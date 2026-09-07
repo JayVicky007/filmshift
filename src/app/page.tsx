@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTrendingMovies } from "@/utils/movieService";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -21,9 +22,10 @@ export default async function HomePage() {
             : "Unknown year";
 
           return (
-            <article
+            <Link
               key={movie.id}
-              className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:scale-105 transition-transform"
+              href={`/movie/${movie.id}`}
+              className="block bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer"
             >
               {movie.poster_path ? (
                 <img
@@ -40,7 +42,7 @@ export default async function HomePage() {
               <p className="px-3 pb-3 pt-1 text-sm text-neutral-600 dark:text-neutral-400">
                 {releaseYear} · {movie.vote_average.toFixed(1)}/10
               </p>
-            </article>
+            </Link>
           );
         })}
       </section>

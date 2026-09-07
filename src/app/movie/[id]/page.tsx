@@ -1,6 +1,5 @@
 import { getMovieDetails } from "@/utils/movieService";
 
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
 function formatRuntime(runtime: number | null) {
@@ -18,16 +17,16 @@ function formatScore(score: number | null) {
   return score === null ? "N/A" : score.toFixed(1);
 }
 
-export default async function MoviePage({
+export default async function MovieDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const resolvedParams = await params;
   let movie = null;
 
   try {
-    movie = await getMovieDetails(id);
+    movie = await getMovieDetails(resolvedParams.id);
   } catch {
     movie = null;
   }
@@ -40,41 +39,19 @@ export default async function MoviePage({
     );
   }
 
-  const backdropUrl = movie.backdrop_path
-    ? `${TMDB_IMAGE_BASE_URL}${movie.backdrop_path}`
-    : null;
   const posterUrl = movie.poster_path
     ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}`
     : null;
 
   return (
-    <main className="bg-background text-foreground min-h-screen pb-16">
-      <section
-        className="relative flex min-h-[24rem] items-end overflow-hidden bg-neutral-900"
-        style={
-          backdropUrl
-            ? { backgroundImage: `url(${backdropUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
-            : undefined
-        }
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
-        <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 text-white">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-neutral-300">
-            FilmShift movie guide
-          </p>
-          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-            {movie.title}
-          </h1>
-        </div>
-      </section>
-
-      <section className="flex flex-col md:flex-row gap-8 mt-6 max-w-6xl mx-auto p-4">
-        <div className="w-full shrink-0 md:w-72">
+    <main className="bg-background text-foreground min-h-screen p-6 md:p-12 flex justify-center">
+      <section className="flex flex-col md:flex-row gap-8 lg:gap-12 max-w-5xl w-full">
+        <div className="flex-shrink-0 w-full md:w-[350px]">
           {posterUrl ? (
             <img
               src={posterUrl}
               alt={`${movie.title} poster`}
-              className="aspect-[2/3] w-full rounded-xl object-cover shadow-xl"
+              className="w-full h-auto object-contain rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800"
             />
           ) : (
             <div className="flex aspect-[2/3] items-center justify-center rounded-xl bg-neutral-200 p-6 text-center text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
@@ -83,9 +60,18 @@ export default async function MoviePage({
           )}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="flex-1 flex flex-col justify-start min-w-0">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+            FilmShift movie guide
+          </p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">
+            {movie.title}
+          </h1>
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm leading-5 text-neutral-600 dark:text-neutral-400">
             <span>{movie.release_date || "Release date unavailable"}</span>
+            <span aria-hidden="true" className="text-neutral-400 dark:text-neutral-600">
+              ·
+            </span>
             <span>{formatRuntime(movie.runtime)}</span>
           </div>
 
