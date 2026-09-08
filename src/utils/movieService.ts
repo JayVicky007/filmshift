@@ -82,6 +82,24 @@ export async function getTrendingMovies(): Promise<TrendingMovie[]> {
   return response.data.results;
 }
 
+export async function searchMovies(query: string): Promise<TrendingMovie[]> {
+  if (!query.trim()) {
+    return [];
+  }
+
+  const response = await axios.get<{ results: TrendingMovie[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/movie"),
+    {
+      params: {
+        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+        query: query.trim(),
+      },
+    },
+  );
+
+  return response.data.results;
+}
+
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
   const tmdbResponse = await axios.get<TmdbMovie>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`),
