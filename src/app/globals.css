@@ -1,33 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* ☀️ Light Mode Theme Colors */
-  --background: #fdfdfd;     /* Crisp, clean soft-white */
-  --foreground: #121212;     /* Off-black text for readability */
+  --background: #F4F6F8;
+  --foreground: #14181C;
+  --surface: #FFFFFF;
+  --text-muted: #5C6470;
+  --accent: #FFC107;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* 🌙 System Dark Mode Fallback */
-    --background: #080808;   /* Pitch black cinematic canvas */
-    --foreground: #f3f3f3;   /* Soft white text */
-  }
-}
-
-/* 🔒 Overrides when a user manually forces Dark Mode */
-.dark {
-  --background: #080808;
-  --foreground: #f3f3f3;
+[data-theme='dark'] {
+  --background: #10161E;
+  --foreground: #E7ECF2;
+  --surface: #1A2430;
+  --text-muted: #A8B1BC;
+  --accent: #FFC107;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+}
+
+html {
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  background-color: var(--background);
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 10%, transparent), transparent 35%),
+    var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
 }

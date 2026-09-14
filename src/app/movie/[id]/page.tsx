@@ -33,7 +33,7 @@ export default async function MovieDetailsPage({
 
   if (!movie) {
     return (
-      <main className="bg-background text-foreground flex min-h-screen items-center justify-center p-8">
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
         <p className="text-xl font-semibold">Movie not found</p>
       </main>
     );
@@ -44,32 +44,32 @@ export default async function MovieDetailsPage({
     : null;
 
   return (
-    <main className="bg-background text-foreground min-h-screen p-6 md:p-12 flex justify-center">
-      <section className="flex flex-col md:flex-row gap-8 lg:gap-12 max-w-5xl w-full">
-        <div className="flex-shrink-0 w-full md:w-[350px]">
+    <main className="flex min-h-screen justify-center bg-background p-6 text-foreground md:p-12">
+      <section className="flex w-full max-w-5xl flex-col gap-8 md:flex-row lg:gap-12">
+        <div className="w-full flex-shrink-0 md:w-[350px]">
           {posterUrl ? (
             <img
               src={posterUrl}
               alt={`${movie.title} poster`}
-              className="w-full h-auto object-contain rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800"
+              className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
             />
           ) : (
-            <div className="flex aspect-[2/3] items-center justify-center rounded-xl bg-neutral-200 p-6 text-center text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
               Poster unavailable
             </div>
           )}
         </div>
 
-        <div className="flex-1 flex flex-col justify-start min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-text-muted">
             FilmShift movie guide
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">
             {movie.title}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm leading-5 text-neutral-600 dark:text-neutral-400">
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm leading-5 text-text-muted">
             <span>{movie.release_date || "Release date unavailable"}</span>
-            <span aria-hidden="true" className="text-neutral-400 dark:text-neutral-600">
+            <span aria-hidden="true" className="text-text-muted/60">
               ·
             </span>
             <span>{formatRuntime(movie.runtime)}</span>
@@ -79,35 +79,37 @@ export default async function MovieDetailsPage({
             {movie.genres.map((genre) => (
               <span
                 key={genre.id}
-                className="rounded-full border border-neutral-300 px-3 py-1 text-sm text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+                className="rounded-full border border-text-muted/20 bg-surface px-3 py-1 text-sm text-foreground"
               >
                 {genre.name}
               </span>
             ))}
           </div>
 
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-neutral-700 dark:text-neutral-300">
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-foreground/90">
             {movie.overview || "No summary is available for this movie."}
           </p>
 
           <section className="mt-10">
-            <h2 className="text-2xl font-bold">Critic Scores</h2>
+            <h2 className="text-2xl font-bold text-foreground">Critic Scores</h2>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100">
-                <p className="text-sm font-semibold">IMDb</p>
-                <p className="mt-1 text-2xl font-bold">{formatScore(movie.ratings.imdb)}</p>
+              <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+                <p className="text-sm font-semibold text-text-muted">IMDb</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">
+                  {formatScore(movie.ratings.imdb)}
+                </p>
               </div>
-              <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-rose-950 dark:border-rose-700 dark:bg-rose-950/50 dark:text-rose-100">
-                <p className="text-sm font-semibold">Rotten Tomatoes</p>
-                <p className="mt-1 text-2xl font-bold">
+              <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+                <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">
                   {movie.ratings.rottenTomatoes === null
                     ? "N/A"
                     : `${movie.ratings.rottenTomatoes}%`}
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950 dark:border-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-100">
-                <p className="text-sm font-semibold">Metacritic</p>
-                <p className="mt-1 text-2xl font-bold">
+              <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+                <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">
                   {formatScore(movie.ratings.metascore)}
                 </p>
               </div>

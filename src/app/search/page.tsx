@@ -13,9 +13,12 @@ export default async function SearchPage({
   const searchTerm = q.trim();
 
   return (
-    <main className="bg-background text-foreground min-h-screen p-8">
+    <main className="min-h-screen bg-background p-8 text-foreground">
       <header className="mx-auto mb-12 max-w-7xl">
-        <h1 className="text-4xl font-bold tracking-tight">
+        <div className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+          Search
+        </div>
+        <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground">
           Search Results for: &quot;{searchTerm}&quot;
         </h1>
       </header>
@@ -23,12 +26,12 @@ export default async function SearchPage({
       {movies.length === 0 ? (
         <p
           role="status"
-          className="mx-auto max-w-7xl rounded-xl border border-neutral-200 bg-neutral-100 p-6 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+          className="mx-auto max-w-7xl rounded-2xl border border-text-muted/15 bg-surface p-6 text-text-muted"
         >
           No movies found matching your search criteria
         </p>
       ) : (
-        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mx-auto max-w-7xl">
+        <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
           {movies.map((movie) => {
             const releaseYear = movie.release_date
               ? new Date(movie.release_date).getFullYear()
@@ -38,23 +41,27 @@ export default async function SearchPage({
               <Link
                 key={movie.id}
                 href={`/movie/${movie.id}`}
-                className="block bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+                className="group block overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
               >
                 {movie.poster_path ? (
-                  <img
-                    src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
-                    alt={`${movie.title} poster`}
-                    className="aspect-[2/3] w-full object-contain"
-                  />
+                  <div className="overflow-hidden">
+                    <img
+                      src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
+                      alt={`${movie.title} poster`}
+                      className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex aspect-[2/3] items-center justify-center bg-neutral-200 px-4 text-center text-sm text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                  <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">
                     Poster unavailable
                   </div>
                 )}
-                <h2 className="font-bold mt-2 px-3">{movie.title}</h2>
-                <p className="px-3 pb-3 pt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                  {releaseYear} · {movie.vote_average.toFixed(1)}/10
-                </p>
+                <div className="p-3">
+                  <h2 className="line-clamp-2 font-bold text-foreground">{movie.title}</h2>
+                  <p className="mt-1 text-sm text-text-muted">
+                    {releaseYear} · {movie.vote_average.toFixed(1)}/10
+                  </p>
+                </div>
               </Link>
             );
           })}
