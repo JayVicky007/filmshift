@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import type { TrendingMovie } from "@/utils/movieService";
+import type { ContentItem } from "@/utils/movieService";
 import ContentCard from "./ContentCard";
 
 export default function ContentCarousel({
@@ -10,7 +10,7 @@ export default function ContentCarousel({
   movies,
 }: {
   title: string;
-  movies: TrendingMovie[];
+  movies: ContentItem[];
 }) {
   const [page, setPage] = useState(0);
   const pageSize = 5;

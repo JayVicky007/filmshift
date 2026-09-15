@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { formatMovieRating, type TrendingMovie } from "@/utils/movieService";
+import { formatMovieRating, type ContentItem } from "@/utils/movieService";
 import RatingRing from "./RatingRing";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function ContentCard({ movie }: { movie: TrendingMovie }) {
+export default function ContentCard({ movie }: { movie: ContentItem }) {
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : "Unknown year";

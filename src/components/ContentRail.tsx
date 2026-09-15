@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { startTransition, useEffect, useState } from "react";
 import type {
   TopRatedPeriod,
-  TrendingMovie,
+  ContentItem,
   TrendingPeriod,
 } from "@/utils/movieService";
 import ContentCard from "./ContentCard";
@@ -19,7 +19,7 @@ export default function ContentRail({
 }: {
   title: string;
   category: string;
-  movies: TrendingMovie[];
+  movies: ContentItem[];
   periodFilter?: boolean;
   periodCategory?: "trending" | "top-rated";
 }) {
@@ -53,7 +53,7 @@ export default function ContentRail({
     setIsLoading(true);
     fetch(`/api/movies?category=${periodCategory}&period=${selectedPeriod}`)
       .then((response) => response.json())
-      .then((data: { results?: TrendingMovie[] }) => {
+      .then((data: { results?: ContentItem[] }) => {
         if (isCurrent && data.results) {
           startTransition(() => {
             setRailMovies(data.results ?? []);

@@ -42,14 +42,14 @@ interface TmdbMovie {
       department: string;
     }>;
   };
-  similar?: { results: TrendingMovie[] };
-  recommendations?: { results: TrendingMovie[] };
+  similar?: { results: ContentItem[] };
+  recommendations?: { results: ContentItem[] };
   external_ids?: {
     imdb_id?: string | null;
   };
 }
 
-export interface TrendingMovie {
+export interface ContentItem {
   id: number;
   title: string;
   poster_path: string | null;
@@ -57,6 +57,9 @@ export interface TrendingMovie {
   vote_average: number;
   vote_count?: number;
 }
+
+/** @deprecated Use ContentItem for shared movie, series, and other content lists. */
+export type TrendingMovie = ContentItem;
 
 export interface SearchSuggestion {
   id: number;
@@ -82,7 +85,7 @@ export const topRatedPeriods = ["all-time", "year", "month"] as const;
 
 export type TopRatedPeriod = (typeof topRatedPeriods)[number];
 
-export function rankAllTimeMovies(movies: TrendingMovie[]): TrendingMovie[] {
+export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
   const globalMean = movies.length > 0
     ? movies.reduce((sum, movie) => sum + movie.vote_average, 0) / movies.length
     : 7;
@@ -145,8 +148,8 @@ export interface MovieDetails {
     character: string;
     profilePath: string | null;
   }>;
-  similar: TrendingMovie[];
-  recommendations: TrendingMovie[];
+  similar: ContentItem[];
+  recommendations: ContentItem[];
   genres: TmdbGenre[];
   runtime: number | null;
   ratings: {
@@ -170,17 +173,17 @@ const parseScore = (score: string | undefined, suffix = "") => {
   return Number.isNaN(parsedScore) ? null : parsedScore;
 };
 
-export async function getTrendingMovies(): Promise<TrendingMovie[]> {
+export async function getTrendingMovies(): Promise<ContentItem[]> {
   return getMoviesByCategory("trending");
 }
 
 export async function getMoviesByCategory(
   category: MovieCategory,
-): Promise<TrendingMovie[]> {
+): Promise<ContentItem[]> {
   const endpoint = category === "trending"
     ? "trending/movie/week"
     : `movie/${category.replace("-", "_")}`;
-  const response = await axios.get<{ results: TrendingMovie[] }>(
+  const response = await axios.get<{ results: ContentItem[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, endpoint),
     {
       params: {
@@ -201,9 +204,9 @@ export async function getMoviesByCategory(
 
 export async function getTrendingMoviesByPeriod(
   period: TrendingPeriod,
-): Promise<TrendingMovie[]> {
+): Promise<ContentItem[]> {
   if (period === "day" || period === "week") {
-    const response = await axios.get<{ results: TrendingMovie[] }>(
+    const response = await axios.get<{ results: ContentItem[] }>(
       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/movie/${period}`),
       { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } },
     );
@@ -214,7 +217,7 @@ export async function getTrendingMoviesByPeriod(
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - (period === "month" ? 30 : 365));
-  const response = await axios.get<{ results: TrendingMovie[] }>(
+  const response = await axios.get<{ results: ContentItem[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
     {
       params: {
@@ -231,12 +234,12 @@ export async function getTrendingMoviesByPeriod(
 
 export async function getTopRatedMoviesByPeriod(
   period: TopRatedPeriod,
-): Promise<TrendingMovie[]> {
+): Promise<ContentItem[]> {
   if (period === "all-time") {
     const today = new Date();
     const responses = await Promise.all(
       Array.from({ length: 25 }, (_, index) => index + 1).map((page) =>
-        axios.get<{ results: TrendingMovie[] }>(
+        axios.get<{ results: ContentItem[] }>(
           getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
           {
             params: {
@@ -272,7 +275,7 @@ export async function getTopRatedMoviesByPeriod(
   const days = period === "year" ? 365 : 30;
   startDate.setDate(today.getDate() - days);
 
-  const response = await axios.get<{ results: TrendingMovie[] }>(
+  const response = await axios.get<{ results: ContentItem[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
     {
       params: {
@@ -288,12 +291,12 @@ export async function getTopRatedMoviesByPeriod(
   return response.data.results;
 }
 
-export async function searchMovies(query: string): Promise<TrendingMovie[]> {
+export async function searchMovies(query: string): Promise<ContentItem[]> {
   if (!query.trim()) {
     return [];
   }
 
-  const response = await axios.get<{ results: TrendingMovie[] }>(
+  const response = await axios.get<{ results: ContentItem[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/movie"),
     {
       params: {
