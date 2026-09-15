@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FilmShift",
-  description: "Your next movie night, perfectly tailored.",
+  description: "Discover and discuss your favorite cinema.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { searchMovies } from "@/utils/movieService";
+import { formatMovieRating, searchMovies } from "@/utils/movieService";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
@@ -59,7 +59,7 @@ export default async function SearchPage({
                 <div className="p-3">
                   <h2 className="line-clamp-2 font-bold text-foreground">{movie.title}</h2>
                   <p className="mt-1 text-sm text-text-muted">
-                    {releaseYear} · {movie.vote_average.toFixed(1)}/10
+                    {releaseYear} · {formatMovieRating(movie.vote_average)}
                   </p>
                 </div>
               </Link>

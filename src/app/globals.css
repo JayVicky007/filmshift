@@ -6,6 +6,7 @@
   --surface: #FFFFFF;
   --text-muted: #5C6470;
   --accent: #FFC107;
+  --trending-text: #8A5A00;
 }
 
 [data-theme='dark'] {
@@ -14,6 +15,7 @@
   --surface: #1A2430;
   --text-muted: #A8B1BC;
   --accent: #FFC107;
+  --trending-text: #FFC107;
 }
 
 @theme inline {
@@ -22,6 +24,7 @@
   --color-surface: var(--surface);
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
+  --color-trending-text: var(--trending-text);
 }
 
 html {
@@ -36,6 +39,27 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@keyframes search-placeholder-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-search-placeholder {
+  animation: search-placeholder-enter 450ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-search-placeholder {
+    animation: none;
+  }
 }
 
 ::selection {
