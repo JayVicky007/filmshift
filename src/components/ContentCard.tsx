@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { formatMovieRating, type TrendingMovie } from "@/utils/movieService";
+import RatingRing from "./RatingRing";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function MovieCard({ movie }: { movie: TrendingMovie }) {
+export default function ContentCard({ movie }: { movie: TrendingMovie }) {
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : "Unknown year";
@@ -14,12 +15,15 @@ export default function MovieCard({ movie }: { movie: TrendingMovie }) {
       className="group block min-w-0 overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
     >
       {movie.poster_path ? (
-        <div className="overflow-hidden">
+        <div className="relative overflow-hidden">
           <img
             src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
             alt={`${movie.title} poster`}
             className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          <div className="absolute bottom-3 left-3">
+            <RatingRing rating={movie.vote_average} />
+          </div>
         </div>
       ) : (
         <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">

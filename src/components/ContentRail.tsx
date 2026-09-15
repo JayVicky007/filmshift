@@ -8,9 +8,9 @@ import type {
   TrendingMovie,
   TrendingPeriod,
 } from "@/utils/movieService";
-import MovieCard from "./MovieCard";
+import ContentCard from "./ContentCard";
 
-export default function MovieRail({
+export default function ContentRail({
   title,
   category,
   movies,
@@ -85,7 +85,7 @@ export default function MovieRail({
         </div>
 
         {periodFilter ? (
-          <div className="flex items-center justify-center overflow-x-auto rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
+          <div className="flex max-w-full flex-wrap items-center justify-center rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
             {(periodCategory === "trending"
               ? (["day", "week", "month", "year"] as TrendingPeriod[])
               : (["all-time", "year", "month"] as TopRatedPeriod[])
@@ -141,7 +141,7 @@ export default function MovieRail({
               className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
             >
               {moviePage.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
+                <ContentCard key={movie.id} movie={movie} />
               ))}
             </div>
           ))}

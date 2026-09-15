@@ -30,6 +30,7 @@
 html {
   background-color: var(--background);
   color: var(--foreground);
+  overflow-x: hidden;
 }
 
 body {
@@ -38,6 +39,7 @@ body {
     var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 

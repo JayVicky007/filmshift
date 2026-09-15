@@ -1,5 +1,5 @@
 import HomeHero from "@/components/HomeHero";
-import MovieRail from "@/components/MovieRail";
+import ContentRail from "@/components/ContentRail";
 import {
   getMoviesByCategory,
   getTopRatedMoviesByPeriod,
@@ -28,7 +28,7 @@ export default async function HomePage() {
 
       <div className="mx-auto mt-16 max-w-7xl space-y-16">
         {sections.map((section, index) => (
-          <MovieRail
+          <ContentRail
             key={section.category}
             title={section.title}
             category={section.category}

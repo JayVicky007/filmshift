@@ -13,8 +13,37 @@ interface TmdbMovie {
   backdrop_path: string | null;
   release_date: string;
   vote_average: number;
+  vote_count: number;
+  status: string;
+  tagline: string;
   genres: TmdbGenre[];
   runtime: number | null;
+  videos?: {
+    results: Array<{
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      official: boolean;
+    }>;
+  };
+  credits?: {
+    cast: Array<{
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+      order: number;
+    }>;
+    crew: Array<{
+      id: number;
+      name: string;
+      job: string;
+      department: string;
+    }>;
+  };
+  similar?: { results: TrendingMovie[] };
+  recommendations?: { results: TrendingMovie[] };
   external_ids?: {
     imdb_id?: string | null;
   };
@@ -100,6 +129,24 @@ export interface MovieDetails {
   poster_path: string | null;
   backdrop_path: string | null;
   release_date: string;
+  status: string;
+  tagline: string;
+  audienceRating: number;
+  audienceVoteCount: number;
+  trailer: {
+    key: string;
+    name: string;
+  } | null;
+  directors: string[];
+  writers: string[];
+  cast: Array<{
+    id: number;
+    name: string;
+    character: string;
+    profilePath: string | null;
+  }>;
+  similar: TrendingMovie[];
+  recommendations: TrendingMovie[];
   genres: TmdbGenre[];
   runtime: number | null;
   ratings: {
@@ -306,12 +353,20 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     {
       params: {
         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        append_to_response: "external_ids",
+        append_to_response: "external_ids,videos,credits,similar,recommendations",
       },
     },
   );
 
   const movie = tmdbResponse.data;
+  const trailer = movie.videos?.results.find(
+    (video) =>
+      video.site === "YouTube" &&
+      video.type === "Trailer" &&
+      video.official,
+  ) ?? movie.videos?.results.find(
+    (video) => video.site === "YouTube" && video.type === "Trailer",
+  ) ?? null;
   let imdbRating: number | null = null;
   let rottenTomatoes: number | null = null;
   let metascore: number | null = null;
@@ -348,6 +403,32 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     poster_path: movie.poster_path,
     backdrop_path: movie.backdrop_path,
     release_date: movie.release_date,
+    status: movie.status,
+    tagline: movie.tagline,
+    audienceRating: movie.vote_average,
+    audienceVoteCount: movie.vote_count,
+    trailer: trailer
+      ? { key: trailer.key, name: trailer.name }
+      : null,
+    directors: movie.credits?.crew
+      .filter((person) => person.job === "Director")
+      .map((person) => person.name)
+      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
+    writers: movie.credits?.crew
+      .filter((person) => person.job === "Writer" || person.job === "Screenplay")
+      .map((person) => person.name)
+      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
+    cast: movie.credits?.cast
+      .sort((first, second) => first.order - second.order)
+      .slice(0, 6)
+      .map((person) => ({
+        id: person.id,
+        name: person.name,
+        character: person.character,
+        profilePath: person.profile_path,
+      })) ?? [],
+    similar: movie.similar?.results.slice(0, 10) ?? [],
+    recommendations: movie.recommendations?.results.slice(0, 10) ?? [],
     genres: movie.genres,
     runtime: movie.runtime,
     ratings: {

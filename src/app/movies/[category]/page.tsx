@@ -1,5 +1,5 @@
 import Link from "next/link";
-import MovieCard from "@/components/MovieCard";
+import ContentCard from "@/components/ContentCard";
 import {
   getMoviesByCategory,
   getTopRatedMoviesByPeriod,
@@ -54,7 +54,7 @@ export default async function MovieCategoryPage({
 
       <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <ContentCard key={movie.id} movie={movie} />
         ))}
       </section>
     </main>
