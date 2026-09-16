@@ -265,6 +265,7 @@ export default function Navbar() {
             onSelect={() => setOpenMenu(null)}
             className="hidden md:block"
           />
+          <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
           {userEmail ? (
             <>
               <Link
@@ -281,6 +282,7 @@ export default function Navbar() {
                 </span>
                 <span className="hidden truncate sm:inline">{accountLabel}</span>
               </Link>
+              <Link href="/write" className="transition-colors hover:text-accent">Write</Link>
               <button type="button" onClick={handleSignOut} className="transition-colors hover:text-accent">
                 Sign out
               </button>

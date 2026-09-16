@@ -8,17 +8,23 @@ export default function ProfileForm({
   userId,
   email,
   initialUsername,
+  initialDisplayName,
   initialAvatarUrl,
+  initialBio,
 }: {
   userId: string;
   email: string;
   initialUsername: string;
+  initialDisplayName: string;
   initialAvatarUrl: string;
+  initialBio: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [username, setUsername] = useState(initialUsername);
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [bio, setBio] = useState(initialBio);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(initialAvatarUrl);
   const [message, setMessage] = useState("");
@@ -77,7 +83,9 @@ export default function ProfileForm({
       .from("profiles")
       .update({
         username: username.trim() || null,
+        display_name: displayName.trim() || null,
         avatar_url: nextAvatarUrl,
+        bio: bio.trim() || null,
       })
       .eq("id", userId);
 
@@ -105,6 +113,18 @@ export default function ProfileForm({
         />
       </div>
       <div>
+        <label htmlFor="display-name" className="text-sm font-semibold">Display name</label>
+        <input
+          id="display-name"
+          type="text"
+          value={displayName}
+          onChange={(event) => setDisplayName(event.target.value)}
+          placeholder="How should people see you?"
+          maxLength={60}
+          className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+        />
+      </div>
+      <div>
         <label htmlFor="username" className="text-sm font-semibold">Username</label>
         <input
           id="username"
@@ -114,6 +134,18 @@ export default function ProfileForm({
           placeholder="Choose a username"
           maxLength={30}
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+        />
+      </div>
+      <div>
+        <label htmlFor="bio" className="text-sm font-semibold">Bio</label>
+        <textarea
+          id="bio"
+          value={bio}
+          onChange={(event) => setBio(event.target.value)}
+          placeholder="Tell the FilmShift community a little about yourself."
+          maxLength={280}
+          rows={4}
+          className="mt-2 w-full resize-y rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
       <div>
