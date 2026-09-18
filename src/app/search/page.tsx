@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { formatMovieRating, searchMovies } from "@/utils/movieService";
-
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+import { searchMovies } from "@/utils/movieService";
+import ContentCard from "@/components/ContentCard"; // 🚀 Import our smart component!
 
 export default async function SearchPage({
   searchParams,
@@ -28,43 +27,14 @@ export default async function SearchPage({
           role="status"
           className="mx-auto max-w-7xl rounded-2xl border border-text-muted/15 bg-surface p-6 text-text-muted"
         >
-          No movies found matching your search criteria
+          No items found matching your search criteria
         </p>
       ) : (
         <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
-          {movies.map((movie) => {
-            const releaseYear = movie.release_date
-              ? new Date(movie.release_date).getFullYear()
-              : "Unknown year";
-
-            return (
-              <Link
-                key={movie.id}
-                href={`/movie/${movie.id}`}
-                className="group block overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
-              >
-                {movie.poster_path ? (
-                  <div className="overflow-hidden">
-                    <img
-                      src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
-                      alt={`${movie.title} poster`}
-                      className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">
-                    Poster unavailable
-                  </div>
-                )}
-                <div className="p-3">
-                  <h2 className="line-clamp-2 font-bold text-foreground">{movie.title}</h2>
-                  <p className="mt-1 text-sm text-text-muted">
-                    {releaseYear} · {formatMovieRating(movie.vote_average)}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
+          {movies.map((item) => (
+            // 🚀 Super clean: Reusing our smart card means anime/documentaries auto-route perfectly!
+            <ContentCard key={item.id} movie={item} />
+          ))}
         </section>
       )}
     </main>

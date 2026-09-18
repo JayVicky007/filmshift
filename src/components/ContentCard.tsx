@@ -4,14 +4,22 @@ import RatingRing from "./RatingRing";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function ContentCard({ movie }: { movie: ContentItem }) {
+// 💡 We tell TypeScript that the movie object might optionally carry our custom media_type string
+export default function ContentCard({ movie }: { movie: ContentItem & { media_type?: string } }) {
+  
+  // 🚀 1. Check our explicit flag first, then fallback to missing property checks!
+  const isTvFormat = movie.media_type === "tv" || 'first_air_date' in movie || !movie.release_date;
+
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : "Unknown year";
 
+  // 2. Automatically generate the perfect path route matching your backend datasets
+  const targetRoute = isTvFormat ? `/tv/${movie.id}` : `/movie/${movie.id}`;
+
   return (
     <Link
-      href={`/movie/${movie.id}`}
+      href={targetRoute}
       className="group block min-w-0 overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
     >
       {movie.poster_path ? (

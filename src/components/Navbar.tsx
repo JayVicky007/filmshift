@@ -315,9 +315,15 @@ export default function Navbar() {
                   setSearchOpen(false); // Closes the mobile layout toggle focus drawer
 
                   // Force the mediaType to lowercase so the check never fails
-                  const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
-                  const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
+// 🚀 Group all serialized formats under 'tv', everything else defaults to 'movie'
+                  const mediaLower = suggestion.mediaType?.toLowerCase() || "";
+                  const isSerialFormat = 
+                    mediaLower.includes("tv") || 
+                    mediaLower.includes("series") || 
+                    mediaLower.includes("anime") || 
+                    mediaLower.includes("animation");
 
+                  const routeType = isSerialFormat ? "tv" : "movie";
                   router.push(`/${routeType}/${suggestion.id}`);
                 }}
               />

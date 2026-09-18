@@ -56,6 +56,7 @@ export interface ContentItem {
   release_date: string;
   vote_average: number;
   vote_count?: number;
+  media_type?: string;
 }
 
 /** @deprecated Use ContentItem for shared movie, series, and other content lists. */
@@ -469,6 +470,8 @@ export interface TvShowDetails {
     character: string;
     profilePath: string | null; // Matches your custom cast architecture!
   }>;
+    similar: ContentItem[];
+    recommendations: ContentItem[];
 }
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
@@ -478,19 +481,31 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       {
         params: {
           api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          append_to_response: "credits",
+          // 1. Tell TMDB to pack similar shows and recommendations into the response!
+          append_to_response: "credits,similar,recommendations",
         },
       }
     );
 
     const show = response.data;
 
+    // 2. Helper tool to map TV properties cleanly to match our ContentItem structure
+    const mapTvToContentItem = (item: any): ContentItem => ({
+      id: item.id,
+      title: item.name, // Maps TV 'name' over to 'title' so ContentCard understands it!
+      poster_path: item.poster_path,
+      release_date: item.first_air_date || "",
+      vote_average: item.vote_average || 0,
+      vote_count: item.vote_count || 0,
+      media_type: "tv",
+    });
+
     return {
       id: show.id,
       name: show.name,
       overview: show.overview,
-      poster_path: show.poster_path, // Stays snake_case to match movie properties
-      backdrop_path: show.backdrop_path, // Stays snake_case to match movie properties
+      poster_path: show.poster_path,
+      backdrop_path: show.backdrop_path,
       first_air_date: show.first_air_date,
       status: show.status,
       tagline: show.tagline,
@@ -504,8 +519,11 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         id: person.id,
         name: person.name,
         character: person.character,
-        profilePath: person.profile_path, // Aligns snake_case to custom camelCase profilePath!
+        profilePath: person.profile_path,
       })) || [],
+      // 3. Attach the mapped lists safely into our data contract
+      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
     };
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);

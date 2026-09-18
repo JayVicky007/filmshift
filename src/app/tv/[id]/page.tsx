@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTvShowDetails } from "@/utils/movieService";
 import RatingRing from "@/components/RatingRing";
+import ContentCarousel from "@/components/ContentCarousel";
 
-const TMDB_POSTER_BASE_URL = "https://tmdb.org";
-const TMDB_BACKDROP_BASE_URL = "https://tmdb.org";
-const TMDB_PROFILE_BASE_URL = "https://tmdb.org";
+
+const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
 // A clean, completely flat string combination that cannot break syntax rules
 function googleSearchUrl(name: string, showName: string) {
@@ -67,6 +69,9 @@ export default async function TvShowDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
+
+
+
 
           {/* TV Metadata Breakdown Layer */}
           <div className="min-w-0 flex-1">
@@ -177,9 +182,21 @@ export default async function TvShowDetailPage({ params }: PageProps) {
                   <p className="truncate text-sm text-text-muted">{person.character}</p>
                 </div>
               ))}
+              
             </div>
           </section>
+
         )}
+
+        {show.similar && show.similar.length > 0 && (
+          <ContentCarousel title="Similar TV Shows" movies={show.similar} />
+        )}
+
+        {show.recommendations && show.recommendations.length > 0 && (
+          <ContentCarousel title="Recommendations" movies={show.recommendations} />
+        )}
+
+
       </div>
     </main>
   );

@@ -180,10 +180,15 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
                 setSuggestions([]);
                 setQuery("");
 
-                // Problem 1 Fix: Instantly map and transfer context focus down to internal layout dynamic route type paths
-                const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
-                const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
+              // 🚀 Group all serialized formats under 'tv', everything else defaults to 'movie'
+                const mediaLower = suggestion.mediaType?.toLowerCase() || "";
+                const isSerialFormat = 
+                  mediaLower.includes("tv") || 
+                  mediaLower.includes("series") || 
+                  mediaLower.includes("anime") || 
+                  mediaLower.includes("animation");
 
+                const routeType = isSerialFormat ? "tv" : "movie";
                 router.push(`/${routeType}/${suggestion.id}`);
               }}
             />
