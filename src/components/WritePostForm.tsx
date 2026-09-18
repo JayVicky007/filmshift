@@ -23,6 +23,7 @@ interface PostData {
   media_type: string;
   tmdb_id: number | null;
   status: "draft" | "published";
+  slug: string | null; 
 }
 
 export default function WritePostForm({ 

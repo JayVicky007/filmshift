@@ -308,12 +308,20 @@ export default function Navbar() {
               <SearchSuggestions
                 suggestions={suggestions}
                 isLoading={isSuggesting}
-                className="right-0 left-auto w-72"
                 onSelect={(suggestion) => {
-                  setQuery(suggestion.title);
+                  // Problem 2 Fix: Clear suggestions and hide them immediately on click
                   setSuggestions([]);
+                  setQuery(""); // Clears out the search bar text string
+                  setSearchOpen(false); // Closes the mobile layout toggle focus drawer
+
+                  // Force the mediaType to lowercase so the check never fails
+                  const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
+                  const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
+
+                  router.push(`/${routeType}/${suggestion.id}`);
                 }}
               />
+            
             </form>
           )}
           <button

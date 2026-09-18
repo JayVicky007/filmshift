@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import DeleteDraftButton from "@/components/DeleteDraftButton";
 
 function formatDate(value: string | null) {
   if (!value) return "Not published";
@@ -67,18 +68,45 @@ export default async function ProfilePage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {drafts.map((draft) => (
-                <article key={draft.id} className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-5 relative group hover:border-accent transition-colors">
-                  <div className="flex justify-between items-center text-xs text-yellow-400 font-semibold uppercase tracking-wider">
-                    <span>{draft.content_type}</span>
-                    <span className="bg-yellow-500/10 px-2 py-0.5 rounded text-[10px]">Draft</span>
-                  </div>
-                  {/* Note: We will hook up the edit/preview page next */}
-                  <h3 className="mt-3 text-lg font-bold tracking-tight">
-                      <Link href={`/blog/edit/${draft.id}`} className="hover:underline">
+                <article 
+                  key={draft.id} 
+                  className="group relative flex flex-col justify-between rounded-2xl border border-text-muted/15 bg-surface p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_12px_30px_rgba(0,0,0,0.15)]"
+                >
+                  {/* Stretched Link Element turning the entire block into a hotspot */}
+                  <Link 
+                    href={`/blog/edit/${draft.id}`}
+                    className="absolute inset-0 rounded-2xl cursor-pointer"
+                  >
+                    <span className="sr-only">Edit draft "{draft.title}"</span>
+                  </Link>
+
+                  {/* Content Layout Layer stacked cleanly above the stretched anchor line */}
+                  <div className="relative z-10 pointer-events-none">
+                    <div className="flex justify-between items-center text-xs text-accent font-semibold uppercase tracking-wider">
+                      <span>{draft.content_type || "Article"}</span>
+                      <span className="bg-accent/10 px-2 py-0.5 rounded text-[10px]">Draft</span>
+                    </div>
+                    
+                    <h3 className="mt-3 text-lg font-bold tracking-tight text-foreground group-hover:text-accent transition-colors line-clamp-1">
                       {draft.title || "Untitled Draft"}
-                    </Link>
-                  </h3>
-                  {draft.excerpt && <p className="mt-2 text-xs text-text-muted line-clamp-2">{draft.excerpt}</p>}
+                    </h3>
+                    
+                    {draft.excerpt && (
+                      <p className="mt-2 text-xs text-text-muted line-clamp-2">
+                        {draft.excerpt}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Secondary Action Item isolated with high z-index stacking */}
+                  <div className="relative z-20 mt-4 flex items-center justify-between border-t border-text-muted/10 pt-3">
+                    <span className="text-[11px] text-text-muted">
+                      Private Draft Workspace
+                    </span>
+                    
+                    {/* Integrated client side deletion component */}
+                    <DeleteDraftButton postId={draft.id} />
+                  </div>
                 </article>
               ))}
             </div>

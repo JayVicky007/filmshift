@@ -441,3 +441,75 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     },
   };
 }
+
+
+
+
+
+// Append to the absolute bottom of src/utils/movieService.ts
+
+export interface TvShowDetails {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  first_air_date: string;
+  status: string;
+  tagline: string;
+  vote_average: number;
+  vote_count: number;
+  number_of_seasons: number;
+  number_of_episodes: number;
+  creators: string[];
+  genres: TmdbGenre[];
+  cast: Array<{
+    id: number;
+    name: string;
+    character: string;
+    profilePath: string | null; // Matches your custom cast architecture!
+  }>;
+}
+
+export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
+  try {
+    const response = await axios.get<any>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`),
+      {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+          append_to_response: "credits",
+        },
+      }
+    );
+
+    const show = response.data;
+
+    return {
+      id: show.id,
+      name: show.name,
+      overview: show.overview,
+      poster_path: show.poster_path, // Stays snake_case to match movie properties
+      backdrop_path: show.backdrop_path, // Stays snake_case to match movie properties
+      first_air_date: show.first_air_date,
+      status: show.status,
+      tagline: show.tagline,
+      vote_average: show.vote_average,
+      vote_count: show.vote_count,
+      number_of_seasons: show.number_of_seasons,
+      number_of_episodes: show.number_of_episodes,
+      creators: show.created_by?.map((c: any) => c.name) || [],
+      genres: show.genres || [],
+      cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
+        id: person.id,
+        name: person.name,
+        character: person.character,
+        profilePath: person.profile_path, // Aligns snake_case to custom camelCase profilePath!
+      })) || [],
+    };
+  } catch (error) {
+    console.error("❌ movieService TV Fetch Error:", error);
+    return null;
+  }
+}
+

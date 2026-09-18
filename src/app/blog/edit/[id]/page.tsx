@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import WritePostForm from "@/components/WritePostForm";
+import DeleteDraftButton from "@/components/DeleteDraftButton";
 
 export default async function EditPostPage({
   params,
@@ -33,13 +34,18 @@ export default async function EditPostPage({
   return (
     <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
       <section className="mx-auto w-full max-w-3xl rounded-3xl border border-text-muted/15 bg-surface p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)] sm:p-8">
-        <Link href="/profile" className="text-sm font-semibold text-text-muted transition-colors hover:text-accent">
-          Cancel & Back to Profile
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/profile" className="text-sm font-semibold text-text-muted transition-colors hover:text-accent">
+            Cancel & Back to Profile
+          </Link>
+          
+          {/* Only render delete button for unpublished drafts */}
+          {post.status === "draft" && <DeleteDraftButton postId={post.id} />}
+        </div>
+
         <h1 className="mt-6 text-4xl font-black tracking-tight">Revise your masterpiece</h1>
         <p className="mt-2 text-text-muted">Modify your formatting content or transition this draft into a live publication.</p>
         
-        {/* Fixed: TypeScript cast embedded cleanly inside completely balanced braces */}
         <WritePostForm 
           authorId={user.id} 
           initialPost={{

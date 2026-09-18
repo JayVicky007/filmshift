@@ -38,12 +38,24 @@ export default async function BlogPostPage({
           {post.author?.avatar_url ? <img src={post.author.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface font-bold">{authorName[0]}</span>}
           <span>{authorName}</span><span aria-hidden="true">·</span><span>{formatDate(post.published_at)}</span>
         </div>
-        {post.excerpt && <p className="mt-10 border-l-4 border-accent pl-5 text-xl leading-8 text-text-muted">{post.excerpt}</p>}
-        <div className="mt-10 text-lg leading-9 text-foreground/90 space-y-6 prose prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-accent hover:prose-a:underline"
-  dangerouslySetInnerHTML={{ __html: post.body }} />
-        {post.tmdb_id && (
-          <Link href={`/movie/${post.tmdb_id}`} className="mt-12 inline-flex rounded-xl border border-accent/50 bg-accent/10 px-4 py-3 font-semibold text-trending-text transition-colors hover:border-accent hover:text-accent">View linked title</Link>
-        )}
+        <div 
+          className="prose prose-invert max-w-none text-foreground/90 mt-8"
+          dangerouslySetInnerHTML={{ __html: post.body }} 
+        />
+{post.tmdb_id && (
+  <Link href={
+      post.media_type === "tv" || 
+      post.media_type === "show" || 
+      post.media_type === "anime" || 
+      post.media_type === "docuseries"
+        ? `/tv/${post.tmdb_id}`
+        : `/movie/${post.tmdb_id}`
+    } 
+    className="mt-12 inline-flex rounded-xl border border-accent/50 bg-accent/10 px-4 py-3 font-semibold text-trending-text transition-colors hover:border-accent hover:text-accent"
+  >
+    View linked title
+  </Link>
+)}
       </article>
     </main>
   );

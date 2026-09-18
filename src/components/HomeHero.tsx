@@ -176,8 +176,15 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
               suggestions={suggestions}
               isLoading={isSuggesting}
               onSelect={(suggestion) => {
-                setQuery(suggestion.title);
+                // Problem 2 Fix: Instantly drop suggestion elements and empty search field string
                 setSuggestions([]);
+                setQuery("");
+
+                // Problem 1 Fix: Instantly map and transfer context focus down to internal layout dynamic route type paths
+                const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
+                const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
+
+                router.push(`/${routeType}/${suggestion.id}`);
               }}
             />
           </div>

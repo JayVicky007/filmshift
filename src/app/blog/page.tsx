@@ -34,17 +34,32 @@ export default async function BlogPage() {
             {posts.map((post) => {
               const authorName = post.author?.display_name || post.author?.username || "FilmShift member";
               return (
-                <article key={post.id} className="rounded-2xl border border-text-muted/15 bg-surface p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1">
+                <article 
+                  key={post.id} 
+                  className="group relative rounded-2xl border border-text-muted/15 bg-surface p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_10px_35px_rgba(234,179,8,0.08)] cursor-pointer"
+                >
                   <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
                     <span>{post.content_type}</span>
                     <span>{post.media_type}</span>
                   </div>
+                  
                   <h2 className="mt-5 text-2xl font-black tracking-tight">
-                    <Link href={`/blog/${post.slug}`} className="transition-colors hover:text-accent">{post.title}</Link>
+                    <Link href={`/blog/${post.slug}`} className="transition-colors group-hover:text-accent focus:outline-none">
+                      <span className="absolute inset-0" aria-hidden="true" />
+                      {post.title}
+                    </Link>
                   </h2>
-                  {post.excerpt && <p className="mt-3 line-clamp-3 text-text-muted">{post.excerpt}</p>}
-                  <div className="mt-6 flex items-center gap-3 border-t border-text-muted/10 pt-4 text-sm text-text-muted">
-                    {post.author?.avatar_url ? <img src={post.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background font-bold">{authorName[0]}</span>}
+                  
+                  {post.excerpt && <p className="mt-3 line-clamp-3 text-text-muted relative z-10">{post.excerpt}</p>}
+                  
+                  <div className="mt-6 flex items-center gap-3 border-t border-text-muted/10 pt-4 text-sm text-text-muted relative z-10">
+                    {post.author?.avatar_url ? (
+                      <img src={post.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    ) : (
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background font-bold">
+                        {authorName[0]}
+                      </span>
+                    )}
                     <span>{authorName}</span>
                     <span aria-hidden="true">·</span>
                     <span>{formatDate(post.published_at)}</span>
