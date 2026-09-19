@@ -44,57 +44,52 @@ const animationCategories = [
 
 type OpenMenu = "movies" | "series" | "animation" | null;
 
+
 function CategoryMenu({
   label,
   menuId,
   categories,
-  isOpen,
-  onToggle,
-  onSelect,
   className = "",
 }: {
   label: string;
   menuId: string;
   categories: string[];
-  isOpen: boolean;
-  onToggle: () => void;
-  onSelect: () => void;
   className?: string;
 }) {
   return (
-    <div className={`relative ${className}`}>
+    /* 🚀 group/menu enables hover triggers. invisible/opacity-0 handles fluid fade entries! */
+    <div className={`relative group/menu py-2 ${className}`}>
       <button
         type="button"
-        aria-expanded={isOpen}
+        aria-haspopup="menu"
         aria-controls={menuId}
-        onClick={onToggle}
-        className="inline-flex items-center gap-1 transition-colors hover:text-accent"
+        className="inline-flex items-center gap-1 transition-colors hover:text-accent cursor-pointer"
       >
         {label}
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
       </button>
-      {isOpen && (
-        <div
-          id={menuId}
-          role="menu"
-          className="absolute right-0 top-full z-50 mt-4 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)]"
-        >
-          {categories.map((category) => (
-            <Link
-              key={category}
-              href={`/search?q=${encodeURIComponent(category)}`}
-              role="menuitem"
-              onClick={onSelect}
-              className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
-            >
-              {category}
-            </Link>
-          ))}
-        </div>
-      )}
+      
+      <div
+        id={menuId}
+        role="menu"
+        className="absolute left-0 top-full z-50 mt-1 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+      >
+        {categories.map((category) => (
+          <Link
+            key={category}
+            href={`/search?q=${encodeURIComponent(category)}`}
+            role="menuitem"
+            className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
+          >
+            {category}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
+
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -225,52 +220,96 @@ export default function Navbar() {
   const accountLabel = username || userEmail?.split("@")[0] || "Account";
   const accountInitial = accountLabel.charAt(0).toUpperCase();
 
+
   return (
     <header
-      className={`z-50 w-full border-b shadow-[0_1px_0_rgba(0,0,0,0.04)] ${
+      className={`z-50 w-full transition-all duration-200 ${
         isHomePage
-          ? "absolute left-4 right-4 top-0 w-auto rounded-t-[2rem] border-transparent bg-slate-950/45 backdrop-blur-[2px] sm:left-8 sm:right-8"
-          : "sticky top-0 border-text-muted/10 bg-background/75 backdrop-blur-xl"
+          /* 🚀 ULTIMATE CLEANUP: Removed all backgrounds, blurs, borders, and shadows! 
+             The navbar items will now float gracefully directly over your hero movie poster artwork. */
+          ? "absolute left-0 right-0 top-0 border-transparent bg-transparent"
+          : "sticky top-0 border-b border-text-muted/10 bg-background/75 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)]"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl ${isHomePage ? "text-white" : "text-foreground"}`}>
+      {/* 🚀 Changed px-6 to px-4 or px-8 on larger viewports to match page margins perfectly and prevent text clashing */}
+      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-8">
+        
+        {/* 1. Main Application Brand Title */}
+        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl shrink-0 ${isHomePage ? "text-white" : "text-foreground"}`}>
           <span>Film</span><span className="text-accent">Shift</span>
         </Link>
 
-        <nav ref={navRef} className={`ml-auto mr-1 flex items-center gap-4 text-sm font-semibold md:mr-2 md:gap-7 ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+        {/* 2. Main Navigation Block (Shifted Left!) */}
+        <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
           <CategoryMenu
             label="Movies"
             menuId="movie-categories"
             categories={movieCategories}
-            isOpen={openMenu === "movies"}
-            onToggle={() => setOpenMenu((menu) => menu === "movies" ? null : "movies")}
-            onSelect={() => setOpenMenu(null)}
           />
           <CategoryMenu
             label="Series"
             menuId="series-categories"
             categories={seriesCategories}
-            isOpen={openMenu === "series"}
-            onToggle={() => setOpenMenu((menu) => menu === "series" ? null : "series")}
-            onSelect={() => setOpenMenu(null)}
             className="hidden sm:block"
           />
           <CategoryMenu
             label="Animation"
             menuId="animation-categories"
             categories={animationCategories}
-            isOpen={openMenu === "animation"}
-            onToggle={() => setOpenMenu((menu) => menu === "animation" ? null : "animation")}
-            onSelect={() => setOpenMenu(null)}
             className="hidden md:block"
           />
           <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
+
+          {/* 🔍 Search Input Layout Layer */}
+          <div className="ml-1 flex items-center gap-2">
+            {searchOpen && (
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <label className="sr-only" htmlFor="nav-search">Search</label>
+                <input
+                  id="nav-search"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search"
+                  autoFocus
+                  className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
+                />
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  isLoading={isSuggesting}
+                  onSelect={(suggestion) => {
+                    setSuggestions([]);
+                    setQuery("");
+                    setSearchOpen(false);
+                    const mediaTypeNormalized = suggestion.mediaType?.toLowerCase() || "";
+                    const routeType = mediaTypeNormalized.includes("tv") || mediaTypeNormalized.includes("series") ? "tv" : "movie";
+                    router.push(`/${routeType}/${suggestion.id}`);
+                  }}
+                />
+              </form>
+            )}
+            <button
+              type="button"
+              aria-label={searchOpen ? "Close search" : "Open search"}
+              onClick={() => {
+                setSearchOpen((open) => !open);
+                setSuggestions([]);
+              }}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white" : "text-foreground"}`}
+            >
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
+
+        {/* 3. Account Settings and Mode Actions Block */}
+        {/* 🚀 Changed gap-4 to gap-3 to pull the toggle slightly inward with crisp internal margins */}
+        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
           {userEmail ? (
             <>
               <Link
                 href="/profile"
-                className="inline-flex max-w-32 items-center gap-2 truncate transition-colors hover:text-accent"
+                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}
                 title={accountLabel}
               >
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"}`}>
@@ -282,69 +321,20 @@ export default function Navbar() {
                 </span>
                 <span className="hidden truncate sm:inline">{accountLabel}</span>
               </Link>
-              <Link href="/write" className="transition-colors hover:text-accent">Write</Link>
-              <button type="button" onClick={handleSignOut} className="transition-colors hover:text-accent">
+              <Link href="/write" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Write</Link>
+              <button type="button" onClick={handleSignOut} className={`transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
                 Sign out
               </button>
             </>
           ) : (
-            <Link href="/login" className="transition-colors hover:text-accent">Login</Link>
+            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Login</Link>
           )}
-        </nav>
 
-        <div className="mr-2 flex items-center gap-2 md:mr-3">
-          {searchOpen && (
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <label className="sr-only" htmlFor="nav-search">Search</label>
-              <input
-                id="nav-search"
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search"
-                autoFocus
-                className="w-28 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-36"
-              />
-              <SearchSuggestions
-                suggestions={suggestions}
-                isLoading={isSuggesting}
-                onSelect={(suggestion) => {
-                  // Problem 2 Fix: Clear suggestions and hide them immediately on click
-                  setSuggestions([]);
-                  setQuery(""); // Clears out the search bar text string
-                  setSearchOpen(false); // Closes the mobile layout toggle focus drawer
-
-                  // Force the mediaType to lowercase so the check never fails
-// 🚀 Group all serialized formats under 'tv', everything else defaults to 'movie'
-                  const mediaLower = suggestion.mediaType?.toLowerCase() || "";
-                  const isSerialFormat = 
-                    mediaLower.includes("tv") || 
-                    mediaLower.includes("series") || 
-                    mediaLower.includes("anime") || 
-                    mediaLower.includes("animation");
-
-                  const routeType = isSerialFormat ? "tv" : "movie";
-                  router.push(`/${routeType}/${suggestion.id}`);
-                }}
-              />
-            
-            </form>
-          )}
-          <button
-            type="button"
-            aria-label={searchOpen ? "Close search" : "Open search"}
-            onClick={() => {
-              setSearchOpen((open) => !open);
-              setSuggestions([]);
-            }}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent ${isHomePage ? "text-white" : "text-foreground"}`}
-          >
-            <Search className="h-5 w-5" aria-hidden="true" />
-          </button>
           <ThemeToggle
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent ${isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"}`}
           />
         </div>
+
       </div>
     </header>
   );

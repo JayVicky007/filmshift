@@ -130,22 +130,33 @@ export default function ContentRail({
         </div>
       </div>
 
+      {/* Existing header controls are right above this row block */}
       <div className={`overflow-hidden transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
-        <div
-          className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
-          style={{ transform: `translateX(-${page * 100}%)` }}
-        >
-          {moviePages.map((moviePage, pageIndex) => (
-            <div
-              key={pageIndex}
-              className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-            >
-              {moviePage.map((movie) => (
-                <ContentCard key={movie.id} movie={movie} />
-              ))}
-            </div>
-          ))}
-        </div>
+        
+        {/* 🚀 Check if the rail has movies. If it's 0, display a beautiful placeholder banner! */}
+        {railMovies.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-text-muted/20 bg-surface/50 p-10 text-center">
+            <p className="text-sm font-semibold text-text-muted">
+              🍿 No upcoming releases scheduled for this exact window. Check back soon!
+            </p>
+          </div>
+        ) : (
+          <div
+            className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+            style={{ transform: `translateX(-${page * 100}%)` }}
+          >
+            {moviePages.map((moviePage, pageIndex) => (
+              <div
+                key={pageIndex}
+                className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+              >
+                {moviePage.map((movie) => (
+                  <ContentCard key={movie.id} movie={movie} />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

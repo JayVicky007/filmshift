@@ -134,7 +134,8 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,10,18,0.94)_0%,rgba(5,10,18,0.78)_45%,rgba(5,10,18,0.45)_100%)]" />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(5,10,18,0.85)_0%,transparent_55%,rgba(5,10,18,0.35)_100%)]" />
 
-      <div className="mx-auto flex h-[100svh] min-h-[38rem] max-w-7xl flex-col items-center justify-center px-6 py-20 text-center sm:px-12 lg:px-20">
+{/* 🚀 Bulletproof for all devices: Compact on mobile, perfectly scaled on your laptop, and locked on massive monitors! */}
+        <div className="mx-auto flex min-h-[32rem] h-[80vh] max-w-7xl flex-col items-center justify-center px-6 py-12 text-center sm:px-12 sm:h-[85vh] lg:px-20 lg:min-h-[38rem]">
         <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
           Your cinema, curated
         </p>

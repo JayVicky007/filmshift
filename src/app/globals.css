@@ -34,9 +34,8 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 10%, transparent), transparent 35%),
-    var(--background);
+  /* 🚀 Dropped the heavy top radial mirror so backgrounds stay beautifully uniform across light and dark transitions */
+  background-color: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
