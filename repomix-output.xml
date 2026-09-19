@@ -387,195 +387,6 @@ export default function LoginPage() {
 }
 </file>
 
-<file path="src/app/tv/[id]/page.tsx">
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getTvShowDetails } from "@/utils/movieService";
-import RatingRing from "@/components/RatingRing";
-
-const TMDB_POSTER_BASE_URL = "https://tmdb.org";
-const TMDB_BACKDROP_BASE_URL = "https://tmdb.org";
-const TMDB_PROFILE_BASE_URL = "https://tmdb.org";
-
-// A clean, completely flat string combination that cannot break syntax rules
-function googleSearchUrl(name: string, showName: string) {
-  return "https://google.com" + encodeURIComponent(name + " " + showName);
-}
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function TvShowDetailPage({ params }: PageProps) {
-  const resolvedParams = await params;
-  let show = null;
-
-  try {
-    show = await getTvShowDetails(resolvedParams.id);
-  } catch {
-    show = null;
-  }
-
-  if (!show) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-        <p className="text-xl font-semibold">TV Series not found</p>
-      </main>
-    );
-  }
-
-  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
-  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
-
-  return (
-    <main className="min-h-screen bg-background text-foreground pb-12">
-      {/* 1. Immersive Hero Backdrop Header */}
-      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-        {backdropUrl && (
-          <div
-            className="absolute inset-0 -z-20 bg-cover bg-center opacity-35"
-            style={{ backgroundImage: `url(${backdropUrl})` }}
-            aria-hidden="true"
-          />
-        )}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          
-          {/* TV Poster Visual Asset Block */}
-          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-            {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={`${show.name} poster`}
-                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-                Poster unavailable
-              </div>
-            )}
-          </div>
-
-          {/* TV Metadata Breakdown Layer */}
-          <div className="min-w-0 flex-1">
-            <Link href="/" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-              ← Back to Journal Dashboard
-            </Link>
-            
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-              {show.name}
-            </h1>
-            
-            {show.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
-            )}
-
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {show.genres?.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-                >
-                  {genre.name}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl border border-accent/60 bg-accent/15 px-5 py-3">
-                <p className="text-sm font-semibold text-white/70">Audience Score</p>
-                <div className="mt-2 flex items-center gap-3">
-                  <RatingRing rating={show.vote_average ?? 0} size="md" />
-                  <span className="text-sm text-white/60">/10</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-              {show.overview || "No summary is available for this series."}
-            </p>
-
-            <p className="mt-3 text-xs text-white/50">
-              {show.vote_count?.toLocaleString() || 0} audience votes
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Secondary Metadata Stack (Credits and Cast) */}
-      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {show.creators && show.creators.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Creators</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Created By:</span>{" "}
-                {show.creators.map((creator: string, index: number) => (
-                  <span key={creator}>
-                    {index > 0 ? ", " : ""}
-                    <a
-                      href={googleSearchUrl(creator, show.name)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="no-underline transition-colors hover:text-accent"
-                    >
-                      {creator}
-                    </a>
-                  </span>
-                ))}
-              </p>
-            </div>
-          </section>
-        )}
-
-        {show.cast && show.cast.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-              {show.cast.map((person) => (
-                <div key={person.id} className="min-w-0 text-center">
-                  <a
-                    href={googleSearchUrl(person.name, show.name)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block no-underline"
-                  >
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                      {/* Fixed: Reads the aligned camelCase profilePath from your custom service mapping! */}
-                      {person.profilePath ? (
-                        <img
-                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
-                          alt={person.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-                      )}
-                    </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-                  </a>
-                  <p className="truncate text-sm text-text-muted">{person.character}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </main>
-  );
-}
-</file>
-
 <file path="src/app/unauthorized/page.tsx">
 import Link from "next/link";
 
@@ -1396,46 +1207,208 @@ export default async function MovieCategoryPage({
 }
 </file>
 
-<file path="src/components/ContentCard.tsx">
+<file path="src/app/tv/[id]/page.tsx">
 import Link from "next/link";
-import { formatMovieRating, type ContentItem } from "@/utils/movieService";
-import RatingRing from "./RatingRing";
+import { notFound } from "next/navigation";
+import { getTvShowDetails } from "@/utils/movieService";
+import RatingRing from "@/components/RatingRing";
+import ContentCarousel from "@/components/ContentCarousel";
 
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function ContentCard({ movie }: { movie: ContentItem }) {
-  const releaseYear = movie.release_date
-    ? new Date(movie.release_date).getFullYear()
-    : "Unknown year";
+const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+// A clean, completely flat string combination that cannot break syntax rules
+function googleSearchUrl(name: string, showName: string) {
+  return "https://google.com" + encodeURIComponent(name + " " + showName);
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function TvShowDetailPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  let show = null;
+
+  try {
+    show = await getTvShowDetails(resolvedParams.id);
+  } catch {
+    show = null;
+  }
+
+  if (!show) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+        <p className="text-xl font-semibold">TV Series not found</p>
+      </main>
+    );
+  }
+
+  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
+  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
 
   return (
-    <Link
-      href={`/movie/${movie.id}`}
-      className="group block min-w-0 overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
-    >
-      {movie.poster_path ? (
-        <div className="relative overflow-hidden">
-          <img
-            src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
-            alt={`${movie.title} poster`}
-            className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    <main className="min-h-screen bg-background text-foreground pb-12">
+      {/* 1. Immersive Hero Backdrop Header */}
+      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+        {backdropUrl && (
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center opacity-35"
+            style={{ backgroundImage: `url(${backdropUrl})` }}
+            aria-hidden="true"
           />
-          <div className="absolute bottom-3 left-3">
-            <RatingRing rating={movie.vote_average} />
+        )}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+          {/* TV Poster Visual Asset Block */}
+          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${show.name} poster`}
+                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+              />
+            ) : (
+              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+                Poster unavailable
+              </div>
+            )}
+          </div>
+
+
+
+
+          {/* TV Metadata Breakdown Layer */}
+          <div className="min-w-0 flex-1">
+            <Link href="/" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
+              ← Back to Journal Dashboard
+            </Link>
+            
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+              {show.name}
+            </h1>
+            
+            {show.tagline && (
+              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {show.genres?.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="rounded-2xl border border-accent/60 bg-accent/15 px-5 py-3">
+                <p className="text-sm font-semibold text-white/70">Audience Score</p>
+                <div className="mt-2 flex items-center gap-3">
+                  <RatingRing rating={show.vote_average ?? 0} size="md" />
+                  <span className="text-sm text-white/60">/10</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+              {show.overview || "No summary is available for this series."}
+            </p>
+
+            <p className="mt-3 text-xs text-white/50">
+              {show.vote_count?.toLocaleString() || 0} audience votes
+            </p>
           </div>
         </div>
-      ) : (
-        <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">
-          Poster unavailable
-        </div>
-      )}
-      <div className="p-3">
-        <h3 className="line-clamp-2 font-bold text-foreground">{movie.title}</h3>
-        <p className="mt-1 text-sm text-text-muted">
-          {releaseYear} · {formatMovieRating(movie.vote_average)}
-        </p>
+      </section>
+
+      {/* 2. Secondary Metadata Stack (Credits and Cast) */}
+      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        {show.creators && show.creators.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Creators</h2>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <span className="font-semibold text-text-muted">Created By:</span>{" "}
+                {show.creators.map((creator: string, index: number) => (
+                  <span key={creator}>
+                    {index > 0 ? ", " : ""}
+                    <a
+                      href={googleSearchUrl(creator, show.name)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="no-underline transition-colors hover:text-accent"
+                    >
+                      {creator}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            </div>
+          </section>
+        )}
+
+        {show.cast && show.cast.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+              {show.cast.map((person) => (
+                <div key={person.id} className="min-w-0 text-center">
+                  <a
+                    href={googleSearchUrl(person.name, show.name)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block no-underline"
+                  >
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+                      {/* Fixed: Reads the aligned camelCase profilePath from your custom service mapping! */}
+                      {person.profilePath ? (
+                        <img
+                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
+                          alt={person.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+                      )}
+                    </div>
+                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                  </a>
+                  <p className="truncate text-sm text-text-muted">{person.character}</p>
+                </div>
+              ))}
+              
+            </div>
+          </section>
+
+        )}
+
+        {show.similar && show.similar.length > 0 && (
+          <ContentCarousel title="Similar TV Shows" movies={show.similar} />
+        )}
+
+        {show.recommendations && show.recommendations.length > 0 && (
+          <ContentCarousel title="Recommendations" movies={show.recommendations} />
+        )}
+
+
       </div>
-    </Link>
+    </main>
   );
 }
 </file>
@@ -1489,161 +1462,6 @@ export default function ContentCarousel({
       </div>
 
       <div className="overflow-hidden">
-        <div
-          className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
-          style={{ transform: `translateX(-${page * 100}%)` }}
-        >
-          {moviePages.map((moviePage, pageIndex) => (
-            <div
-              key={pageIndex}
-              className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-            >
-              {moviePage.map((movie) => (
-                <ContentCard key={movie.id} movie={movie} />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-</file>
-
-<file path="src/components/ContentRail.tsx">
-"use client";
-
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { startTransition, useEffect, useState } from "react";
-import type {
-  TopRatedPeriod,
-  ContentItem,
-  TrendingPeriod,
-} from "@/utils/movieService";
-import ContentCard from "./ContentCard";
-
-export default function ContentRail({
-  title,
-  category,
-  movies,
-  periodFilter = false,
-  periodCategory = "trending",
-}: {
-  title: string;
-  category: string;
-  movies: ContentItem[];
-  periodFilter?: boolean;
-  periodCategory?: "trending" | "top-rated";
-}) {
-  const [page, setPage] = useState(0);
-  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod | TopRatedPeriod>(
-    periodCategory === "top-rated" ? "all-time" : "year",
-  );
-  const [railMovies, setRailMovies] = useState(movies);
-  const [isLoading, setIsLoading] = useState(false);
-  const pageSize = 5;
-  const pageCount = Math.max(1, Math.ceil(railMovies.length / pageSize));
-  const moviePages = Array.from({ length: pageCount }, (_, pageIndex) =>
-    railMovies.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
-  );
-
-  useEffect(() => {
-    if (!periodFilter) {
-      return;
-    }
-
-    if (
-      (periodCategory === "trending" && selectedPeriod === "year") ||
-      (periodCategory === "top-rated" && selectedPeriod === "all-time")
-    ) {
-      setRailMovies(movies);
-      setPage(0);
-      return;
-    }
-
-    let isCurrent = true;
-    setIsLoading(true);
-    fetch(`/api/movies?category=${periodCategory}&period=${selectedPeriod}`)
-      .then((response) => response.json())
-      .then((data: { results?: ContentItem[] }) => {
-        if (isCurrent && data.results) {
-          startTransition(() => {
-            setRailMovies(data.results ?? []);
-            setPage(0);
-          });
-        }
-      })
-      .finally(() => {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [movies, periodCategory, periodFilter, selectedPeriod]);
-
-  return (
-    <section className="mx-auto max-w-7xl">
-      <div className="mb-6 grid items-end gap-4 md:grid-cols-[1fr_auto_1fr]">
-        <div>
-          <Link
-            href={`/movies/${category}`}
-            className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-lg font-bold text-trending-text transition-colors hover:border-accent hover:text-accent"
-          >
-            {title}
-          </Link>
-        </div>
-
-        {periodFilter ? (
-          <div className="flex max-w-full flex-wrap items-center justify-center rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
-            {(periodCategory === "trending"
-              ? (["day", "week", "month", "year"] as TrendingPeriod[])
-              : (["all-time", "year", "month"] as TopRatedPeriod[])
-            ).map((period) => (
-              <button
-                key={period}
-                type="button"
-                onClick={() => setSelectedPeriod(period)}
-                className={`shrink-0 rounded-full px-3 py-1.5 capitalize transition-colors ${selectedPeriod === period ? "bg-accent text-slate-950" : "text-text-muted hover:text-accent"}`}
-              >
-                  {period === "all-time" ? "All Time" : period}
-              </button>
-            ))}
-          </div>
-        ) : <div />}
-
-        <div className="flex items-center justify-end gap-2">
-          <Link
-            href={`/movies/${category}`}
-            className="mr-2 hidden text-sm font-semibold text-text-muted transition-colors hover:text-accent sm:inline"
-          >
-            View all
-          </Link>
-          <button
-            type="button"
-            aria-label={`Show previous ${title.toLowerCase()} movies`}
-            onClick={() => setPage((currentPage) => Math.max(0, currentPage - 1))}
-            disabled={page === 0}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label={`Show more ${title.toLowerCase()} movies`}
-            onClick={() => setPage((currentPage) => Math.min(pageCount - 1, currentPage + 1))}
-            disabled={page >= pageCount - 1}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-
-      <div className={`overflow-hidden transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
         <div
           className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(-${page * 100}%)` }}
@@ -2289,81 +2107,6 @@ export default async function ProfilePage() {
 }
 </file>
 
-<file path="src/app/search/page.tsx">
-import Link from "next/link";
-import { formatMovieRating, searchMovies } from "@/utils/movieService";
-
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
-
-export default async function SearchPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { q = "" } = await searchParams;
-  const movies = await searchMovies(q);
-  const searchTerm = q.trim();
-
-  return (
-    <main className="min-h-screen bg-background p-8 text-foreground">
-      <header className="mx-auto mb-12 max-w-7xl">
-        <div className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-          Search
-        </div>
-        <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground">
-          Search Results for: &quot;{searchTerm}&quot;
-        </h1>
-      </header>
-
-      {movies.length === 0 ? (
-        <p
-          role="status"
-          className="mx-auto max-w-7xl rounded-2xl border border-text-muted/15 bg-surface p-6 text-text-muted"
-        >
-          No movies found matching your search criteria
-        </p>
-      ) : (
-        <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
-          {movies.map((movie) => {
-            const releaseYear = movie.release_date
-              ? new Date(movie.release_date).getFullYear()
-              : "Unknown year";
-
-            return (
-              <Link
-                key={movie.id}
-                href={`/movie/${movie.id}`}
-                className="group block overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
-              >
-                {movie.poster_path ? (
-                  <div className="overflow-hidden">
-                    <img
-                      src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
-                      alt={`${movie.title} poster`}
-                      className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">
-                    Poster unavailable
-                  </div>
-                )}
-                <div className="p-3">
-                  <h2 className="line-clamp-2 font-bold text-foreground">{movie.title}</h2>
-                  <p className="mt-1 text-sm text-text-muted">
-                    {releaseYear} · {formatMovieRating(movie.vote_average)}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </section>
-      )}
-    </main>
-  );
-}
-</file>
-
 <file path="src/app/layout.tsx">
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -2405,215 +2148,217 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 </file>
 
-<file path="src/components/HomeHero.tsx">
-"use client";
-
-import { Search } from "lucide-react";
+<file path="src/components/ContentCard.tsx">
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import type { ContentItem, SearchSuggestion } from "@/utils/movieService";
-import SearchSuggestions from "./SearchSuggestions";
+import { formatMovieRating, type ContentItem } from "@/utils/movieService";
+import RatingRing from "./RatingRing";
 
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-const SEARCH_PLACEHOLDERS = [
-  "Your next obsession is hiding in here somewhere.",
-  "Search now, or we auto-play Dragon Ball Evolution.",
-  "Name a movie. We can take it from here.",
-  "Feed the algorithm. It is hungry.",
-  "Search now, or enjoy a four-hour history of grass.",
-  "Tell us what you want, or your parents pick the movie.",
-  "Find something better than scrolling forever.",
-  "Give us a title. We won't judge your comfort watch.",
-  "One search stands between you and a great movie night.",
-  "Your watchlist called. It wants attention.",
-  "Find a movie before the group chat starts arguing.",
-  "For when 'anything' somehow means nothing.",
-  "Search by title, actor, mood, or questionable impulse.",
-  "There is a perfect movie. It is probably not Morbius.",
-  "Let us find tonight's main character energy.",
-  "Give the search a try. Netflix can't love you like we can.",
-  "We know you will rewatch The Office again. But try us anyway.",
-];
+const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function HomeHero({ movies }: { movies: ContentItem[] }) {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [activePoster, setActivePoster] = useState(0);
-  const [activePlaceholder, setActivePlaceholder] = useState(0);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
-  const posters = movies.filter((movie) => movie.poster_path);
-  const currentMovie = posters[activePoster % posters.length];
+// 💡 We tell TypeScript that the movie object might optionally carry our custom media_type string
+export default function ContentCard({ movie }: { movie: ContentItem & { media_type?: string } }) {
+  
+  // 🚀 1. Check our explicit flag first, then fallback to missing property checks!
+  const isTvFormat = movie.media_type === "tv" || 'first_air_date' in movie || !movie.release_date;
 
-  useEffect(() => {
-    if (posters.length < 2) {
-      return;
-    }
+  const releaseYear = movie.release_date
+    ? new Date(movie.release_date).getFullYear()
+    : "Unknown year";
 
-    setActivePoster(Math.floor(Math.random() * posters.length));
-
-    const interval = window.setInterval(() => {
-      setActivePoster((currentIndex) => {
-        let nextIndex = currentIndex;
-
-        while (nextIndex === currentIndex) {
-          nextIndex = Math.floor(Math.random() * posters.length);
-        }
-
-        return nextIndex;
-      });
-    }, 8000);
-
-    return () => window.clearInterval(interval);
-  }, [posters.length]);
-
-  useEffect(() => {
-    setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
-
-    const interval = window.setInterval(() => {
-      setActivePlaceholder((currentIndex) => {
-        let nextIndex = currentIndex;
-
-        while (nextIndex === currentIndex) {
-          nextIndex = Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length);
-        }
-
-        return nextIndex;
-      });
-    }, 8000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const searchTerm = query.trim();
-
-    if (searchTerm.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      setIsSuggesting(true);
-      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
-        .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setSuggestions([]);
-          }
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setIsSuggesting(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query]);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const searchTerm = query.trim();
-
-    if (searchTerm) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    }
-  }
+  // 2. Automatically generate the perfect path route matching your backend datasets
+  const targetRoute = isTvFormat ? `/tv/${movie.id}` : `/movie/${movie.id}`;
 
   return (
-    <section className="relative isolate overflow-hidden rounded-[2rem] border border-text-muted/15 bg-surface shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
-      <Link
-        href={currentMovie ? `/movie/${currentMovie.id}` : "#"}
-        aria-label={currentMovie ? `View ${currentMovie.title}` : "Featured movie"}
-        className="absolute inset-0 -z-20 bg-cover bg-[center_top] transition-[background-image] duration-1000"
-        style={{
-          backgroundImage: currentMovie?.poster_path
-            ? `url(${TMDB_IMAGE_BASE_URL}${currentMovie.poster_path})`
-            : undefined,
-        }}
-      />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,10,18,0.94)_0%,rgba(5,10,18,0.78)_45%,rgba(5,10,18,0.45)_100%)]" />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(5,10,18,0.85)_0%,transparent_55%,rgba(5,10,18,0.35)_100%)]" />
-
-      <div className="mx-auto flex h-[100svh] min-h-[38rem] max-w-7xl flex-col items-center justify-center px-6 py-20 text-center sm:px-12 lg:px-20">
-        <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
-          Your cinema, curated
-        </p>
-        <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl">
-          Welcome
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg text-white/80 sm:text-xl">
-          Discover millions of movies, TV shows, and people. Start exploring now!
-        </p>
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-10 flex w-full max-w-3xl flex-col gap-3 sm:flex-row"
-          role="search"
-        >
-          <label className="sr-only" htmlFor="hero-search">
-            Search for a movie or TV show
-          </label>
-          <div className="relative flex min-h-14 flex-1 items-center rounded-full border border-white/20 bg-white px-5 shadow-2xl shadow-black/20">
-            <Search className="mr-3 h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />
-            {!query && (
-              <span
-                key={activePlaceholder}
-                className="pointer-events-none absolute inset-y-0 left-14 right-5 flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-base text-slate-400 animate-search-placeholder"
-                aria-hidden="true"
-              >
-                {SEARCH_PLACEHOLDERS[activePlaceholder]}
-              </span>
-            )}
-            <input
-              id="hero-search"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder=""
-              className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
-            />
-            <SearchSuggestions
-              suggestions={suggestions}
-              isLoading={isSuggesting}
-              onSelect={(suggestion) => {
-                // Problem 2 Fix: Instantly drop suggestion elements and empty search field string
-                setSuggestions([]);
-                setQuery("");
-
-                // Problem 1 Fix: Instantly map and transfer context focus down to internal layout dynamic route type paths
-                const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
-                const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
-
-                router.push(`/${routeType}/${suggestion.id}`);
-              }}
-            />
+    <Link
+      href={targetRoute}
+      className="group block min-w-0 overflow-hidden rounded-2xl border border-text-muted/15 bg-surface shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_16px_38px_rgba(255,193,7,0.15)]"
+    >
+      {movie.poster_path ? (
+        <div className="relative overflow-hidden">
+          <img
+            src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
+            alt={`${movie.title} poster`}
+            className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute bottom-3 left-3">
+            <RatingRing rating={movie.vote_average} />
           </div>
-          <button
-            type="submit"
-            className="min-h-14 rounded-full bg-accent px-8 font-bold text-slate-950 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
-          >
-            Search
-          </button>
-        </form>
+        </div>
+      ) : (
+        <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">
+          Poster unavailable
+        </div>
+      )}
+      <div className="p-3">
+        <h3 className="line-clamp-2 font-bold text-foreground">{movie.title}</h3>
+        <p className="mt-1 text-sm text-text-muted">
+          {releaseYear} · {formatMovieRating(movie.vote_average)}
+        </p>
+      </div>
+    </Link>
+  );
+}
+</file>
 
-        {currentMovie && (
-          <p className="mt-6 text-sm text-white/60">
-            Now featuring{" "}
-            <Link
-              href={`/movie/${currentMovie.id}`}
-              className="font-semibold text-white/85 underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
-            >
-              {currentMovie.title}
-            </Link>
-          </p>
+<file path="src/components/ContentRail.tsx">
+"use client";
+
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { startTransition, useEffect, useState } from "react";
+import type {
+  TopRatedPeriod,
+  ContentItem,
+  TrendingPeriod,
+} from "@/utils/movieService";
+import ContentCard from "./ContentCard";
+
+export default function ContentRail({
+  title,
+  category,
+  movies,
+  periodFilter = false,
+  periodCategory = "trending",
+}: {
+  title: string;
+  category: string;
+  movies: ContentItem[];
+  periodFilter?: boolean;
+  periodCategory?: "trending" | "top-rated";
+}) {
+  const [page, setPage] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod | TopRatedPeriod>(
+    periodCategory === "top-rated" ? "all-time" : "year",
+  );
+  const [railMovies, setRailMovies] = useState(movies);
+  const [isLoading, setIsLoading] = useState(false);
+  const pageSize = 5;
+  const pageCount = Math.max(1, Math.ceil(railMovies.length / pageSize));
+  const moviePages = Array.from({ length: pageCount }, (_, pageIndex) =>
+    railMovies.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+  );
+
+  useEffect(() => {
+    if (!periodFilter) {
+      return;
+    }
+
+    if (
+      (periodCategory === "trending" && selectedPeriod === "year") ||
+      (periodCategory === "top-rated" && selectedPeriod === "all-time")
+    ) {
+      setRailMovies(movies);
+      setPage(0);
+      return;
+    }
+
+    let isCurrent = true;
+    setIsLoading(true);
+    fetch(`/api/movies?category=${periodCategory}&period=${selectedPeriod}`)
+      .then((response) => response.json())
+      .then((data: { results?: ContentItem[] }) => {
+        if (isCurrent && data.results) {
+          startTransition(() => {
+            setRailMovies(data.results ?? []);
+            setPage(0);
+          });
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [movies, periodCategory, periodFilter, selectedPeriod]);
+
+  return (
+    <section className="mx-auto max-w-7xl">
+      <div className="mb-6 grid items-end gap-4 md:grid-cols-[1fr_auto_1fr]">
+        <div>
+          <Link
+            href={`/movies/${category}`}
+            className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-lg font-bold text-trending-text transition-colors hover:border-accent hover:text-accent"
+          >
+            {title}
+          </Link>
+        </div>
+
+        {periodFilter ? (
+          <div className="flex max-w-full flex-wrap items-center justify-center rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
+            {(periodCategory === "trending"
+              ? (["day", "week", "month", "year"] as TrendingPeriod[])
+              : (["all-time", "year", "month"] as TopRatedPeriod[])
+            ).map((period) => (
+              <button
+                key={period}
+                type="button"
+                onClick={() => setSelectedPeriod(period)}
+                className={`shrink-0 rounded-full px-3 py-1.5 capitalize transition-colors ${selectedPeriod === period ? "bg-accent text-slate-950" : "text-text-muted hover:text-accent"}`}
+              >
+                  {period === "all-time" ? "All Time" : period}
+              </button>
+            ))}
+          </div>
+        ) : <div />}
+
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={`/movies/${category}`}
+            className="mr-2 hidden text-sm font-semibold text-text-muted transition-colors hover:text-accent sm:inline"
+          >
+            View all
+          </Link>
+          <button
+            type="button"
+            aria-label={`Show previous ${title.toLowerCase()} movies`}
+            onClick={() => setPage((currentPage) => Math.max(0, currentPage - 1))}
+            disabled={page === 0}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label={`Show more ${title.toLowerCase()} movies`}
+            onClick={() => setPage((currentPage) => Math.min(pageCount - 1, currentPage + 1))}
+            disabled={page >= pageCount - 1}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      {/* Existing header controls are right above this row block */}
+      <div className={`overflow-hidden transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
+        
+        {/* 🚀 Check if the rail has movies. If it's 0, display a beautiful placeholder banner! */}
+        {railMovies.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-text-muted/20 bg-surface/50 p-10 text-center">
+            <p className="text-sm font-semibold text-text-muted">
+              🍿 No upcoming releases scheduled for this exact window. Check back soon!
+            </p>
+          </div>
+        ) : (
+          <div
+            className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+            style={{ transform: `translateX(-${page * 100}%)` }}
+          >
+            {moviePages.map((moviePage, pageIndex) => (
+              <div
+                key={pageIndex}
+                className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+              >
+                {moviePage.map((movie) => (
+                  <ContentCard key={movie.id} movie={movie} />
+                ))}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </section>
@@ -2884,6 +2629,51 @@ export default async function MovieDetailsPage({
 }
 </file>
 
+<file path="src/app/search/page.tsx">
+import Link from "next/link";
+import { searchMovies } from "@/utils/movieService";
+import ContentCard from "@/components/ContentCard"; // 🚀 Import our smart component!
+
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
+  const movies = await searchMovies(q);
+  const searchTerm = q.trim();
+
+  return (
+    <main className="min-h-screen bg-background p-8 text-foreground">
+      <header className="mx-auto mb-12 max-w-7xl">
+        <div className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+          Search
+        </div>
+        <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground">
+          Search Results for: &quot;{searchTerm}&quot;
+        </h1>
+      </header>
+
+      {movies.length === 0 ? (
+        <p
+          role="status"
+          className="mx-auto max-w-7xl rounded-2xl border border-text-muted/15 bg-surface p-6 text-text-muted"
+        >
+          No items found matching your search criteria
+        </p>
+      ) : (
+        <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
+          {movies.map((item) => (
+            // 🚀 Super clean: Reusing our smart card means anime/documentaries auto-route perfectly!
+            <ContentCard key={item.id} movie={item} />
+          ))}
+        </section>
+      )}
+    </main>
+  );
+}
+</file>
+
 <file path="src/app/page.tsx">
 import HomeHero from "@/components/HomeHero";
 import ContentRail from "@/components/ContentRail";
@@ -2896,18 +2686,19 @@ import {
 const sections = [
   { title: "Trending", category: "trending" as const },
   { title: "Now Playing", category: "now-playing" as const },
-  { title: "Upcoming", category: "upcoming" as const },
   { title: "Top Rated", category: "top-rated" as const },
+  { title: "Upcoming", category: "upcoming" as const },
 ];
 
 export default async function HomePage() {
-  const [trending, nowPlaying, upcoming, topRated] = await Promise.all([
+  /* 🚀 Re-aligned the Promise array fetching sequence to match our new layout order! */
+  const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
     getTrendingMoviesByPeriod("year"),
     getMoviesByCategory("now-playing"),
-    getMoviesByCategory("upcoming"),
-    getTopRatedMoviesByPeriod("all-time"),
+    getTopRatedMoviesByPeriod("all-time"), // Fetches top-rated 3rd now
+    getMoviesByCategory("upcoming"),  // Fetches upcoming 4th now
   ]);
-  const moviesByCategory = [trending, nowPlaying, upcoming, topRated];
+  const moviesByCategory = [trending, nowPlaying, topRated, upcoming];
 
   return (
     <main className="min-h-screen bg-background px-4 pb-4 text-foreground sm:px-8 sm:pb-8">
@@ -2926,6 +2717,228 @@ export default async function HomePage() {
         ))}
       </div>
     </main>
+  );
+}
+</file>
+
+<file path="src/components/HomeHero.tsx">
+"use client";
+
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import type { ContentItem, SearchSuggestion } from "@/utils/movieService";
+import SearchSuggestions from "./SearchSuggestions";
+
+const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const SEARCH_PLACEHOLDERS = [
+  "Your next obsession is hiding in here somewhere.",
+  "Search now, or we auto-play Dragon Ball Evolution.",
+  "Name a movie. We can take it from here.",
+  "Feed the algorithm. It is hungry.",
+  "Search now, or enjoy a four-hour history of grass.",
+  "Tell us what you want, or your parents pick the movie.",
+  "Find something better than scrolling forever.",
+  "Give us a title. We won't judge your comfort watch.",
+  "One search stands between you and a great movie night.",
+  "Your watchlist called. It wants attention.",
+  "Find a movie before the group chat starts arguing.",
+  "For when 'anything' somehow means nothing.",
+  "Search by title, actor, mood, or questionable impulse.",
+  "There is a perfect movie. It is probably not Morbius.",
+  "Let us find tonight's main character energy.",
+  "Give the search a try. Netflix can't love you like we can.",
+  "We know you will rewatch The Office again. But try us anyway.",
+];
+
+export default function HomeHero({ movies }: { movies: ContentItem[] }) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [activePoster, setActivePoster] = useState(0);
+  const [activePlaceholder, setActivePlaceholder] = useState(0);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const posters = movies.filter((movie) => movie.poster_path);
+  const currentMovie = posters[activePoster % posters.length];
+
+  useEffect(() => {
+    if (posters.length < 2) {
+      return;
+    }
+
+    setActivePoster(Math.floor(Math.random() * posters.length));
+
+    const interval = window.setInterval(() => {
+      setActivePoster((currentIndex) => {
+        let nextIndex = currentIndex;
+
+        while (nextIndex === currentIndex) {
+          nextIndex = Math.floor(Math.random() * posters.length);
+        }
+
+        return nextIndex;
+      });
+    }, 8000);
+
+    return () => window.clearInterval(interval);
+  }, [posters.length]);
+
+  useEffect(() => {
+    setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
+
+    const interval = window.setInterval(() => {
+      setActivePlaceholder((currentIndex) => {
+        let nextIndex = currentIndex;
+
+        while (nextIndex === currentIndex) {
+          nextIndex = Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length);
+        }
+
+        return nextIndex;
+      });
+    }, 8000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const searchTerm = query.trim();
+
+    if (searchTerm.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      setIsSuggesting(true);
+      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
+        .then((response) => response.json())
+        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setSuggestions([]);
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsSuggesting(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchTerm = query.trim();
+
+    if (searchTerm) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  }
+
+  return (
+    <section className="relative isolate overflow-hidden rounded-[2rem] border border-text-muted/15 bg-surface shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
+      <Link
+        href={currentMovie ? `/movie/${currentMovie.id}` : "#"}
+        aria-label={currentMovie ? `View ${currentMovie.title}` : "Featured movie"}
+        className="absolute inset-0 -z-20 bg-cover bg-[center_top] transition-[background-image] duration-1000"
+        style={{
+          backgroundImage: currentMovie?.poster_path
+            ? `url(${TMDB_IMAGE_BASE_URL}${currentMovie.poster_path})`
+            : undefined,
+        }}
+      />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,10,18,0.94)_0%,rgba(5,10,18,0.78)_45%,rgba(5,10,18,0.45)_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(5,10,18,0.85)_0%,transparent_55%,rgba(5,10,18,0.35)_100%)]" />
+
+{/* 🚀 Bulletproof for all devices: Compact on mobile, perfectly scaled on your laptop, and locked on massive monitors! */}
+        <div className="mx-auto flex min-h-[32rem] h-[80vh] max-w-7xl flex-col items-center justify-center px-6 py-12 text-center sm:px-12 sm:h-[85vh] lg:px-20 lg:min-h-[38rem]">
+        <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
+          Your cinema, curated
+        </p>
+        <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl">
+          Welcome
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg text-white/80 sm:text-xl">
+          Discover millions of movies, TV shows, and people. Start exploring now!
+        </p>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-10 flex w-full max-w-3xl flex-col gap-3 sm:flex-row"
+          role="search"
+        >
+          <label className="sr-only" htmlFor="hero-search">
+            Search for a movie or TV show
+          </label>
+          <div className="relative flex min-h-14 flex-1 items-center rounded-full border border-white/20 bg-white px-5 shadow-2xl shadow-black/20">
+            <Search className="mr-3 h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />
+            {!query && (
+              <span
+                key={activePlaceholder}
+                className="pointer-events-none absolute inset-y-0 left-14 right-5 flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-base text-slate-400 animate-search-placeholder"
+                aria-hidden="true"
+              >
+                {SEARCH_PLACEHOLDERS[activePlaceholder]}
+              </span>
+            )}
+            <input
+              id="hero-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder=""
+              className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
+            />
+            <SearchSuggestions
+              suggestions={suggestions}
+              isLoading={isSuggesting}
+              onSelect={(suggestion) => {
+                // Problem 2 Fix: Instantly drop suggestion elements and empty search field string
+                setSuggestions([]);
+                setQuery("");
+
+              // 🚀 Group all serialized formats under 'tv', everything else defaults to 'movie'
+                const mediaLower = suggestion.mediaType?.toLowerCase() || "";
+                const isSerialFormat = 
+                  mediaLower.includes("tv") || 
+                  mediaLower.includes("series") || 
+                  mediaLower.includes("anime") || 
+                  mediaLower.includes("animation");
+
+                const routeType = isSerialFormat ? "tv" : "movie";
+                router.push(`/${routeType}/${suggestion.id}`);
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            className="min-h-14 rounded-full bg-accent px-8 font-bold text-slate-950 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
+          >
+            Search
+          </button>
+        </form>
+
+        {currentMovie && (
+          <p className="mt-6 text-sm text-white/60">
+            Now featuring{" "}
+            <Link
+              href={`/movie/${currentMovie.id}`}
+              className="font-semibold text-white/85 underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+            >
+              {currentMovie.title}
+            </Link>
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 </file>
@@ -3007,9 +3020,8 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 10%, transparent), transparent 35%),
-    var(--background);
+  /* 🚀 Dropped the heavy top radial mirror so backgrounds stay beautifully uniform across light and dark transitions */
+  background-color: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -3086,354 +3098,6 @@ for the TipTap placeholder text */
 }
 </file>
 
-<file path="src/components/Navbar.tsx">
-"use client";
-
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
-import type { SearchSuggestion } from "@/utils/movieService";
-import { createClient } from "@/utils/supabase/client";
-import SearchSuggestions from "./SearchSuggestions";
-import ThemeToggle from "./ThemeToggle";
-
-const movieCategories = [
-  "Hollywood",
-  "British Cinema",
-  "European Cinema",
-  "Bollywood",
-  "Nollywood",
-  "East Asian Cinema",
-  "Animation",
-  "Anime",
-];
-
-const seriesCategories = [
-  "American Series",
-  "British Series",
-  "European Series",
-  "Indian Series",
-  "East Asian Series",
-  "Latin American Series",
-  "Turkish Series",
-  "African Series",
-];
-
-const animationCategories = [
-  "American Animation",
-  "European Animation",
-  "Japanese Anime",
-  "Chinese Donghua",
-  "Korean Animation",
-  "Indian Animation",
-  "Latin American Animation",
-  "African Animation",
-];
-
-type OpenMenu = "movies" | "series" | "animation" | null;
-
-function CategoryMenu({
-  label,
-  menuId,
-  categories,
-  isOpen,
-  onToggle,
-  onSelect,
-  className = "",
-}: {
-  label: string;
-  menuId: string;
-  categories: string[];
-  isOpen: boolean;
-  onToggle: () => void;
-  onSelect: () => void;
-  className?: string;
-}) {
-  return (
-    <div className={`relative ${className}`}>
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        aria-controls={menuId}
-        onClick={onToggle}
-        className="inline-flex items-center gap-1 transition-colors hover:text-accent"
-      >
-        {label}
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" />
-      </button>
-      {isOpen && (
-        <div
-          id={menuId}
-          role="menu"
-          className="absolute right-0 top-full z-50 mt-4 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)]"
-        >
-          {categories.map((category) => (
-            <Link
-              key={category}
-              href={`/search?q=${encodeURIComponent(category)}`}
-              role="menuitem"
-              onClick={onSelect}
-              className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
-            >
-              {category}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const isHomePage = pathname === "/";
-
-  useEffect(() => {
-    let isCurrent = true;
-    const supabase = createClient();
-
-    async function loadUserProfile(userId: string | null, email: string | null) {
-      if (!userId) {
-        setUserEmail(null);
-        setUsername(null);
-        setAvatarUrl(null);
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, avatar_url")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (isCurrent) {
-        setUserEmail(email);
-        setUsername(profile?.username ?? null);
-        setAvatarUrl(profile?.avatar_url ?? null);
-      }
-    }
-
-    supabase.auth.getUser().then(({ data }) => {
-      void loadUserProfile(data.user?.id ?? null, data.user?.email ?? null);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      void loadUserProfile(session?.user?.id ?? null, session?.user?.email ?? null);
-    });
-
-    return () => {
-      isCurrent = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!openMenu) {
-      return;
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      if (!navRef.current?.contains(event.target as Node)) {
-        setOpenMenu(null);
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpenMenu(null);
-      }
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [openMenu]);
-
-  useEffect(() => {
-    const searchTerm = query.trim();
-
-    if (!searchOpen || searchTerm.length < 2) {
-      setSuggestions([]);
-      setIsSuggesting(false);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      setIsSuggesting(true);
-      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
-        .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setSuggestions([]);
-          }
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setIsSuggesting(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query, searchOpen]);
-
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const searchTerm = query.trim();
-
-    if (searchTerm) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    }
-  }
-
-  async function handleSignOut() {
-    await createClient().auth.signOut();
-    router.refresh();
-  }
-
-  const accountLabel = username || userEmail?.split("@")[0] || "Account";
-  const accountInitial = accountLabel.charAt(0).toUpperCase();
-
-  return (
-    <header
-      className={`z-50 w-full border-b shadow-[0_1px_0_rgba(0,0,0,0.04)] ${
-        isHomePage
-          ? "absolute left-4 right-4 top-0 w-auto rounded-t-[2rem] border-transparent bg-slate-950/45 backdrop-blur-[2px] sm:left-8 sm:right-8"
-          : "sticky top-0 border-text-muted/10 bg-background/75 backdrop-blur-xl"
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl ${isHomePage ? "text-white" : "text-foreground"}`}>
-          <span>Film</span><span className="text-accent">Shift</span>
-        </Link>
-
-        <nav ref={navRef} className={`ml-auto mr-1 flex items-center gap-4 text-sm font-semibold md:mr-2 md:gap-7 ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-          <CategoryMenu
-            label="Movies"
-            menuId="movie-categories"
-            categories={movieCategories}
-            isOpen={openMenu === "movies"}
-            onToggle={() => setOpenMenu((menu) => menu === "movies" ? null : "movies")}
-            onSelect={() => setOpenMenu(null)}
-          />
-          <CategoryMenu
-            label="Series"
-            menuId="series-categories"
-            categories={seriesCategories}
-            isOpen={openMenu === "series"}
-            onToggle={() => setOpenMenu((menu) => menu === "series" ? null : "series")}
-            onSelect={() => setOpenMenu(null)}
-            className="hidden sm:block"
-          />
-          <CategoryMenu
-            label="Animation"
-            menuId="animation-categories"
-            categories={animationCategories}
-            isOpen={openMenu === "animation"}
-            onToggle={() => setOpenMenu((menu) => menu === "animation" ? null : "animation")}
-            onSelect={() => setOpenMenu(null)}
-            className="hidden md:block"
-          />
-          <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
-          {userEmail ? (
-            <>
-              <Link
-                href="/profile"
-                className="inline-flex max-w-32 items-center gap-2 truncate transition-colors hover:text-accent"
-                title={accountLabel}
-              >
-                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"}`}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold">{accountInitial}</span>
-                  )}
-                </span>
-                <span className="hidden truncate sm:inline">{accountLabel}</span>
-              </Link>
-              <Link href="/write" className="transition-colors hover:text-accent">Write</Link>
-              <button type="button" onClick={handleSignOut} className="transition-colors hover:text-accent">
-                Sign out
-              </button>
-            </>
-          ) : (
-            <Link href="/login" className="transition-colors hover:text-accent">Login</Link>
-          )}
-        </nav>
-
-        <div className="mr-2 flex items-center gap-2 md:mr-3">
-          {searchOpen && (
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <label className="sr-only" htmlFor="nav-search">Search</label>
-              <input
-                id="nav-search"
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search"
-                autoFocus
-                className="w-28 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-36"
-              />
-              <SearchSuggestions
-                suggestions={suggestions}
-                isLoading={isSuggesting}
-                onSelect={(suggestion) => {
-                  // Problem 2 Fix: Clear suggestions and hide them immediately on click
-                  setSuggestions([]);
-                  setQuery(""); // Clears out the search bar text string
-                  setSearchOpen(false); // Closes the mobile layout toggle focus drawer
-
-                  // Force the mediaType to lowercase so the check never fails
-                  const mediaTypeNormalized = suggestion.mediaType?.toLowerCase();
-                  const routeType = mediaTypeNormalized === "tv" || mediaTypeNormalized === "tv series" ? "tv" : "movie";
-
-                  router.push(`/${routeType}/${suggestion.id}`);
-                }}
-              />
-            
-            </form>
-          )}
-          <button
-            type="button"
-            aria-label={searchOpen ? "Close search" : "Open search"}
-            onClick={() => {
-              setSearchOpen((open) => !open);
-              setSuggestions([]);
-            }}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent ${isHomePage ? "text-white" : "text-foreground"}`}
-          >
-            <Search className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <ThemeToggle
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent ${isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"}`}
-          />
-        </div>
-      </div>
-    </header>
-  );
-}
-</file>
-
 <file path="src/utils/movieService.ts">
 import axios from "axios";
 
@@ -3493,6 +3157,7 @@ export interface ContentItem {
   release_date: string;
   vote_average: number;
   vote_count?: number;
+  media_type?: string;
 }
 
 /** @deprecated Use ContentItem for shared movie, series, and other content lists. */
@@ -3906,6 +3571,8 @@ export interface TvShowDetails {
     character: string;
     profilePath: string | null; // Matches your custom cast architecture!
   }>;
+    similar: ContentItem[];
+    recommendations: ContentItem[];
 }
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
@@ -3915,19 +3582,31 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       {
         params: {
           api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          append_to_response: "credits",
+          // 1. Tell TMDB to pack similar shows and recommendations into the response!
+          append_to_response: "credits,similar,recommendations",
         },
       }
     );
 
     const show = response.data;
 
+    // 2. Helper tool to map TV properties cleanly to match our ContentItem structure
+    const mapTvToContentItem = (item: any): ContentItem => ({
+      id: item.id,
+      title: item.name, // Maps TV 'name' over to 'title' so ContentCard understands it!
+      poster_path: item.poster_path,
+      release_date: item.first_air_date || "",
+      vote_average: item.vote_average || 0,
+      vote_count: item.vote_count || 0,
+      media_type: "tv",
+    });
+
     return {
       id: show.id,
       name: show.name,
       overview: show.overview,
-      poster_path: show.poster_path, // Stays snake_case to match movie properties
-      backdrop_path: show.backdrop_path, // Stays snake_case to match movie properties
+      poster_path: show.poster_path,
+      backdrop_path: show.backdrop_path,
       first_air_date: show.first_air_date,
       status: show.status,
       tagline: show.tagline,
@@ -3941,13 +3620,360 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         id: person.id,
         name: person.name,
         character: person.character,
-        profilePath: person.profile_path, // Aligns snake_case to custom camelCase profilePath!
+        profilePath: person.profile_path,
       })) || [],
+      // 3. Attach the mapped lists safely into our data contract
+      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
     };
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);
     return null;
   }
+}
+</file>
+
+<file path="src/components/Navbar.tsx">
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Search } from "lucide-react";
+import type { SearchSuggestion } from "@/utils/movieService";
+import { createClient } from "@/utils/supabase/client";
+import SearchSuggestions from "./SearchSuggestions";
+import ThemeToggle from "./ThemeToggle";
+
+const movieCategories = [
+  "Hollywood",
+  "British Cinema",
+  "European Cinema",
+  "Bollywood",
+  "Nollywood",
+  "East Asian Cinema",
+  "Animation",
+  "Anime",
+];
+
+const seriesCategories = [
+  "American Series",
+  "British Series",
+  "European Series",
+  "Indian Series",
+  "East Asian Series",
+  "Latin American Series",
+  "Turkish Series",
+  "African Series",
+];
+
+const animationCategories = [
+  "American Animation",
+  "European Animation",
+  "Japanese Anime",
+  "Chinese Donghua",
+  "Korean Animation",
+  "Indian Animation",
+  "Latin American Animation",
+  "African Animation",
+];
+
+type OpenMenu = "movies" | "series" | "animation" | null;
+
+
+function CategoryMenu({
+  label,
+  menuId,
+  categories,
+  className = "",
+}: {
+  label: string;
+  menuId: string;
+  categories: string[];
+  className?: string;
+}) {
+  return (
+    /* 🚀 group/menu enables hover triggers. invisible/opacity-0 handles fluid fade entries! */
+    <div className={`relative group/menu py-2 ${className}`}>
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        className="inline-flex items-center gap-1 transition-colors hover:text-accent cursor-pointer"
+      >
+        {label}
+        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+      </button>
+      
+      <div
+        id={menuId}
+        role="menu"
+        className="absolute left-0 top-full z-50 mt-1 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+      >
+        {categories.map((category) => (
+          <Link
+            key={category}
+            href={`/search?q=${encodeURIComponent(category)}`}
+            role="menuitem"
+            className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
+          >
+            {category}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const isHomePage = pathname === "/";
+
+  useEffect(() => {
+    let isCurrent = true;
+    const supabase = createClient();
+
+    async function loadUserProfile(userId: string | null, email: string | null) {
+      if (!userId) {
+        setUserEmail(null);
+        setUsername(null);
+        setAvatarUrl(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (isCurrent) {
+        setUserEmail(email);
+        setUsername(profile?.username ?? null);
+        setAvatarUrl(profile?.avatar_url ?? null);
+      }
+    }
+
+    supabase.auth.getUser().then(({ data }) => {
+      void loadUserProfile(data.user?.id ?? null, data.user?.email ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      void loadUserProfile(session?.user?.id ?? null, session?.user?.email ?? null);
+    });
+
+    return () => {
+      isCurrent = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!openMenu) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!navRef.current?.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openMenu]);
+
+  useEffect(() => {
+    const searchTerm = query.trim();
+
+    if (!searchOpen || searchTerm.length < 2) {
+      setSuggestions([]);
+      setIsSuggesting(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      setIsSuggesting(true);
+      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
+        .then((response) => response.json())
+        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setSuggestions([]);
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsSuggesting(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query, searchOpen]);
+
+  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchTerm = query.trim();
+
+    if (searchTerm) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  }
+
+  async function handleSignOut() {
+    await createClient().auth.signOut();
+    router.refresh();
+  }
+
+  const accountLabel = username || userEmail?.split("@")[0] || "Account";
+  const accountInitial = accountLabel.charAt(0).toUpperCase();
+
+
+  return (
+    <header
+      className={`z-50 w-full transition-all duration-200 ${
+        isHomePage
+          /* 🚀 ULTIMATE CLEANUP: Removed all backgrounds, blurs, borders, and shadows! 
+             The navbar items will now float gracefully directly over your hero movie poster artwork. */
+          ? "absolute left-0 right-0 top-0 border-transparent bg-transparent"
+          : "sticky top-0 border-b border-text-muted/10 bg-background/75 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+      }`}
+    >
+      {/* 🚀 Changed px-6 to px-4 or px-8 on larger viewports to match page margins perfectly and prevent text clashing */}
+      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-8">
+        
+        {/* 1. Main Application Brand Title */}
+        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl shrink-0 ${isHomePage ? "text-white" : "text-foreground"}`}>
+          <span>Film</span><span className="text-accent">Shift</span>
+        </Link>
+
+        {/* 2. Main Navigation Block (Shifted Left!) */}
+        <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+          <CategoryMenu
+            label="Movies"
+            menuId="movie-categories"
+            categories={movieCategories}
+          />
+          <CategoryMenu
+            label="Series"
+            menuId="series-categories"
+            categories={seriesCategories}
+            className="hidden sm:block"
+          />
+          <CategoryMenu
+            label="Animation"
+            menuId="animation-categories"
+            categories={animationCategories}
+            className="hidden md:block"
+          />
+          <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
+
+          {/* 🔍 Search Input Layout Layer */}
+          <div className="ml-1 flex items-center gap-2">
+            {searchOpen && (
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <label className="sr-only" htmlFor="nav-search">Search</label>
+                <input
+                  id="nav-search"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search"
+                  autoFocus
+                  className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
+                />
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  isLoading={isSuggesting}
+                  onSelect={(suggestion) => {
+                    setSuggestions([]);
+                    setQuery("");
+                    setSearchOpen(false);
+                    const mediaTypeNormalized = suggestion.mediaType?.toLowerCase() || "";
+                    const routeType = mediaTypeNormalized.includes("tv") || mediaTypeNormalized.includes("series") ? "tv" : "movie";
+                    router.push(`/${routeType}/${suggestion.id}`);
+                  }}
+                />
+              </form>
+            )}
+            <button
+              type="button"
+              aria-label={searchOpen ? "Close search" : "Open search"}
+              onClick={() => {
+                setSearchOpen((open) => !open);
+                setSuggestions([]);
+              }}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white" : "text-foreground"}`}
+            >
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
+
+        {/* 3. Account Settings and Mode Actions Block */}
+        {/* 🚀 Changed gap-4 to gap-3 to pull the toggle slightly inward with crisp internal margins */}
+        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
+          {userEmail ? (
+            <>
+              <Link
+                href="/profile"
+                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}
+                title={accountLabel}
+              >
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"}`}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{accountInitial}</span>
+                  )}
+                </span>
+                <span className="hidden truncate sm:inline">{accountLabel}</span>
+              </Link>
+              <Link href="/write" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Write</Link>
+              <button type="button" onClick={handleSignOut} className={`transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Login</Link>
+          )}
+
+          <ThemeToggle
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"}`}
+          />
+        </div>
+
+      </div>
+    </header>
+  );
 }
 </file>
 

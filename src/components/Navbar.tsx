@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, User, PenSquare, LogOut } from "lucide-react";
 import type { SearchSuggestion } from "@/utils/movieService";
 import { createClient } from "@/utils/supabase/client";
 import SearchSuggestions from "./SearchSuggestions";
@@ -277,6 +277,7 @@ export default function Navbar() {
                 <SearchSuggestions
                   suggestions={suggestions}
                   isLoading={isSuggesting}
+                  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72" // 🚀 Grown and anchored to the right!
                   onSelect={(suggestion) => {
                     setSuggestions([]);
                     setQuery("");
@@ -302,38 +303,81 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* 3. Account Settings and Mode Actions Block */}
-        {/* 🚀 Changed gap-4 to gap-3 to pull the toggle slightly inward with crisp internal margins */}
-        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
-          {userEmail ? (
-            <>
-              <Link
-                href="/profile"
-                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}
-                title={accountLabel}
-              >
-                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"}`}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold">{accountInitial}</span>
-                  )}
-                </span>
-                <span className="hidden truncate sm:inline">{accountLabel}</span>
-              </Link>
-              <Link href="/write" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Write</Link>
-              <button type="button" onClick={handleSignOut} className={`transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-                Sign out
-              </button>
-            </>
+{/* 3. Account Settings and Mode Actions Block */}
+<div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
+  {userEmail ? (
+    /* 🚀 group/menu enables fluid CSS hover transitions for the user profile section */
+    <div className="relative group/menu py-2">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent cursor-pointer ${
+          isHomePage ? "text-white/90" : "text-text-muted"
+        }`}
+        title={accountLabel}
+      >
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${
+          isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"
+        }`}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
           ) : (
-            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>Login</Link>
+            <span className="text-xs font-bold">{accountInitial}</span>
           )}
+        </span>
+        <span className="hidden truncate sm:inline">{accountLabel}</span>
+        <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+      </button>
 
-          <ThemeToggle
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"}`}
-          />
-        </div>
+      {/* Nested Dropdown Action Box */}
+      <div
+        role="menu"
+        className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+      >
+        <Link
+          href="/profile"
+          role="menuitem"
+          className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+        >
+          <User className="h-4 w-4 opacity-70" />
+          <span>My Profile</span>
+        </Link>
+        
+        <Link
+          href="/write"
+          role="menuitem"
+          className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+        >
+          <PenSquare className="h-4 w-4 opacity-70" />
+          <span>Write Post</span>
+        </Link>
+        
+        <hr className="my-1 border-text-muted/10" />
+        
+        <button
+          type="button"
+          onClick={handleSignOut}
+          role="menuitem"
+          className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+        >
+          <LogOut className="h-4 w-4 opacity-70" />
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+  ) : (
+    <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+      Login
+    </Link>
+  )}
+
+  <ThemeToggle
+    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${
+      isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"
+    }`}
+  />
+</div>
 
       </div>
     </header>
