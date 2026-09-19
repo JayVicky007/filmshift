@@ -4,14 +4,14 @@ import { getTvShowDetails } from "@/utils/movieService";
 import RatingRing from "@/components/RatingRing";
 import ContentCarousel from "@/components/ContentCarousel";
 
-
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
 const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
-// A clean, completely flat string combination that cannot break syntax rules
+
+// 🚀 Fixed: Clean, bulletproof link format generator that supports all platforms flawlessly
 function googleSearchUrl(name: string, showName: string) {
-  return "https://google.com" + encodeURIComponent(name + " " + showName);
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
 }
 
 interface PageProps {
@@ -70,13 +70,10 @@ export default async function TvShowDetailPage({ params }: PageProps) {
             )}
           </div>
 
-
-
-
           {/* TV Metadata Breakdown Layer */}
           <div className="min-w-0 flex-1">
             <Link href="/" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-              ← Back to Journal Dashboard
+              ← Back to Dashboard
             </Link>
             
             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
@@ -88,7 +85,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">Series & Animation</span>
               <span aria-hidden="true">·</span>
               <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
               <span aria-hidden="true">·</span>
@@ -129,33 +126,51 @@ export default async function TvShowDetailPage({ params }: PageProps) {
 
       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {show.creators && show.creators.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Creators</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Created By:</span>{" "}
-                {show.creators.map((creator: string, index: number) => (
-                  <span key={creator}>
-                    {index > 0 ? ", " : ""}
-                    <a
-                      href={googleSearchUrl(creator, show.name)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="no-underline transition-colors hover:text-accent"
-                    >
-                      {creator}
-                    </a>
-                  </span>
-                ))}
+        
+        {/* 🚀 New/Fixed: Complete Production Credits Layout Grid Row */}
+        <section className="md:px-4">
+          <h2 className="pl-1 text-2xl font-bold">Credits & Staff</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {show.creators && show.creators.length > 0 ? (
+              <div className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <p className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">Created By</p>
+                <div className="text-base font-semibold text-foreground flex flex-wrap gap-x-2">
+                  {show.creators.map((creator: string, index: number) => (
+                    <span key={creator}>
+                      {index > 0 ? ", " : ""}
+                      <a
+                        href={googleSearchUrl(creator, show.name)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="transition-colors hover:text-accent underline decoration-text-muted/30 hover:decoration-accent"
+                      >
+                        {creator}
+                      </a>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <p className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">Created By</p>
+                <p className="text-base text-text-muted font-medium">Production Studio Staff</p>
+              </div>
+            )}
+
+            {/* 🚀 Community Journal Contributor Slot Card */}
+            <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+              <p className="text-sm font-bold text-accent uppercase tracking-wider mb-1">Journal Contributor</p>
+              <p className="text-base text-foreground font-semibold">
+                FilmShift Community Member
               </p>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
+        {/* Top Cast Visual Section */}
         {show.cast && show.cast.length > 0 && (
           <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <h2 className="pl-1 text-2xl font-bold">Voice Cast & Characters</h2>
             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
               {show.cast.map((person) => (
                 <div key={person.id} className="min-w-0 text-center">
@@ -163,10 +178,9 @@ export default async function TvShowDetailPage({ params }: PageProps) {
                     href={googleSearchUrl(person.name, show.name)}
                     target="_blank"
                     rel="noreferrer"
-                    className="block no-underline"
+                    className="block no-underline group"
                   >
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                      {/* Fixed: Reads the aligned camelCase profilePath from your custom service mapping! */}
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface transition-transform duration-200 group-hover:scale-105 group-hover:border-accent">
                       {person.profilePath ? (
                         <img
                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
@@ -177,26 +191,22 @@ export default async function TvShowDetailPage({ params }: PageProps) {
                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
                       )}
                     </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                    <p className="mt-3 truncate font-semibold transition-colors group-hover:text-accent">{person.name}</p>
                   </a>
                   <p className="truncate text-sm text-text-muted">{person.character}</p>
                 </div>
               ))}
-              
             </div>
           </section>
-
         )}
 
         {show.similar && show.similar.length > 0 && (
-          <ContentCarousel title="Similar TV Shows" movies={show.similar} />
+          <ContentCarousel title="Similar Shows" movies={show.similar} />
         )}
 
         {show.recommendations && show.recommendations.length > 0 && (
           <ContentCarousel title="Recommendations" movies={show.recommendations} />
         )}
-
-
       </div>
     </main>
   );

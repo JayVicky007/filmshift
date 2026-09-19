@@ -65,7 +65,8 @@ export type TrendingMovie = ContentItem;
 export interface SearchSuggestion {
   id: number;
   title: string;
-  mediaType: "Movie" | "TV Series" | "Animation" | "Anime" | "Documentary" | "Person";
+  mediaType: "Movie" | "TV Series" | "Animation" | "Anime" | "Documentary" | "Person" | string;
+  rawMediaType: "movie" | "tv" | "person"; // 🚀 Add this line!
   posterPath: string | null;
 }
 
@@ -297,17 +298,29 @@ export async function searchMovies(query: string): Promise<ContentItem[]> {
     return [];
   }
 
-  const response = await axios.get<{ results: ContentItem[] }>(
-    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/movie"),
+  // 🚀 Switch endpoint from search/movie to search/multi to match suggestions behavior
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/multi"),
     {
       params: {
         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
         query: query.trim(),
+        include_adult: false,
       },
-    },
+    }
   );
 
-  return response.data.results;
+  // Filter out people (actors) so the grid only renders clean watchable cards
+  return response.data.results
+    .filter((item) => item.media_type === "movie" || item.media_type === "tv")
+    .map((item) => ({
+      id: item.id,
+      title: item.title ?? item.name ?? "Untitled", // Handle movie titles & tv names safely
+      poster_path: item.poster_path,
+      release_date: item.release_date || item.first_air_date || "",
+      vote_average: item.vote_average ?? 0,
+      media_type: item.media_type,
+    }));
 }
 
 export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
@@ -321,6 +334,8 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
       profile_path?: string | null;
       genre_ids?: number[];
       original_language?: string;
+      release_date?: string;
+      first_air_date?: string;
     }>;
   }>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/multi"), {
     params: {
@@ -333,22 +348,30 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
   return response.data.results
     .filter((result) => result.media_type === "movie" || result.media_type === "tv" || result.media_type === "person")
     .slice(0, 6)
-    .map((result) => ({
-      id: result.id,
-      title: result.title ?? result.name ?? "Untitled",
-      mediaType: result.media_type === "person"
-        ? "Person"
-        : result.genre_ids?.includes(99)
-          ? "Documentary"
-          : result.genre_ids?.includes(16) && result.original_language === "ja"
-            ? "Anime"
-            : result.genre_ids?.includes(16)
-              ? "Animation"
-              : result.media_type === "tv"
-                ? "TV Series"
-                : "Movie",
-      posterPath: result.poster_path ?? result.profile_path ?? null,
-    }));
+    .map((result) => {
+      // 🚀 Grab the release or first air year for brackets
+      const rawDate = result.release_date || result.first_air_date || "";
+      const year = rawDate ? ` (${rawDate.slice(0, 4)})` : "";
+      const baseTitle = result.title ?? result.name ?? "Untitled";
+
+      return {
+        id: result.id,
+        title: result.media_type === "person" ? baseTitle : `${baseTitle}${year}`,
+        rawMediaType: result.media_type, // 🚀 Pass the absolute truth!
+        mediaType: result.media_type === "person"
+          ? "Person"
+          : result.genre_ids?.includes(99)
+            ? "Documentary"
+            : result.genre_ids?.includes(16) && result.original_language === "ja"
+              ? "Anime"
+              : result.genre_ids?.includes(16)
+                ? "Animation"
+                : result.media_type === "tv"
+                  ? "TV Series"
+                  : "Movie",
+        posterPath: result.poster_path ?? result.profile_path ?? null,
+      };
+    });
 }
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {

@@ -274,19 +274,20 @@ export default function Navbar() {
                   autoFocus
                   className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
                 />
-                <SearchSuggestions
-                  suggestions={suggestions}
-                  isLoading={isSuggesting}
-                  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72" // 🚀 Grown and anchored to the right!
-                  onSelect={(suggestion) => {
-                    setSuggestions([]);
-                    setQuery("");
-                    setSearchOpen(false);
-                    const mediaTypeNormalized = suggestion.mediaType?.toLowerCase() || "";
-                    const routeType = mediaTypeNormalized.includes("tv") || mediaTypeNormalized.includes("series") ? "tv" : "movie";
-                    router.push(`/${routeType}/${suggestion.id}`);
-                  }}
-                />
+<SearchSuggestions
+  suggestions={suggestions}
+  isLoading={isSuggesting}
+  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
+  onSelect={(suggestion) => {
+    setSuggestions([]);
+    setQuery("");
+    setSearchOpen(false);
+    
+    // 🚀 Completely skip text guessing! Trust TMDB's direct classification
+    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+    router.push(`/${routeType}/${suggestion.id}`);
+  }}
+/>
               </form>
             )}
             <button

@@ -173,26 +173,18 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
               placeholder=""
               className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
             />
-            <SearchSuggestions
-              suggestions={suggestions}
-              isLoading={isSuggesting}
-              onSelect={(suggestion) => {
-                // Problem 2 Fix: Instantly drop suggestion elements and empty search field string
-                setSuggestions([]);
-                setQuery("");
+<SearchSuggestions
+  suggestions={suggestions}
+  isLoading={isSuggesting}
+  onSelect={(suggestion) => {
+    setSuggestions([]);
+    setQuery("");
 
-              // 🚀 Group all serialized formats under 'tv', everything else defaults to 'movie'
-                const mediaLower = suggestion.mediaType?.toLowerCase() || "";
-                const isSerialFormat = 
-                  mediaLower.includes("tv") || 
-                  mediaLower.includes("series") || 
-                  mediaLower.includes("anime") || 
-                  mediaLower.includes("animation");
-
-                const routeType = isSerialFormat ? "tv" : "movie";
-                router.push(`/${routeType}/${suggestion.id}`);
-              }}
-            />
+    // 🚀 Use the absolute truth field here too!
+    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+    router.push(`/${routeType}/${suggestion.id}`);
+  }}
+/>
           </div>
           <button
             type="submit"
