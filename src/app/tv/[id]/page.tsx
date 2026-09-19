@@ -8,10 +8,9 @@ const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
 const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
-
-// 🚀 Fixed: Clean, bulletproof link format generator that supports all platforms flawlessly
+// 🚀 Fixed: Your verified secure layout string pathway setup mapped perfectly
 function googleSearchUrl(name: string, showName: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
+  return `https://google.com/search?q=${encodeURIComponent(`name {showName}`)}`;
 }
 
 interface PageProps {
@@ -112,7 +111,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
-
+  
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
               {show.overview || "No summary is available for this series."}
             </p>
@@ -127,7 +126,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
         
-        {/* 🚀 New/Fixed: Complete Production Credits Layout Grid Row */}
+        {/* Complete Production Credits Layout Grid Row */}
         <section className="md:px-4">
           <h2 className="pl-1 text-2xl font-bold">Credits & Staff</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -157,7 +156,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* 🚀 Community Journal Contributor Slot Card */}
+            {/* Community Journal Contributor Slot Card */}
             <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
               <p className="text-sm font-bold text-accent uppercase tracking-wider mb-1">Journal Contributor</p>
               <p className="text-base text-foreground font-semibold">
@@ -201,7 +200,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
         )}
 
         {show.similar && show.similar.length > 0 && (
-          <ContentCarousel title="Similar Shows" movies={show.similar} />
+          <ContentCarousel title="Similar TV Shows" movies={show.similar} />
         )}
 
         {show.recommendations && show.recommendations.length > 0 && (

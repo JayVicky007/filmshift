@@ -505,7 +505,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         params: {
           api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
           // 1. Tell TMDB to pack similar shows and recommendations into the response!
-          append_to_response: "credits,similar,recommendations",
+          append_to_response: "credits,similar,recommendations,videos",
         },
       }
     );
@@ -547,6 +547,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       // 3. Attach the mapped lists safely into our data contract
       similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
       recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      
     };
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);
