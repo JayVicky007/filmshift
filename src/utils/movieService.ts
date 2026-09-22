@@ -468,17 +468,12 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
 
 
 
-
-
-// Append to the absolute bottom of src/utils/movieService.ts
-
 export interface TvShowDetails {
   id: number;
   name: string;
   overview: string;
   poster_path: string | null;
   backdrop_path: string | null;
-  trailer_key?: string | null;
   first_air_date: string;
   status: string;
   tagline: string;
@@ -492,10 +487,18 @@ export interface TvShowDetails {
     id: number;
     name: string;
     character: string;
-    profilePath: string | null; // Matches your custom cast architecture!
+    profilePath: string | null;
   }>;
-    similar: ContentItem[];
-    recommendations: ContentItem[];
+  similar: ContentItem[];
+  recommendations: ContentItem[];
+  // Added data variables to support real multi-source critic card scoring metrics
+  ratings: {
+    imdb: number | null;
+  };
+  trailer: {
+    key: string;
+    name: string;
+  } | null;
 }
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
@@ -505,18 +508,42 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       {
         params: {
           api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          // 1. Tell TMDB to pack similar shows and recommendations into the response!
-          append_to_response: "credits,similar,recommendations,videos",
+          // Appends external_ids to capture the official IMDB ID entry reference string
+          append_to_response: "credits,similar,recommendations,external_ids,videos",
         },
       }
     );
 
     const show = response.data;
 
-    // 2. Helper tool to map TV properties cleanly to match our ContentItem structure
+    // Isolate the core trailer video asset link if present inside the payload sequence
+    const trailer = show.videos?.results.find(
+      (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
+    ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
+
+    let imdbRating: number | null = null;
+
+    // Perform background query mapping to fetch authentic OMDb metrics
+    if (show.external_ids?.imdb_id) {
+      try {
+        const omdbResponse = await axios.get<any>(
+          getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
+          {
+            params: {
+              apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
+              i: show.external_ids.imdb_id,
+            },
+          }
+        );
+        imdbRating = parseScore(omdbResponse.data.imdbRating);
+      } catch {
+        // Fallback gracefully if OMDb endpoint limits are exceeded
+      }
+    }
+
     const mapTvToContentItem = (item: any): ContentItem => ({
       id: item.id,
-      title: item.name, // Maps TV 'name' over to 'title' so ContentCard understands it!
+      title: item.name,
       poster_path: item.poster_path,
       release_date: item.first_air_date || "",
       vote_average: item.vote_average || 0,
@@ -545,14 +572,15 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         character: person.character,
         profilePath: person.profile_path,
       })) || [],
-      // 3. Attach the mapped lists safely into our data contract
       similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
       recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-      
+      ratings: {
+        imdb: imdbRating,
+      },
+      trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
     };
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);
     return null;
   }
 }
-
