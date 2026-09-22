@@ -467,7 +467,6 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
 }
 
 
-
 export interface TvShowDetails {
   id: number;
   name: string;
@@ -491,15 +490,20 @@ export interface TvShowDetails {
   }>;
   similar: ContentItem[];
   recommendations: ContentItem[];
-  // Added data variables to support real multi-source critic card scoring metrics
+  
+  // 🚀 UPGRADED: Unified multi-source tracking fields to support Metacritic parity
   ratings: {
     imdb: number | null;
+    rottenTomatoes: number | null;
+    metascore: number | null;
   };
   trailer: {
     key: string;
     name: string;
   } | null;
 }
+
+
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
@@ -508,7 +512,6 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       {
         params: {
           api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          // Appends external_ids to capture the official IMDB ID entry reference string
           append_to_response: "credits,similar,recommendations,external_ids,videos",
         },
       }
@@ -516,14 +519,15 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
 
     const show = response.data;
 
-    // Isolate the core trailer video asset link if present inside the payload sequence
     const trailer = show.videos?.results.find(
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
     ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
 
     let imdbRating: number | null = null;
+    let rottenTomatoes: number | null = null;
+    let metascore: number | null = null;
 
-    // Perform background query mapping to fetch authentic OMDb metrics
+    // 🚀 Background query mapping to fetch authentic multi-source OMDb metrics
     if (show.external_ids?.imdb_id) {
       try {
         const omdbResponse = await axios.get<any>(
@@ -535,9 +539,18 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
             },
           }
         );
-        imdbRating = parseScore(omdbResponse.data.imdbRating);
+
+        const omdbData = omdbResponse.data;
+        imdbRating = parseScore(omdbData.imdbRating);
+        metascore = parseScore(omdbData.Metascore);
+        rottenTomatoes = parseScore(
+          omdbData.Ratings?.find(
+            (rating: any) => rating.Source === "Rotten Tomatoes"
+          )?.Value,
+          "%"
+        );
       } catch {
-        // Fallback gracefully if OMDb endpoint limits are exceeded
+        // Fallback gracefully if OMDb endpoint limits are reached
       }
     }
 
@@ -576,6 +589,8 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
       ratings: {
         imdb: imdbRating,
+        rottenTomatoes,
+        metascore,
       },
       trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
     };
@@ -584,3 +599,4 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     return null;
   }
 }
+

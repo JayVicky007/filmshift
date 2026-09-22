@@ -22,7 +22,8 @@ function formatScore(score: number | null) {
 }
 
 function googleSearchUrl(name: string, movieTitle: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} {movieTitle}`)}`;
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
+
 }
 
 

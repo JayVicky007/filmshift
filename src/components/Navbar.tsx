@@ -44,7 +44,6 @@ const animationCategories = [
 
 type OpenMenu = "movies" | "series" | "animation" | null;
 
-
 function CategoryMenu({
   label,
   menuId,
@@ -57,7 +56,6 @@ function CategoryMenu({
   className?: string;
 }) {
   return (
-    /* 🚀 group/menu enables hover triggers. invisible/opacity-0 handles fluid fade entries! */
     <div className={`relative group/menu py-2 ${className}`}>
       <button
         type="button"
@@ -90,7 +88,6 @@ function CategoryMenu({
   );
 }
 
-
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -103,6 +100,10 @@ export default function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
   const navRef = useRef<HTMLElement>(null);
+  
+  // 🚀 Added focus sandbox tracking reference here
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  
   const isHomePage = pathname === "/";
 
   useEffect(() => {
@@ -220,18 +221,14 @@ export default function Navbar() {
   const accountLabel = username || userEmail?.split("@")[0] || "Account";
   const accountInitial = accountLabel.charAt(0).toUpperCase();
 
-
   return (
     <header
       className={`z-50 w-full transition-all duration-200 ${
         isHomePage
-          /* 🚀 ULTIMATE CLEANUP: Removed all backgrounds, blurs, borders, and shadows! 
-             The navbar items will now float gracefully directly over your hero movie poster artwork. */
           ? "absolute left-0 right-0 top-0 border-transparent bg-transparent"
           : "sticky top-0 border-b border-text-muted/10 bg-background/75 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)]"
       }`}
     >
-      {/* 🚀 Changed px-6 to px-4 or px-8 on larger viewports to match page margins perfectly and prevent text clashing */}
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-8">
         
         {/* 1. Main Application Brand Title */}
@@ -239,7 +236,7 @@ export default function Navbar() {
           <span>Film</span><span className="text-accent">Shift</span>
         </Link>
 
-        {/* 2. Main Navigation Block (Shifted Left!) */}
+        {/* 2. Main Navigation Block */}
         <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
           <CategoryMenu
             label="Movies"
@@ -260,8 +257,18 @@ export default function Navbar() {
           />
           <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
 
+
           {/* 🔍 Search Input Layout Layer */}
-          <div className="ml-1 flex items-center gap-2">
+          <div 
+            ref={searchContainerRef}
+            className="ml-1 flex items-center gap-2"
+            onBlur={(event) => {
+              // 🚀 Bulletproof blur check from our playground: only shuts dropdown if clicking completely outside
+              if (!searchContainerRef.current?.contains(event.relatedTarget as Node)) {
+                setSuggestions([]);
+              }
+            }}
+          >
             {searchOpen && (
               <form onSubmit={handleSearchSubmit} className="relative">
                 <label className="sr-only" htmlFor="nav-search">Search</label>
@@ -270,24 +277,36 @@ export default function Navbar() {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
+                  onFocus={() => {
+                    // 🚀 INSTANT RE-TRIGGER: If there is text already in the box on click-in, instantly re-fetch suggestions!
+                    const searchTerm = query.trim();
+                    if (searchTerm.length >= 2) {
+                      setIsSuggesting(true);
+                      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`)
+                        .then((response) => response.json())
+                        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+                        .catch(() => setSuggestions([]))
+                        .finally(() => setIsSuggesting(false));
+                    }
+                  }}
                   placeholder="Search"
                   autoFocus
                   className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
                 />
-<SearchSuggestions
-  suggestions={suggestions}
-  isLoading={isSuggesting}
-  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
-  onSelect={(suggestion) => {
-    setSuggestions([]);
-    setQuery("");
-    setSearchOpen(false);
-    
-    // 🚀 Completely skip text guessing! Trust TMDB's direct classification
-    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
-    router.push(`/${routeType}/${suggestion.id}`);
-  }}
-/>
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  isLoading={isSuggesting}
+                  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
+                  onSelect={(suggestion) => {
+                    setSuggestions([]);
+                    setQuery("");
+                    setSearchOpen(false);
+                    
+                    // 🚀 Follows the Global Search Routing Law
+                    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+                    router.push(`/${routeType}/${suggestion.id}`);
+                  }}
+                />
               </form>
             )}
             <button
@@ -304,81 +323,81 @@ export default function Navbar() {
           </div>
         </nav>
 
-{/* 3. Account Settings and Mode Actions Block */}
-<div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
-  {userEmail ? (
-    /* 🚀 group/menu enables fluid CSS hover transitions for the user profile section */
-    <div className="relative group/menu py-2">
-      <button
-        type="button"
-        aria-haspopup="menu"
-        className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent cursor-pointer ${
-          isHomePage ? "text-white/90" : "text-text-muted"
-        }`}
-        title={accountLabel}
-      >
-        <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${
-          isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"
-        }`}>
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+        {/* 3. Account Settings and Mode Actions Block */}
+        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
+          {userEmail ? (
+            <div className="relative group/menu py-2">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent cursor-pointer ${
+                  isHomePage ? "text-white/90" : "text-text-muted"
+                }`}
+                title={typeof accountLabel === "string" ? accountLabel : userEmail}
+              >
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${
+                  isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"
+                }`}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{accountInitial}</span>
+                  )}
+                </span>
+                <span className="hidden truncate sm:inline">
+                  {typeof accountLabel === "string" ? accountLabel : accountLabel}
+                </span>
+                <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+              </button>
+
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+                invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+              >
+                <Link
+                  href="/profile"
+                  role="menuitem"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+                >
+                  <User className="h-4 w-4 opacity-70" />
+                  <span>My Profile</span>
+                </Link>
+                
+                <Link
+                  href="/write"
+                  role="menuitem"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+                >
+                  <PenSquare className="h-4 w-4 opacity-70" />
+                  <span>Write Post</span>
+                </Link>
+                
+                <hr className="my-1 border-text-muted/10" />
+                
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  role="menuitem"
+                  className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 opacity-70" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
           ) : (
-            <span className="text-xs font-bold">{accountInitial}</span>
+            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+              Login
+            </Link>
           )}
-        </span>
-        <span className="hidden truncate sm:inline">{accountLabel}</span>
-        <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
-      </button>
 
-      {/* Nested Dropdown Action Box */}
-      <div
-        role="menu"
-        className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
-        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
-      >
-        <Link
-          href="/profile"
-          role="menuitem"
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
-        >
-          <User className="h-4 w-4 opacity-70" />
-          <span>My Profile</span>
-        </Link>
-        
-        <Link
-          href="/write"
-          role="menuitem"
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
-        >
-          <PenSquare className="h-4 w-4 opacity-70" />
-          <span>Write Post</span>
-        </Link>
-        
-        <hr className="my-1 border-text-muted/10" />
-        
-        <button
-          type="button"
-          onClick={handleSignOut}
-          role="menuitem"
-          className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
-        >
-          <LogOut className="h-4 w-4 opacity-70" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </div>
-  ) : (
-    <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-      Login
-    </Link>
-  )}
-
-  <ThemeToggle
-    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${
-      isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"
-    }`}
-  />
-</div>
+          <ThemeToggle
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${
+              isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"
+            }`}
+          />
+        </div>
 
       </div>
     </header>
