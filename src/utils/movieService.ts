@@ -478,6 +478,7 @@ export interface TvShowDetails {
   overview: string;
   poster_path: string | null;
   backdrop_path: string | null;
+  trailer_key?: string | null;
   first_air_date: string;
   status: string;
   tagline: string;

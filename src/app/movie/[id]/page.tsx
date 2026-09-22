@@ -125,7 +125,7 @@ React.useEffect(() => {
               ))}
             </div>
 
-            {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
+          {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
                 <div>
@@ -135,9 +135,9 @@ React.useEffect(() => {
                 <RatingRing rating={movie.audienceRating} size="sm" />
               </div>
               
-              {/* The Smart Action Button Trigger */}
+               {/* The Smart Action Button Trigger */}
               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
-            </div>
+            </div> 
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
               {movie.overview || "No summary is available for this movie."}
@@ -256,14 +256,15 @@ function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: strin
 
       {/* The Cinematic Popout Backdrop Layer */}
       {isOpen && (
-        /* 🚀 TMDB Secret: z-[100] completely breaks out of the normal layout stack and floats above the z-50 navbar! */
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
+          {/* Backdrop absolute close target area */}
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
           
-          {/* Main Modal Card Box Component */}
-          <div className="relative w-full max-w-xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+          {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
+          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
             
             {/* Header controls layout block */}
-            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0">
+            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
               <h3 className="font-bold text-foreground text-sm truncate pr-4">
                 {movieTitle} — Trailer
               </h3>
@@ -277,12 +278,12 @@ function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: strin
               </button>
             </div>
 
-            {/* The Perfectly Repaired Widescreen Video Box Container */}
-              <div className="relative w-full max-w-3xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[75vh] overflow-hidden">              
+            {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
               <iframe
-                src={`https://youtube.com/embed/${trailerKey}`} // 🚀 Injected your customized working link format!
+                src={`https://youtube.com/embed/${trailerKey}`}
                 title={`${movieTitle} Official Trailer`}
-                className="absolute inset-0 h-full w-full"
+                className="absolute inset-0 h-full w-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
@@ -294,4 +295,3 @@ function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: strin
     </>
   );
 }
-
