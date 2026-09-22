@@ -16,7 +16,7 @@ function formatScore(score: number | null) {
 }
 
 function googleSearchUrl(name: string, showName: string) {
-  return `https://google.com${encodeURIComponent(`${name} ${showName}`)}`;
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
 }
 
 export default function TvShowDetailPage({
@@ -292,7 +292,7 @@ function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string;
 
             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
               <iframe
-                src={'https://youtube.com\${trailerKey}'}
+                src={`https://youtube.com/embed/${trailerKey}`}
                 title={`${seriesTitle} Official Trailer`}
                 className="absolute inset-0 h-full w-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
