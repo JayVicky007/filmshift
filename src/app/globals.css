@@ -108,33 +108,35 @@ body {
 }
 
 /* Headliner tracking rules overrides for explicit element heights */
-.prose .tiptap h1,
-.prose-invert .tiptap h1 {
-  font-size: 2.5rem !important; /* Huge banner heading */
+/* 🚀 TAILWIND v4 WORKSPACE HEADING ENGINE OVERRIDES */
+.prose-invert .edit-workspace-canvas h1,
+.prose .tiptap .heading-node[data-level="1"],
+.prose-invert h1.heading-node {
+  font-size: 2.6rem !important;
   font-weight: 900 !important;
-  line-height: 1.2 !important;
-  margin-top: 1.75rem !important;
-  margin-bottom: 1rem !important;
+  line-height: 1.25 !important;
+  display: block !important;
+  color: #FFFFFF !important;
 }
 
-.prose .tiptap h2,
-.prose-invert .tiptap h2 {
-  font-size: 1.85rem !important; /* Medium section heading */
+.prose-invert .edit-workspace-canvas h2,
+.prose .tiptap .heading-node[data-level="2"],
+.prose-invert h2.heading-node {
+  font-size: 1.85rem !important;
   font-weight: 800 !important;
-  line-height: 1.3 !important;
-  margin-top: 1.5rem !important;
-  margin-bottom: 0.75rem !important;
+  line-height: 1.35 !important;
+  display: block !important;
+  color: #E7ECF2 !important;
 }
 
-/* 🚀 ADD THIS H3 LAYER BLOCK TO COMPLETE THE SCALE DIFFERENCES */
-.prose .tiptap h3,
-.prose-invert .tiptap h3 {
-  font-size: 1.35rem !important; /* Compact subheading size */
+.prose-invert .edit-workspace-canvas h3,
+.prose .tiptap .heading-node[data-level="3"],
+.prose-invert h3.heading-node {
+  font-size: 1.35rem !important;
   font-weight: 700 !important;
   line-height: 1.4 !important;
-  margin-top: 1.25rem !important;
-  margin-bottom: 0.5rem !important;
-  color: var(--accent) !important; /* Highlight H3 entries with FilmShift Gold! */
+  display: block !important;
+  color: #FFC107 !important; /* Highlights H3 titles with FilmShift Gold */
 }
 
 /* Blockquote & code element workbench structures */
