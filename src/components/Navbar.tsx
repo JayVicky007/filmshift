@@ -256,7 +256,7 @@ export default function Navbar() {
           {/* 📺 2. Link Series Header directly to our new /tv hub layout */}
           <div className="flex items-center gap-1 hidden sm:flex">
             <Link href="/tv" className="transition-colors hover:text-accent">
-              Series
+              TV Series
             </Link>
             <CategoryMenu
               label=""
@@ -266,12 +266,12 @@ export default function Navbar() {
             />
           </div>
 
-          <CategoryMenu
+          {/* <CategoryMenu
             label="Animation"
             menuId="animation-categories"
             categories={animationCategories}
             className="hidden md:block"
-          />
+          /> */}
           <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
 
 

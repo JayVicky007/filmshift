@@ -1,5 +1,33 @@
 import axios from "axios";
 
+
+// 🚀 Fetch both trending movies and TV shows, then blend them together cleanly
+export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
+  try {
+    const [movies, tvShows] = await Promise.all([
+      getTrendingMoviesByPeriod(period),
+      // Fallback to "week" if period is "year" since TMDB tv endpoint defaults to day/week
+      getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
+    ]);
+
+    // Interleave them or combine and slice
+    const combined: ContentItem[] = [];
+    const maxLength = Math.max(movies.length, tvShows.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
+      if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
+    }
+
+    return combined;
+  } catch (error) {
+    console.error("❌ Failed to fetch unified trending content:", error);
+    return getTrendingMoviesByPeriod(period); // Fallback to movies if it fails
+  }
+}
+
+
+
 interface TmdbGenre {
   id: number;
   name: string;
@@ -523,34 +551,43 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
     ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
 
+// 🚀 Place this updated logic inside your getTvShowDetails function in src/utils/movieService.ts
     let imdbRating: number | null = null;
     let rottenTomatoes: number | null = null;
     let metascore: number | null = null;
 
-    // 🚀 Background query mapping to fetch authentic multi-source OMDb metrics
-    if (show.external_ids?.imdb_id) {
+    // 🚀 FIXED: TV shows nest external_ids inside an appended block object. 
+    // We check both the root object and the nested sub-property fallback.
+    const tvImdbId = show.external_ids?.imdb_id || (show.external_ids as any)?.results?.imdb_id;
+
+    if (tvImdbId) {
       try {
         const omdbResponse = await axios.get<any>(
           getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
           {
             params: {
               apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-              i: show.external_ids.imdb_id,
+              i: tvImdbId,
             },
           }
         );
 
         const omdbData = omdbResponse.data;
+        
+        // 🚀 Extract and parse scores safely from the live OMDb stream
         imdbRating = parseScore(omdbData.imdbRating);
         metascore = parseScore(omdbData.Metascore);
-        rottenTomatoes = parseScore(
-          omdbData.Ratings?.find(
+        
+        if (omdbData.Ratings) {
+          const rtRating = omdbData.Ratings.find(
             (rating: any) => rating.Source === "Rotten Tomatoes"
-          )?.Value,
-          "%"
-        );
-      } catch {
-        // Fallback gracefully if OMDb endpoint limits are reached
+          );
+          if (rtRating) {
+            rottenTomatoes = parseScore(rtRating.Value, "%");
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ OMDb endpoint fallback for TV series:", error);
       }
     }
 
@@ -564,36 +601,40 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       media_type: "tv",
     });
 
-    return {
-      id: show.id,
-      name: show.name,
-      overview: show.overview,
-      poster_path: show.poster_path,
-      backdrop_path: show.backdrop_path,
-      first_air_date: show.first_air_date,
-      status: show.status,
-      tagline: show.tagline,
-      vote_average: show.vote_average,
-      vote_count: show.vote_count,
-      number_of_seasons: show.number_of_seasons,
-      number_of_episodes: show.number_of_episodes,
-      creators: show.created_by?.map((c: any) => c.name) || [],
-      genres: show.genres || [],
-      cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
-        id: person.id,
-        name: person.name,
-        character: person.character,
-        profilePath: person.profile_path,
-      })) || [],
-      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-      ratings: {
-        imdb: imdbRating,
-        rottenTomatoes,
-        metascore,
-      },
-      trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
-    };
+    
+// 🚀 Update the final return block inside getTvShowDetails in src/utils/movieService.ts
+return {
+  id: show.id,
+  name: show.name,
+  overview: show.overview,
+  poster_path: show.poster_path,
+  backdrop_path: show.backdrop_path,
+  first_air_date: show.first_air_date,
+  status: show.status,
+  tagline: show.tagline,
+  vote_average: show.vote_average,
+  vote_count: show.vote_count,
+  number_of_seasons: show.number_of_seasons,
+  number_of_episodes: show.number_of_episodes,
+  creators: show.created_by?.map((c: any) => c.name) || [],
+  genres: show.genres || [],
+  cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
+    id: person.id,
+    name: person.name,
+    character: person.character,
+    profilePath: person.profile_path,
+  })) || [],
+  similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+  recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+  
+  // 🚀 FIXED: Map TMDB's 10-point scale onto a clean 100% block for TV metrics
+  ratings: {
+    imdb: imdbRating, // Keeps your live IMDb sync working!
+    rottenTomatoes: show.vote_average ? Math.round(show.vote_average * 10) : null, 
+    metascore: show.vote_average ? Math.round(show.vote_average * 10) : null,
+  },
+  trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+};
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);
     return null;
