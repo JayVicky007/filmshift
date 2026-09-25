@@ -1,11 +1,11 @@
 import Link from "next/link";
 import ContentCard from "@/components/ContentCard";
-import { getTrendingMoviesByPeriod } from "@/utils/movieService";
+import { getTrendingTvByPeriod } from "@/utils/movieService";
 
 export default async function TvSeriesIndexPage() {
   // Leverage your existing trending service array context to sample current popular hits
   // NOTE: By routing through multi-search rulesets, the components safely resolve format differences!
-  const popularSeriesSamples = await getTrendingMoviesByPeriod("week");
+  const popularSeriesSamples = await getTrendingTvByPeriod("week");
   
   // Filter downstream results to focus heavily on modern formatting titles
   const simulatedTvCatalog = popularSeriesSamples.slice(0, 15);

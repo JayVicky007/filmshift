@@ -600,3 +600,22 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
   }
 }
 
+
+// 🚀 Add this new function to fetch real trending TV shows from TMDB
+export async function getTrendingTvByPeriod(
+  period: "day" | "week"
+): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/tv/${period}`),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? item.title ?? "Untitled", // TV uses .name instead of .title
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
