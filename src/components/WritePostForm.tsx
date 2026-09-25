@@ -63,31 +63,33 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
   // 🎯 Upgraded Editor Lifecycle—FIXED levels syntax, removed cropping dependencies entirely
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-          HTMLAttributes: { class: "font-black tracking-tight text-white heading-node" }
-        },
-        bulletList: { HTMLAttributes: { class: "list-disc pl-6 space-y-1 my-4 block text-foreground/90" } },
-        orderedList: { HTMLAttributes: { class: "list-decimal pl-6 space-y-1 my-4 block text-foreground/90" } },
-        blockquote: { HTMLAttributes: { class: "border-l-4 border-accent bg-surface/30 px-4 py-2 italic text-text-muted my-4 block rounded-r-lg" } },
-        undoRedo: { depth: 50, newGroupDelay: 500 }
-      }),
-      Underline.configure({}),
-      Dropcursor.configure({ color: "#FFC107", width: 3 }), 
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-
-      Image.configure({
-        HTMLAttributes: {
-          // 🚀 FIXED: Added max-h-[400px] and object-contain to frame vertical images beautifully
-          class: "rounded-xl border border-text-muted/15 my-6 max-w-full max-h-[500px] object-contain mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
-        },
-      }),
-      Placeholder.configure({ placeholder: "Share your cinematic thoughts..." }),
-    ],
+// 🚀 Clean configuration array inside src/components/WritePostForm.tsx
+// 🚀 Clean, warning-free extensions configuration in src/components/WritePostForm.tsx
+  extensions: [
+    StarterKit.configure({
+      heading: {
+        levels: [1,2,3],
+        HTMLAttributes: { class: "font-black tracking-tight text-white heading-node" }
+      },
+      bulletList: { HTMLAttributes: { class: "list-disc pl-6 space-y-1 my-4 block text-foreground/90" } },
+      orderedList: { HTMLAttributes: { class: "list-decimal pl-6 space-y-1 my-4 block text-foreground/90" } },
+      blockquote: { HTMLAttributes: { class: "border-l-4 border-accent bg-surface/30 px-4 py-2 italic text-text-muted my-4 block rounded-r-lg" } },
+      dropcursor: { color: "#FFC107", width: 3 },
+      undoRedo: { depth: 50, newGroupDelay: 500 }
+    }),
+    
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
+    
+    Image.configure({
+      HTMLAttributes: {
+        class: "rounded-xl border border-text-muted/15 my-6 max-w-full max-h-[500px] object-contain mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
+      },
+    }),
+    
+    Placeholder.configure({ placeholder: "Share your cinematic thoughts..." }),
+  ],
     content: initialPost?.body || "",
     immediatelyRender: false,
     editorProps: {
