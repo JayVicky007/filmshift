@@ -44,6 +44,7 @@ const animationCategories = [
 
 type OpenMenu = "movies" | "series" | "animation" | null;
 
+{/* 🚀 CategoryMenu component header */}
 function CategoryMenu({
   label,
   menuId,
@@ -61,10 +62,10 @@ function CategoryMenu({
         type="button"
         aria-haspopup="menu"
         aria-controls={menuId}
-        className="inline-flex items-center gap-1 transition-colors hover:text-accent cursor-pointer"
+        className="inline-flex items-center gap-0.5 transition-colors hover:text-accent cursor-pointer text-sm font-semibold"
       >
-        {label}
-        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+        {label && <span>{label}</span>}
+        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180 opacity-60" aria-hidden="true" />
       </button>
       
       <div
@@ -238,17 +239,33 @@ export default function Navbar() {
 
         {/* 2. Main Navigation Block */}
         <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-          <CategoryMenu
-            label="Movies"
-            menuId="movie-categories"
-            categories={movieCategories}
-          />
-          <CategoryMenu
-            label="Series"
-            menuId="series-categories"
-            categories={seriesCategories}
-            className="hidden sm:block"
-          />
+          
+          {/* 🎬 1. Link Movies Header directly to our curated /movies catalog index */}
+          <div className="flex items-center gap-1">
+            <Link href="/movies" className="transition-colors hover:text-accent">
+              Movies
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="movie-categories"
+              categories={movieCategories}
+              className="!py-0"
+            />
+          </div>
+
+          {/* 📺 2. Link Series Header directly to our new /tv hub layout */}
+          <div className="flex items-center gap-1 hidden sm:flex">
+            <Link href="/tv" className="transition-colors hover:text-accent">
+              Series
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="series-categories"
+              categories={seriesCategories}
+              className="!py-0"
+            />
+          </div>
+
           <CategoryMenu
             label="Animation"
             menuId="animation-categories"
