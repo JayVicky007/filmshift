@@ -619,3 +619,52 @@ export async function getTrendingTvByPeriod(
     media_type: "tv",
   }));
 }
+
+
+// 🚀 1. Fetch current live airing schedules (TV Parity for Now Playing)
+export async function getTvAiringToday(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/airing_today"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
+
+// 🚀 2. Fetch all-time critical television masterpieces
+export async function getTopRatedTv(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
+
+// 🚀 3. Fetch scheduled upcoming network additions (TV Parity for Upcoming)
+export async function getTvOnTheAir(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/on_the_air"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}

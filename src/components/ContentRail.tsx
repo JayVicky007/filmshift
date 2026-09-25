@@ -150,8 +150,9 @@ export default function ContentRail({
                 key={pageIndex}
                 className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
               >
-                {moviePage.map((movie) => (
-                  <ContentCard key={movie.id} movie={movie} />
+                {moviePage.map((movie, index) => (
+                  /* 🚀 COMBINE ID AND INDEX: This forces perfect key uniqueness even if title 118 shows up twice! */
+                  <ContentCard key={`${movie.id}-rail-${pageIndex}-${index}`} movie={movie} />
                 ))}
               </div>
             ))}

@@ -1,50 +1,63 @@
 import Link from "next/link";
 import ContentRail from "@/components/ContentRail";
-import { getMoviesByCategory } from "@/utils/movieService";
+import {
+  getMoviesByCategory,
+  getTopRatedMoviesByPeriod,
+  getTrendingMoviesByPeriod,
+} from "@/utils/movieService";
 
 export default async function MoviesIndexPage() {
-  // Fetch multiple categories concurrently for an aggregated dashboard view
-  const [nowPlaying, upcoming, topRated] = await Promise.all([
+  // 🚀 Fetch the exact same category arrays running on the main index route
+  const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
+    getTrendingMoviesByPeriod("year"),
     getMoviesByCategory("now-playing"),
+    getTopRatedMoviesByPeriod("all-time"),
     getMoviesByCategory("upcoming"),
-    getMoviesByCategory("top-rated"),
   ]);
 
   return (
     <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
       <header className="mx-auto mb-12 max-w-7xl">
         <Link href="/" className="text-sm font-semibold text-text-muted hover:text-accent transition-colors">
-          ← Back to Dashboard
+          ← Back to home
         </Link>
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">
-          FilmShift Cinema Catalog
+          FilmShift Movie Hub
         </p>
-        <h1 className="mt-3 text-5xl font-black tracking-tight">Browse Movies</h1>
+        <h1 className="mt-3 text-5xl font-black tracking-tight">Movies</h1>
         <p className="mt-3 text-lg text-text-muted">
-          Dive into current theatrical listings, global top ratings, and highly anticipated releases.
+          Your full theater destination for currently playing, all-time highest ranked, and trending cinema collections.
         </p>
       </header>
 
-      {/* Grid of beautifully curated Category Rails */}
+      {/* 🚀 Category section rails aligned cleanly with homepage architecture parameters */}
       <div className="mx-auto space-y-16 max-w-7xl">
-        <ContentRail 
-          title="Now Playing in Theaters" 
-          category="now-playing" 
-          movies={nowPlaying} 
+        <ContentRail
+          title="Trending"
+          category="trending"
+          movies={trending}
+          periodFilter={true}
+          periodCategory="trending"
         />
-        
-        <ContentRail 
-          title="Anticipated Upcoming Releases" 
-          category="upcoming" 
-          movies={upcoming} 
+
+        <ContentRail
+          title="Now Playing"
+          category="now-playing"
+          movies={nowPlaying}
         />
-        
-        <ContentRail 
-          title="All-Time Critical Masterpieces" 
-          category="top-rated" 
+
+        <ContentRail
+          title="Top Rated"
+          category="top-rated"
           movies={topRated}
           periodFilter={true}
           periodCategory="top-rated"
+        />
+
+        <ContentRail
+          title="Upcoming"
+          category="upcoming"
+          movies={upcoming}
         />
       </div>
     </main>

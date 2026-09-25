@@ -1,42 +1,63 @@
 import Link from "next/link";
-import ContentCard from "@/components/ContentCard";
-import { getTrendingTvByPeriod } from "@/utils/movieService";
+import ContentRail from "@/components/ContentRail";
+import { 
+  getTrendingTvByPeriod,
+  getTvAiringToday,
+  getTopRatedTv,
+  getTvOnTheAir
+} from "@/utils/movieService";
 
 export default async function TvSeriesIndexPage() {
-  // Leverage your existing trending service array context to sample current popular hits
-  // NOTE: By routing through multi-search rulesets, the components safely resolve format differences!
-  const popularSeriesSamples = await getTrendingTvByPeriod("week");
-  
-  // Filter downstream results to focus heavily on modern formatting titles
-  const simulatedTvCatalog = popularSeriesSamples.slice(0, 15);
+  // Fetch the identical four-channel catalog stack concurrently 
+  const [trending, airingToday, topRated, upcomingDrops] = await Promise.all([
+    getTrendingTvByPeriod("week"),
+    getTvAiringToday(),
+    getTopRatedTv(),
+    getTvOnTheAir(),
+  ]);
 
   return (
-    <main className="min-h-screen bg-background p-6 text-foreground md:p-10">
-      <header className="mx-auto mb-10 max-w-7xl">
+    <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
+      <header className="mx-auto mb-12 max-w-7xl">
         <Link href="/" className="text-sm font-semibold text-text-muted hover:text-accent transition-colors">
           ← Back to home
         </Link>
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-          FilmShift Streaming Guides
+          FilmShift Network Hub
         </p>
-        <h1 className="mt-3 text-5xl font-black tracking-tight">TV Series Network</h1>
+        <h1 className="mt-3 text-5xl font-black tracking-tight">TV Series</h1>
         <p className="mt-3 text-lg text-text-muted">
-          Explore seasonal streaming dramas, trending binge watches, and legendary episodic releases.
+          Your full episodic dashboard for seasonal drops, network trends, and timeless television history.
         </p>
       </header>
 
-      {/* Grid view optimized to display a high-volume collection of items comfortably */}
-      <section className="mx-auto grid max-w-7xl grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {simulatedTvCatalog.map((item) => (
-          <ContentCard 
-            key={item.id} 
-            movie={{
-              ...item,
-              media_type: "tv" // Explicitly forcing the tv routing parameter law safely
-            }} 
-          />
-        ))}
-      </section>
+      {/* Curie layout rows rendering distinct sliding rails */}
+      <div className="mx-auto space-y-16 max-w-7xl">
+        <ContentRail
+          title="Trending Series"
+          category="trending"
+          movies={trending}
+          periodFilter={false} // Clean single interval window fallback
+        />
+
+        <ContentRail
+          title="Airing Today"
+          category="now-playing"
+          movies={airingToday}
+        />
+
+        <ContentRail
+          title="Top Rated Masterpieces"
+          category="top-rated"
+          movies={topRated}
+        />
+
+        <ContentRail
+          title="On The Air (New Seasons)"
+          category="upcoming"
+          movies={upcomingDrops}
+        />
+      </div>
     </main>
   );
 }
