@@ -142,32 +142,31 @@ export default function TvShowDetailPage({
               {show.vote_count?.toLocaleString() || 0} audience votes
             </p>
 
-      {/* 🚀 Verify this layout section inside src/app/tv/[id]/page.tsx matches your updated movie view */}
+            {/* 🚀 UPGRADED: Clean, full type-safe parity metrics across IMDb, Rotten Tomatoes, and Metacritic */}
             <section className="mt-10">
-              <h2 className="text-2xl font-bold text-white">Critic & Platform Scores</h2>
+              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                
                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
                   <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
                   <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.imdb === null ? "N/A" : show.ratings.imdb.toFixed(1)}
+                    {formatScore(show.ratings.imdb)}
                   </p>
                 </div>
-                
                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">TMDB Tomatometer</p>
+                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
                   <p className="mt-1 text-2xl font-bold text-foreground">
                     {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
                   </p>
                 </div>
-                
                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Metascore Parity</p>
+                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
                   <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.metascore === null ? "N/A" : show.ratings.metascore}
+                    {show.ratings.metascore === null ? "--" : show.ratings.metascore}
+                  </p>
+                  <p className="text-[10px] font-medium text-text-muted mt-0.5">
+                    {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
                   </p>
                 </div>
-
               </div>
             </section>
           </div>

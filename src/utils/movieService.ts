@@ -601,40 +601,36 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       media_type: "tv",
     });
 
-    
-// 🚀 Update the final return block inside getTvShowDetails in src/utils/movieService.ts
-return {
-  id: show.id,
-  name: show.name,
-  overview: show.overview,
-  poster_path: show.poster_path,
-  backdrop_path: show.backdrop_path,
-  first_air_date: show.first_air_date,
-  status: show.status,
-  tagline: show.tagline,
-  vote_average: show.vote_average,
-  vote_count: show.vote_count,
-  number_of_seasons: show.number_of_seasons,
-  number_of_episodes: show.number_of_episodes,
-  creators: show.created_by?.map((c: any) => c.name) || [],
-  genres: show.genres || [],
-  cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
-    id: person.id,
-    name: person.name,
-    character: person.character,
-    profilePath: person.profile_path,
-  })) || [],
-  similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-  recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-  
-  // 🚀 FIXED: Map TMDB's 10-point scale onto a clean 100% block for TV metrics
-  ratings: {
-    imdb: imdbRating, // Keeps your live IMDb sync working!
-    rottenTomatoes: show.vote_average ? Math.round(show.vote_average * 10) : null, 
-    metascore: show.vote_average ? Math.round(show.vote_average * 10) : null,
-  },
-  trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
-};
+    return {
+      id: show.id,
+      name: show.name,
+      overview: show.overview,
+      poster_path: show.poster_path,
+      backdrop_path: show.backdrop_path,
+      first_air_date: show.first_air_date,
+      status: show.status,
+      tagline: show.tagline,
+      vote_average: show.vote_average,
+      vote_count: show.vote_count,
+      number_of_seasons: show.number_of_seasons,
+      number_of_episodes: show.number_of_episodes,
+      creators: show.created_by?.map((c: any) => c.name) || [],
+      genres: show.genres || [],
+      cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
+        id: person.id,
+        name: person.name,
+        character: person.character,
+        profilePath: person.profile_path,
+      })) || [],
+      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      ratings: {
+        imdb: imdbRating,
+        rottenTomatoes,
+        metascore,
+      },
+      trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+    };
   } catch (error) {
     console.error("❌ movieService TV Fetch Error:", error);
     return null;
