@@ -152,18 +152,17 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="content-type" className="text-sm font-semibold">Post type</label>
-          <select id="content-type" value={contentType} onChange={(event) => setContentType(event.target.value as "review" | "article")} className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30">
-            <option value="review">Review</option>
-            <option value="article">Article</option>
-          </select>
-        </div>
+        {/* 🚀 Updated Select values to output "tv" for series, ensuring alignment with dynamic routes */}
         <div>
           <label htmlFor="media-type" className="text-sm font-semibold">Media type</label>
-          <select id="media-type" value={mediaType} onChange={(event) => setMediaType(event.target.value)} className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30">
+          <select 
+            id="media-type" 
+            value={mediaType} 
+            onChange={(event) => setMediaType(event.target.value)} 
+            className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+          >
             <option value="movie">Movie</option>
-            <option value="series">Series</option>
+            <option value="tv">Series (TV)</option>
             <option value="anime">Anime</option>
             <option value="animation">Animation</option>
             <option value="documentary">Documentary</option>
