@@ -69,10 +69,12 @@ src/
       page.tsx
     movie/
       [id]/
+        MovieTrailerModalButton.tsx
         page.tsx
     movies/
       [category]/
         page.tsx
+      page.tsx
     profile/
       page.tsx
     sandbox/
@@ -82,6 +84,8 @@ src/
     tv/
       [id]/
         page.tsx
+        TvTrailerModalButton.tsx
+      page.tsx
     unauthorized/
       page.tsx
     write/
@@ -95,6 +99,7 @@ src/
     ContentCarousel.tsx
     ContentRail.tsx
     DeleteDraftButton.tsx
+    Footer.tsx
     HomeHero.tsx
     Navbar.tsx
     ProfileForm.tsx
@@ -125,6 +130,128 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/app/movie/[id]/MovieTrailerModalButton.tsx">
+"use client";
+
+import React, { useState } from "react";
+import { Play, X } from "lucide-react";
+
+interface TrailerProps {
+  trailerKey: string;
+  movieTitle: string;
+}
+
+export function MovieTrailerModalButton({ trailerKey, movieTitle }: TrailerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+      >
+        <Play className="h-4 w-4 fill-current" />
+        <span>Watch Trailer</span>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+              <h3 className="font-bold text-foreground text-sm truncate pr-4">
+                {movieTitle} — Trailer
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+                aria-label="Close trailer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+              <iframe
+                src={`https://youtube.com/embed/${trailerKey}`}
+                title={`${movieTitle} Official Trailer`}
+                className="absolute inset-0 h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+</file>
+
+<file path="src/app/tv/[id]/TvTrailerModalButton.tsx">
+"use client";
+
+import React, { useState } from "react";
+import { Play, X } from "lucide-react";
+
+interface TvTrailerProps {
+  trailerKey: string;
+  seriesTitle: string;
+}
+
+export function TvTrailerModalButton({ trailerKey, seriesTitle }: TvTrailerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+      >
+        <Play className="h-4 w-4 fill-current" />
+        <span>Watch Trailer</span>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+              <h3 className="font-bold text-foreground text-sm truncate pr-4">
+                {seriesTitle} — Trailer
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+                aria-label="Close trailer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+              <iframe
+                src={`https://youtube.com/embed/${trailerKey}`}
+                title={`${seriesTitle} Official Trailer`}
+                className="absolute inset-0 h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+</file>
 
 <file path="public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
@@ -615,6 +742,47 @@ export default function DeleteDraftButton({ postId }: DeleteDraftButtonProps) {
     >
       {isDeleting ? "Deleting..." : "Delete Draft"}
     </button>
+  );
+}
+</file>
+
+<file path="src/components/Footer.tsx">
+import Link from "next/link";
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="mt-auto w-full border-t border-text-muted/10 bg-surface/40 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8 md:flex md:items-center md:justify-between lg:px-12">
+        
+        {/* Brand Left Anchor */}
+        <div className="flex justify-center md:order-2 gap-6 text-sm font-semibold text-text-muted">
+          <Link href="/movies" className="hover:text-accent transition-colors">Movies</Link>
+          <Link href="/tv" className="hover:text-accent transition-colors">Series</Link>
+          <Link href="/blog" className="hover:text-accent transition-colors">Blog</Link>
+          <a 
+            href="https://themoviedb.org" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="hover:text-accent transition-colors text-xs opacity-75 font-normal"
+          >
+            TMDB API
+          </a>
+        </div>
+
+        {/* Copyright Attribution Right Anchor */}
+        <div className="mt-4 md:order-1 md:mt-0 text-center md:text-left">
+          <p className="text-xs text-text-muted">
+            &copy; {currentYear} <span className="font-black tracking-tight text-foreground">Film<span className="text-accent">Shift</span></span>. Developed as a modern cinema curation layout.
+          </p>
+          <p className="mt-1 text-[10px] text-text-muted/60">
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
+          </p>
+        </div>
+
+      </div>
+    </footer>
   );
 }
 </file>
@@ -1350,6 +1518,74 @@ export default async function MovieCategoryPage({
 }
 </file>
 
+<file path="src/app/movies/page.tsx">
+import Link from "next/link";
+import ContentRail from "@/components/ContentRail";
+import {
+  getMoviesByCategory,
+  getTopRatedMoviesByPeriod,
+  getTrendingMoviesByPeriod,
+} from "@/utils/movieService";
+
+export default async function MoviesIndexPage() {
+  // 🚀 Fetch the exact same category arrays running on the main index route
+  const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
+    getTrendingMoviesByPeriod("year"),
+    getMoviesByCategory("now-playing"),
+    getTopRatedMoviesByPeriod("all-time"),
+    getMoviesByCategory("upcoming"),
+  ]);
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
+      <header className="mx-auto mb-12 max-w-7xl">
+        <Link href="/" className="text-sm font-semibold text-text-muted hover:text-accent transition-colors">
+          ← Back to home
+        </Link>
+        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">
+          FilmShift Movie Hub
+        </p>
+        <h1 className="mt-3 text-5xl font-black tracking-tight">Movies</h1>
+        <p className="mt-3 text-lg text-text-muted">
+          Your full theater destination for currently playing, all-time highest ranked, and trending cinema collections.
+        </p>
+      </header>
+
+      {/* 🚀 Category section rails aligned cleanly with homepage architecture parameters */}
+      <div className="mx-auto space-y-16 max-w-7xl">
+        <ContentRail
+          title="Trending"
+          category="trending"
+          movies={trending}
+          periodFilter={true}
+          periodCategory="trending"
+        />
+
+        <ContentRail
+          title="Now Playing"
+          category="now-playing"
+          movies={nowPlaying}
+        />
+
+        <ContentRail
+          title="Top Rated"
+          category="top-rated"
+          movies={topRated}
+          periodFilter={true}
+          periodCategory="top-rated"
+        />
+
+        <ContentRail
+          title="Upcoming"
+          category="upcoming"
+          movies={upcoming}
+        />
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/components/ContentCarousel.tsx">
 "use client";
 
@@ -1961,43 +2197,68 @@ export default async function ProfilePage() {
 }
 </file>
 
-<file path="src/app/layout.tsx">
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import type { ReactNode } from "react";
-import Navbar from "@/components/Navbar";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import "./globals.css";
+<file path="src/app/tv/page.tsx">
+import Link from "next/link";
+import ContentRail from "@/components/ContentRail";
+import { 
+  getTrendingTvByPeriod,
+  getTvAiringToday,
+  getTopRatedTv,
+  getTvOnTheAir
+} from "@/utils/movieService";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export default async function TvSeriesIndexPage() {
+  // Fetch the identical four-channel catalog stack concurrently 
+  const [trending, airingToday, topRated, upcomingDrops] = await Promise.all([
+    getTrendingTvByPeriod("week"),
+    getTvAiringToday(),
+    getTopRatedTv(),
+    getTvOnTheAir(),
+  ]);
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "FilmShift",
-  description: "Discover and discuss your favorite cinema.",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
-        <ThemeProvider attribute="data-theme" defaultTheme="dark">
-          <Navbar />
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
+      <header className="mx-auto mb-12 max-w-7xl">
+        <Link href="/" className="text-sm font-semibold text-text-muted hover:text-accent transition-colors">
+          ← Back to home
+        </Link>
+        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+          FilmShift Network Hub
+        </p>
+        <h1 className="mt-3 text-5xl font-black tracking-tight">TV Series</h1>
+        <p className="mt-3 text-lg text-text-muted">
+          Your full episodic dashboard for seasonal drops, network trends, and timeless television history.
+        </p>
+      </header>
+
+      {/* Curie layout rows rendering distinct sliding rails */}
+      <div className="mx-auto space-y-16 max-w-7xl">
+        <ContentRail
+          title="Trending Series"
+          category="trending"
+          movies={trending}
+          periodFilter={false} // Clean single interval window fallback
+        />
+
+        <ContentRail
+          title="Airing Today"
+          category="now-playing"
+          movies={airingToday}
+        />
+
+        <ContentRail
+          title="Top Rated Masterpieces"
+          category="top-rated"
+          movies={topRated}
+        />
+
+        <ContentRail
+          title="On The Air (New Seasons)"
+          category="upcoming"
+          movies={upcomingDrops}
+        />
+      </div>
+    </main>
   );
 }
 </file>
@@ -2050,6 +2311,49 @@ export default function ContentCard({ movie }: { movie: ContentItem & { media_ty
         </p>
       </div>
     </Link>
+  );
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "FilmShift",
+  description: "Discover and discuss your favorite cinema.",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+        <ThemeProvider attribute="data-theme" defaultTheme="dark">
+          <Navbar />
+          {children}
+          <Footer />
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
 </file>
@@ -2207,8 +2511,9 @@ export default function ContentRail({
                 key={pageIndex}
                 className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
               >
-                {moviePage.map((movie) => (
-                  <ContentCard key={movie.id} movie={movie} />
+                {moviePage.map((movie, index) => (
+                  /* 🚀 COMBINE ID AND INDEX: This forces perfect key uniqueness even if title 118 shows up twice! */
+                  <ContentCard key={`${movie.id}-rail-${pageIndex}-${index}`} movie={movie} />
                 ))}
               </div>
             ))}
@@ -2323,44 +2628,843 @@ import ContentRail from "@/components/ContentRail";
 import {
   getMoviesByCategory,
   getTopRatedMoviesByPeriod,
-  getTrendingMoviesByPeriod,
+  getTopRatedTv,
+  getUnifiedTrendingByPeriod,
+  getTvOnTheAir,
 } from "@/utils/movieService";
 
 const sections = [
-  { title: "Trending", category: "trending" as const },
-  { title: "Now Playing", category: "now-playing" as const },
-  { title: "Top Rated", category: "top-rated" as const },
-  { title: "Upcoming", category: "upcoming" as const },
+  { title: "Trending", category: "trending" as const, periodFilter: true, periodCategory: "trending" as const },
+  { title: "Now Playing in Theaters", category: "now-playing" as const, periodFilter: false, periodCategory: "trending" as const },
+  { title: "Top Rated Masterpieces", category: "top-rated" as const, periodFilter: false, periodCategory: "top-rated" as const },
+  { title: "Upcoming TV Seasons", category: "upcoming" as const, periodFilter: false, periodCategory: "trending" as const },
 ];
 
 export default async function HomePage() {
-  /* 🚀 Re-aligned the Promise array fetching sequence to match our new layout order! */
-  const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
-    getTrendingMoviesByPeriod("year"),
+  // 🚀 Concurrently fetch mixed entertainment arrays
+  const [trendingMixed, nowPlayingMovies, topRatedMovies, topRatedTv, upcomingTv] = await Promise.all([
+    getUnifiedTrendingByPeriod("year"),
     getMoviesByCategory("now-playing"),
-    getTopRatedMoviesByPeriod("all-time"), // Fetches top-rated 3rd now
-    getMoviesByCategory("upcoming"),  // Fetches upcoming 4th now
+    getTopRatedMoviesByPeriod("all-time"),
+    getTopRatedTv(),
+    getTvOnTheAir(),
   ]);
-  const moviesByCategory = [trending, nowPlaying, topRated, upcoming];
+
+  // 🚀 Combine Top Rated Movies and TV shows into an interleaved masterpiece row
+  const topRatedMixed = [];
+  const maxCuratedLength = Math.max(topRatedMovies.length, topRatedTv.length);
+  for (let i = 0; i < maxCuratedLength; i++) {
+    if (topRatedMovies[i]) topRatedMixed.push({ ...topRatedMovies[i], media_type: "movie" });
+    if (topRatedTv[i]) topRatedMixed.push({ ...topRatedTv[i], media_type: "tv" });
+  }
+
+  const moviesByCategory = [
+    trendingMixed,
+    nowPlayingMovies.map(m => ({ ...m, media_type: "movie" })),
+    topRatedMixed,
+    upcomingTv.map(t => ({ ...t, media_type: "tv" }))
+  ];
 
   return (
     <main className="min-h-screen bg-background px-4 pb-4 text-foreground sm:px-8 sm:pb-8">
-      <HomeHero movies={trending} />
+      {/* Hero background cycles dynamically through the combined trending items! */}
+      <HomeHero movies={trendingMixed} />
 
       <div className="mx-auto mt-16 max-w-7xl space-y-16">
         {sections.map((section, index) => (
           <ContentRail
-            key={section.category}
+            key={section.title}
             title={section.title}
             category={section.category}
             movies={moviesByCategory[index]}
-            periodFilter={section.category === "trending" || section.category === "top-rated"}
-            periodCategory={section.category === "top-rated" ? "top-rated" : "trending"}
+            periodFilter={section.periodFilter}
+            periodCategory={section.periodCategory}
           />
         ))}
       </div>
     </main>
   );
+}
+</file>
+
+<file path="src/components/HomeHero.tsx">
+"use client";
+
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import type { ContentItem, SearchSuggestion } from "@/utils/movieService";
+import SearchSuggestions from "./SearchSuggestions";
+
+const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const SEARCH_PLACEHOLDERS = [
+  "Your next obsession is hiding in here somewhere.",
+  "Search now, or we auto-play Dragon Ball Evolution.",
+  "Name a movie. We can take it from here.",
+  "Feed the algorithm. It is hungry.",
+  "Search now, or enjoy a four-hour history of grass.",
+  "Tell us what you want, or your parents pick the movie.",
+  "Find something better than scrolling forever.",
+  "Give us a title. We won't judge your comfort watch.",
+  "One search stands between you and a great movie night.",
+  "Your watchlist called. It wants attention.",
+  "Find a movie before the group chat starts arguing.",
+  "For when 'anything' somehow means nothing.",
+  "Search by title, actor, mood, or questionable impulse.",
+  "There is a perfect movie. It is probably not Morbius.",
+  "Let us find tonight's main character energy.",
+  "Give the search a try. Netflix can't love you like we can.",
+  "We know you will rewatch The Office again. But try us anyway.",
+];
+
+export default function HomeHero({ movies }: { movies: ContentItem[] }) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [activePoster, setActivePoster] = useState(0);
+  const [activePlaceholder, setActivePlaceholder] = useState(0);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const posters = movies.filter((movie) => movie.poster_path);
+  const currentMovie = posters[activePoster % posters.length];
+
+  useEffect(() => {
+    if (posters.length < 2) {
+      return;
+    }
+
+    setActivePoster(Math.floor(Math.random() * posters.length));
+
+    const interval = window.setInterval(() => {
+      setActivePoster((currentIndex) => {
+        let nextIndex = currentIndex;
+
+        while (nextIndex === currentIndex) {
+          nextIndex = Math.floor(Math.random() * posters.length);
+        }
+
+        return nextIndex;
+      });
+    }, 8000);
+
+    return () => window.clearInterval(interval);
+  }, [posters.length]);
+
+  useEffect(() => {
+    setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
+
+    const interval = window.setInterval(() => {
+      setActivePlaceholder((currentIndex) => {
+        let nextIndex = currentIndex;
+
+        while (nextIndex === currentIndex) {
+          nextIndex = Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length);
+        }
+
+        return nextIndex;
+      });
+    }, 8000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const searchTerm = query.trim();
+
+    if (searchTerm.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      setIsSuggesting(true);
+      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
+        .then((response) => response.json())
+        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setSuggestions([]);
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsSuggesting(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchTerm = query.trim();
+
+    if (searchTerm) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  }
+
+  return (
+    <section className="relative isolate overflow-hidden rounded-[2rem] border border-text-muted/15 bg-surface shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
+      <Link
+        href={currentMovie ? `/movie/${currentMovie.id}` : "#"}
+        aria-label={currentMovie ? `View ${currentMovie.title}` : "Featured movie"}
+        className="absolute inset-0 -z-20 bg-cover bg-[center_top] transition-[background-image] duration-1000"
+        style={{
+          backgroundImage: currentMovie?.poster_path
+            ? `url(${TMDB_IMAGE_BASE_URL}${currentMovie.poster_path})`
+            : undefined,
+        }}
+      />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,10,18,0.94)_0%,rgba(5,10,18,0.78)_45%,rgba(5,10,18,0.45)_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(5,10,18,0.85)_0%,transparent_55%,rgba(5,10,18,0.35)_100%)]" />
+
+{/* 🚀 Bulletproof for all devices: Compact on mobile, perfectly scaled on your laptop, and locked on massive monitors! */}
+        <div className="mx-auto flex min-h-[32rem] h-[80vh] max-w-7xl flex-col items-center justify-center px-6 py-12 text-center sm:px-12 sm:h-[85vh] lg:px-20 lg:min-h-[38rem]">
+        <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
+          Your cinema, curated
+        </p>
+        <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl">
+          Welcome
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg text-white/80 sm:text-xl">
+          Discover millions of movies, TV shows, and people. Start exploring now!
+        </p>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-10 flex w-full max-w-3xl flex-col gap-3 sm:flex-row"
+          role="search"
+        >
+          <label className="sr-only" htmlFor="hero-search">
+            Search for a movie or TV show
+          </label>
+          <div className="relative flex min-h-14 flex-1 items-center rounded-full border border-white/20 bg-white px-5 shadow-2xl shadow-black/20">
+            <Search className="mr-3 h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />
+            {!query && (
+              <span
+                key={activePlaceholder}
+                className="pointer-events-none absolute inset-y-0 left-14 right-5 flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-base text-slate-400 animate-search-placeholder"
+                aria-hidden="true"
+              >
+                {SEARCH_PLACEHOLDERS[activePlaceholder]}
+              </span>
+            )}
+            <input
+              id="hero-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder=""
+              className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
+            />
+<SearchSuggestions
+  suggestions={suggestions}
+  isLoading={isSuggesting}
+  onSelect={(suggestion) => {
+    setSuggestions([]);
+    setQuery("");
+
+    // 🚀 Use the absolute truth field here too!
+    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+    router.push(`/${routeType}/${suggestion.id}`);
+  }}
+/>
+          </div>
+          <button
+            type="submit"
+            className="min-h-14 rounded-full bg-accent px-8 font-bold text-slate-950 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
+          >
+            Search
+          </button>
+        </form>
+
+        {currentMovie && (
+          <p className="mt-6 text-sm text-white/60">
+            Now featuring{" "}
+            <Link
+              href={`/movie/${currentMovie.id}`}
+              className="font-semibold text-white/85 underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+            >
+              {currentMovie.title}
+            </Link>
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+</file>
+
+<file path="src/app/movie/[id]/page.tsx">
+// "use client";
+
+// import React, { useState } from "react";
+// import { getMovieDetails, type MovieDetails } from "@/utils/movieService";
+// import ContentCarousel from "@/components/ContentCarousel";
+// import RatingRing from "@/components/RatingRing";
+// import { Play, X } from "lucide-react";
+
+// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+// function formatRuntime(runtime: number | null) {
+//   if (!runtime) return "Runtime unavailable";
+//   const hours = Math.floor(runtime / 60);
+//   const minutes = runtime % 60;
+//   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+// }
+
+// function formatScore(score: number | null) {
+//   return score === null ? "N/A" : score.toFixed(1);
+// }
+
+// function googleSearchUrl(name: string, movieTitle: string) {
+//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
+
+// }
+
+
+// // 🚀 Core Page Server Component logic wrapped cleanly
+// export default function MovieDetailsPageWrapper({
+//   params,
+// }: {
+//   params: React.ComponentProps<any>["params"];
+// }) {
+//   const resolvedParams = React.use(params as any) as { id: string };
+//   const [movie, setMovie] = useState<MovieDetails | null>(null);
+//   const [error, setError] = useState(false);
+
+// React.useEffect(() => {
+//   getMovieDetails(resolvedParams.id)
+//     .then((data) => {
+//       if (data) {
+//         setMovie(data);
+//         // 🚀 Snap the browser back to the top of the screen when a new title loads!
+//         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+//       }
+//       else setError(true);
+//     })
+//     .catch(() => setError(true));
+// }, [resolvedParams.id]);
+
+//   if (error) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+//         <p className="text-xl font-semibold">Movie not found</p>
+//       </main>
+//     );
+//   }
+
+//   if (!movie) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
+//         <p className="text-xl font-semibold text-text-muted">Loading movie details...</p>
+//       </main>
+//     );
+//   }
+
+//   const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
+//   const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
+
+//   return (
+//     <main className="min-h-screen bg-background text-foreground">
+//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+//         {backdropUrl && (
+//           <div
+//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+//             style={{ backgroundImage: `url(${backdropUrl})` }}
+//             aria-hidden="true"
+//           />
+//         )}
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+//             {posterUrl ? (
+//               <img
+//                 src={posterUrl}
+//                 alt={`${movie.title} poster`}
+//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+//               />
+//             ) : (
+//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+//                 Poster unavailable
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="min-w-0 flex-1">
+//             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+//               FilmShift movie guide
+//             </p>
+//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+//               {movie.title}
+//             </h1>
+//             {movie.tagline && (
+//               <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
+//             )}
+//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+//               <span>{movie.status || "Status unavailable"}</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{movie.release_date || "Release date unavailable"}</span>
+//               <span aria-hidden="true" className="text-text-muted/60">·</span>
+//               <span>{formatRuntime(movie.runtime)}</span>
+//             </div>
+
+//             <div className="mt-5 flex flex-wrap gap-2">
+//               {movie.genres.map((genre) => (
+//                 <span
+//                   key={genre.id}
+//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+//                 >
+//                   {genre.name}
+//                 </span>
+//               ))}
+//             </div>
+
+//           {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
+//             <div className="mt-8 flex flex-wrap items-center gap-4">
+//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+//                   <p className="text-xs text-white/60">Score Rating</p>
+//                 </div>
+//                 <RatingRing rating={movie.audienceRating} size="sm" />
+//               </div>
+              
+//                {/* The Smart Action Button Trigger */}
+//               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
+//             </div> 
+
+//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+//               {movie.overview || "No summary is available for this movie."}
+//             </p>
+
+//             <p className="mt-3 text-xs text-white/50">
+//               {movie.audienceVoteCount.toLocaleString()} audience votes
+//             </p>
+
+//             <section className="mt-10">
+//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">IMDb</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
+//                 </div>
+//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
+//                 </div>
+//               </div>
+//             </section>
+//           </div>
+//         </div>
+//       </section>
+
+//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+//         {(movie.directors.length > 0 || movie.writers.length > 0) && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+//               {movie.directors.length > 0 && (
+//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                   <span className="font-semibold text-text-muted">Director</span>{" "}
+//                   {movie.directors.map((director, index) => (
+//                     <span key={director}>
+//                       {index > 0 ? ", " : ""}
+//                       <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+//                         {director}
+//                       </a>
+//                     </span>
+//                   ))}
+//                 </p>
+//               )}
+//               {movie.writers.length > 0 && (
+//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                   <span className="font-semibold text-text-muted">Writer</span>{" "}
+//                   {movie.writers.map((writer, index) => (
+//                     <span key={writer}>
+//                       {index > 0 ? ", " : ""}
+//                       <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+//                         {writer}
+//                       </a>
+//                     </span>
+//                   ))}
+//                 </p>
+//               )}
+//             </div>
+//           </section>
+//         )}
+
+//         {movie.cast.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+//               {movie.cast.map((person) => (
+//                 <div key={person.id} className="min-w-0 text-center">
+//                   <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
+//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+//                                             {person.profilePath ? (
+//                         <img 
+//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
+//                           alt={person.name} 
+//                           className="h-full w-full object-cover" 
+//                         />
+//                       ) : (
+//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+//                       )}
+//                     </div>
+//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+//                   </a>
+//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
+//                 </div>
+//               ))}
+//             </div>
+//           </section>
+//         )}
+
+//         {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
+//         {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+//       </div>
+//     </main>
+//   );
+// }
+
+// // 🚀 THE TMDB-STYLE FLOATING MODAL (Overlays completely above the navbar!)
+// function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: string; movieTitle: string }) {
+//   const [isOpen, setIsOpen] = useState(false);
+
+//   return (
+//     <>
+//       <button
+//         type="button"
+//         onClick={() => setIsOpen(true)}
+//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+//       >
+//         <Play className="h-4 w-4 fill-current" />
+//         <span>Watch Trailer</span>
+//       </button>
+
+//       {/* The Cinematic Popout Backdrop Layer */}
+//       {isOpen && (
+//         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
+//           {/* Backdrop absolute close target area */}
+//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+//           {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
+//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            
+//             {/* Header controls layout block */}
+//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
+//                 {movieTitle} — Trailer
+//               </h3>
+//               <button
+//                 type="button"
+//                 onClick={() => setIsOpen(false)}
+//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+//                 aria-label="Close trailer"
+//               >
+//                 <X className="h-5 w-5" />
+//               </button>
+//             </div>
+
+//             {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
+//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+//               <iframe
+//                 src={`https://youtube.com/embed/${trailerKey}`}
+//                 title={`${movieTitle} Official Trailer`}
+//                 className="absolute inset-0 h-full w-full border-0"
+//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//                 allowFullScreen
+//               />
+//             </div>
+
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+import React from "react";
+import { getMovieDetails } from "@/utils/movieService";
+import ContentCarousel from "@/components/ContentCarousel";
+import RatingRing from "@/components/RatingRing";
+import Link from "next/link";
+import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
+
+
+    const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+    const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+    const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+    
+function formatRuntime(runtime: number | null) {
+  if (!runtime) return "Runtime unavailable";
+  const hours = Math.floor(runtime / 60);
+  const minutes = runtime % 60;
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
+function formatScore(score: number | null) {
+  return score === null ? "N/A" : score.toFixed(1);
+}
+
+function googleSearchUrl(name: string, movieTitle: string) {
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function MovieDetailsPage({ params }: PageProps) {
+  const { id } = await params;
+  const movie = await getMovieDetails(id);
+
+  if (!movie) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+        <p className="text-xl font-semibold">Movie not found</p>
+      </main>
+    );
+  }
+
+  const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
+  const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
+
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+        {backdropUrl && (
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: `url(${backdropUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${movie.title} poster`}
+                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+              />
+            ) : (
+              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+                Poster unavailable
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+              FilmShift movie guide
+            </p>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+              {movie.title}
+            </h1>
+            {movie.tagline && (
+              <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
+            )}
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span>{movie.status || "Status unavailable"}</span>
+              <span aria-hidden="true">·</span>
+              <span>{movie.release_date || "Release date unavailable"}</span>
+              <span aria-hidden="true" className="text-text-muted/60">·</span>
+              <span>{formatRuntime(movie.runtime)}</span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {movie.genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+                  <p className="text-xs text-white/60">Score Rating</p>
+                </div>
+                <RatingRing rating={movie.audienceRating} size="sm" />
+              </div>
+              
+              {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
+            </div> 
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+              {movie.overview || "No summary is available for this movie."}
+            </p>
+
+            <p className="mt-3 text-xs text-white/50">
+              {movie.audienceVoteCount.toLocaleString()} audience votes
+            </p>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">IMDb</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
+                </div>
+                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        {(movie.directors.length > 0 || movie.writers.length > 0) && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              {movie.directors.length > 0 && (
+                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">Director</span>{" "}
+                  {movie.directors.map((director, index) => (
+                    <span key={director}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {director}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
+              {movie.writers.length > 0 && (
+                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">Writer</span>{" "}
+                  {movie.writers.map((writer, index) => (
+                    <span key={writer}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {writer}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {movie.cast.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+              {movie.cast.map((person) => (
+                <div key={person.id} className="min-w-0 text-center">
+                  <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+                      {person.profilePath ? (
+                        <img 
+                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
+                          alt={person.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+                      )}
+                    </div>
+                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                  </a>
+                  <p className="truncate text-sm text-text-muted">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+{movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
+{movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "filmshift",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "@tiptap/extension-drag-handle-react": "^3.31.3",
+    "@tiptap/extension-dropcursor": "^3.31.3",
+    "@tiptap/extension-image": "^3.31.3",
+    "@tiptap/extension-placeholder": "^3.31.3",
+    "@tiptap/extension-text-align": "^3.31.3",
+    "@tiptap/extension-underline": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/react": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
+    "axios": "^1.20.0",
+    "lucide-react": "^1.46.0",
+    "next": "16.3.4",
+    "next-themes": "^0.4.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }
 </file>
 
@@ -2430,31 +3534,33 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
   // 🎯 Upgraded Editor Lifecycle—FIXED levels syntax, removed cropping dependencies entirely
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-          HTMLAttributes: { class: "font-black tracking-tight text-white heading-node" }
-        },
-        bulletList: { HTMLAttributes: { class: "list-disc pl-6 space-y-1 my-4 block text-foreground/90" } },
-        orderedList: { HTMLAttributes: { class: "list-decimal pl-6 space-y-1 my-4 block text-foreground/90" } },
-        blockquote: { HTMLAttributes: { class: "border-l-4 border-accent bg-surface/30 px-4 py-2 italic text-text-muted my-4 block rounded-r-lg" } },
-        undoRedo: { depth: 50, newGroupDelay: 500 }
-      }),
-      Underline.configure({}),
-      Dropcursor.configure({ color: "#FFC107", width: 3 }), 
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-
-      Image.configure({
-        HTMLAttributes: {
-          // 🚀 FIXED: Added max-h-[400px] and object-contain to frame vertical images beautifully
-          class: "rounded-xl border border-text-muted/15 my-6 max-w-full max-h-[500px] object-contain mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
-        },
-      }),
-      Placeholder.configure({ placeholder: "Share your cinematic thoughts..." }),
-    ],
+// 🚀 Clean configuration array inside src/components/WritePostForm.tsx
+// 🚀 Clean, warning-free extensions configuration in src/components/WritePostForm.tsx
+  extensions: [
+    StarterKit.configure({
+      heading: {
+        levels: [1,2,3],
+        HTMLAttributes: { class: "font-black tracking-tight text-white heading-node" }
+      },
+      bulletList: { HTMLAttributes: { class: "list-disc pl-6 space-y-1 my-4 block text-foreground/90" } },
+      orderedList: { HTMLAttributes: { class: "list-decimal pl-6 space-y-1 my-4 block text-foreground/90" } },
+      blockquote: { HTMLAttributes: { class: "border-l-4 border-accent bg-surface/30 px-4 py-2 italic text-text-muted my-4 block rounded-r-lg" } },
+      dropcursor: { color: "#FFC107", width: 3 },
+      undoRedo: { depth: 50, newGroupDelay: 500 }
+    }),
+    
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
+    
+    Image.configure({
+      HTMLAttributes: {
+        class: "rounded-xl border border-text-muted/15 my-6 max-w-full max-h-[500px] object-contain mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
+      },
+    }),
+    
+    Placeholder.configure({ placeholder: "Share your cinematic thoughts..." }),
+  ],
     content: initialPost?.body || "",
     immediatelyRender: false,
     editorProps: {
@@ -2519,18 +3625,17 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="content-type" className="text-sm font-semibold">Post type</label>
-          <select id="content-type" value={contentType} onChange={(event) => setContentType(event.target.value as "review" | "article")} className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30">
-            <option value="review">Review</option>
-            <option value="article">Article</option>
-          </select>
-        </div>
+        {/* 🚀 Updated Select values to output "tv" for series, ensuring alignment with dynamic routes */}
         <div>
           <label htmlFor="media-type" className="text-sm font-semibold">Media type</label>
-          <select id="media-type" value={mediaType} onChange={(event) => setMediaType(event.target.value)} className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30">
+          <select 
+            id="media-type" 
+            value={mediaType} 
+            onChange={(event) => setMediaType(event.target.value)} 
+            className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+          >
             <option value="movie">Movie</option>
-            <option value="series">Series</option>
+            <option value="tv">Series (TV)</option>
             <option value="anime">Anime</option>
             <option value="animation">Animation</option>
             <option value="documentary">Documentary</option>
@@ -2773,1177 +3878,224 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
     </form> 
   );
 }
-</file>
 
-<file path="src/components/HomeHero.tsx">
-"use client";
 
-import { Search } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import type { ContentItem, SearchSuggestion } from "@/utils/movieService";
-import SearchSuggestions from "./SearchSuggestions";
 
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-const SEARCH_PLACEHOLDERS = [
-  "Your next obsession is hiding in here somewhere.",
-  "Search now, or we auto-play Dragon Ball Evolution.",
-  "Name a movie. We can take it from here.",
-  "Feed the algorithm. It is hungry.",
-  "Search now, or enjoy a four-hour history of grass.",
-  "Tell us what you want, or your parents pick the movie.",
-  "Find something better than scrolling forever.",
-  "Give us a title. We won't judge your comfort watch.",
-  "One search stands between you and a great movie night.",
-  "Your watchlist called. It wants attention.",
-  "Find a movie before the group chat starts arguing.",
-  "For when 'anything' somehow means nothing.",
-  "Search by title, actor, mood, or questionable impulse.",
-  "There is a perfect movie. It is probably not Morbius.",
-  "Let us find tonight's main character energy.",
-  "Give the search a try. Netflix can't love you like we can.",
-  "We know you will rewatch The Office again. But try us anyway.",
-];
 
-export default function HomeHero({ movies }: { movies: ContentItem[] }) {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [activePoster, setActivePoster] = useState(0);
-  const [activePlaceholder, setActivePlaceholder] = useState(0);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
-  const posters = movies.filter((movie) => movie.poster_path);
-  const currentMovie = posters[activePoster % posters.length];
 
-  useEffect(() => {
-    if (posters.length < 2) {
-      return;
-    }
 
-    setActivePoster(Math.floor(Math.random() * posters.length));
-
-    const interval = window.setInterval(() => {
-      setActivePoster((currentIndex) => {
-        let nextIndex = currentIndex;
-
-        while (nextIndex === currentIndex) {
-          nextIndex = Math.floor(Math.random() * posters.length);
-        }
-
-        return nextIndex;
-      });
-    }, 8000);
-
-    return () => window.clearInterval(interval);
-  }, [posters.length]);
-
-  useEffect(() => {
-    setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
-
-    const interval = window.setInterval(() => {
-      setActivePlaceholder((currentIndex) => {
-        let nextIndex = currentIndex;
-
-        while (nextIndex === currentIndex) {
-          nextIndex = Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length);
-        }
-
-        return nextIndex;
-      });
-    }, 8000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const searchTerm = query.trim();
-
-    if (searchTerm.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      setIsSuggesting(true);
-      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
-        .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setSuggestions([]);
-          }
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setIsSuggesting(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query]);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const searchTerm = query.trim();
-
-    if (searchTerm) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    }
-  }
-
-  return (
-    <section className="relative isolate overflow-hidden rounded-[2rem] border border-text-muted/15 bg-surface shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
-      <Link
-        href={currentMovie ? `/movie/${currentMovie.id}` : "#"}
-        aria-label={currentMovie ? `View ${currentMovie.title}` : "Featured movie"}
-        className="absolute inset-0 -z-20 bg-cover bg-[center_top] transition-[background-image] duration-1000"
-        style={{
-          backgroundImage: currentMovie?.poster_path
-            ? `url(${TMDB_IMAGE_BASE_URL}${currentMovie.poster_path})`
-            : undefined,
-        }}
-      />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,10,18,0.94)_0%,rgba(5,10,18,0.78)_45%,rgba(5,10,18,0.45)_100%)]" />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(5,10,18,0.85)_0%,transparent_55%,rgba(5,10,18,0.35)_100%)]" />
-
-{/* 🚀 Bulletproof for all devices: Compact on mobile, perfectly scaled on your laptop, and locked on massive monitors! */}
-        <div className="mx-auto flex min-h-[32rem] h-[80vh] max-w-7xl flex-col items-center justify-center px-6 py-12 text-center sm:px-12 sm:h-[85vh] lg:px-20 lg:min-h-[38rem]">
-        <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
-          Your cinema, curated
-        </p>
-        <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl">
-          Welcome
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg text-white/80 sm:text-xl">
-          Discover millions of movies, TV shows, and people. Start exploring now!
-        </p>
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-10 flex w-full max-w-3xl flex-col gap-3 sm:flex-row"
-          role="search"
-        >
-          <label className="sr-only" htmlFor="hero-search">
-            Search for a movie or TV show
-          </label>
-          <div className="relative flex min-h-14 flex-1 items-center rounded-full border border-white/20 bg-white px-5 shadow-2xl shadow-black/20">
-            <Search className="mr-3 h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />
-            {!query && (
-              <span
-                key={activePlaceholder}
-                className="pointer-events-none absolute inset-y-0 left-14 right-5 flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-base text-slate-400 animate-search-placeholder"
-                aria-hidden="true"
-              >
-                {SEARCH_PLACEHOLDERS[activePlaceholder]}
-              </span>
-            )}
-            <input
-              id="hero-search"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder=""
-              className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
-            />
-<SearchSuggestions
-  suggestions={suggestions}
-  isLoading={isSuggesting}
-  onSelect={(suggestion) => {
-    setSuggestions([]);
-    setQuery("");
-
-    // 🚀 Use the absolute truth field here too!
-    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
-    router.push(`/${routeType}/${suggestion.id}`);
-  }}
-/>
-          </div>
-          <button
-            type="submit"
-            className="min-h-14 rounded-full bg-accent px-8 font-bold text-slate-950 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-950"
-          >
-            Search
-          </button>
-        </form>
-
-        {currentMovie && (
-          <p className="mt-6 text-sm text-white/60">
-            Now featuring{" "}
-            <Link
-              href={`/movie/${currentMovie.id}`}
-              className="font-semibold text-white/85 underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
-            >
-              {currentMovie.title}
-            </Link>
-          </p>
-        )}
-      </div>
-    </section>
-  );
-}
-</file>
-
-<file path="src/app/movie/[id]/page.tsx">
-"use client";
-
-import React, { useState } from "react";
-import { getMovieDetails, type MovieDetails } from "@/utils/movieService";
-import ContentCarousel from "@/components/ContentCarousel";
-import RatingRing from "@/components/RatingRing";
-import { Play, X } from "lucide-react";
-
-const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-function formatRuntime(runtime: number | null) {
-  if (!runtime) return "Runtime unavailable";
-  const hours = Math.floor(runtime / 60);
-  const minutes = runtime % 60;
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-}
-
-function formatScore(score: number | null) {
-  return score === null ? "N/A" : score.toFixed(1);
-}
-
-function googleSearchUrl(name: string, movieTitle: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
-
-}
-
-
-// 🚀 Core Page Server Component logic wrapped cleanly
-export default function MovieDetailsPageWrapper({
-  params,
-}: {
-  params: React.ComponentProps<any>["params"];
-}) {
-  const resolvedParams = React.use(params as any) as { id: string };
-  const [movie, setMovie] = useState<MovieDetails | null>(null);
-  const [error, setError] = useState(false);
-
-React.useEffect(() => {
-  getMovieDetails(resolvedParams.id)
-    .then((data) => {
-      if (data) {
-        setMovie(data);
-        // 🚀 Snap the browser back to the top of the screen when a new title loads!
-        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-      }
-      else setError(true);
-    })
-    .catch(() => setError(true));
-}, [resolvedParams.id]);
-
-  if (error) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-        <p className="text-xl font-semibold">Movie not found</p>
-      </main>
-    );
-  }
-
-  if (!movie) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-        <p className="text-xl font-semibold text-text-muted">Loading movie details...</p>
-      </main>
-    );
-  }
-
-  const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
-  const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
-
-  return (
-    <main className="min-h-screen bg-background text-foreground">
-      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-        {backdropUrl && (
-          <div
-            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: `url(${backdropUrl})` }}
-            aria-hidden="true"
-          />
-        )}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-            {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={`${movie.title} poster`}
-                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-                Poster unavailable
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-              FilmShift movie guide
-            </p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-              {movie.title}
-            </h1>
-            {movie.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
-            )}
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span>{movie.status || "Status unavailable"}</span>
-              <span aria-hidden="true">·</span>
-              <span>{movie.release_date || "Release date unavailable"}</span>
-              <span aria-hidden="true" className="text-text-muted/60">·</span>
-              <span>{formatRuntime(movie.runtime)}</span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {movie.genres.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-                >
-                  {genre.name}
-                </span>
-              ))}
-            </div>
-
-          {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-                  <p className="text-xs text-white/60">Score Rating</p>
-                </div>
-                <RatingRing rating={movie.audienceRating} size="sm" />
-              </div>
-              
-               {/* The Smart Action Button Trigger */}
-              {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
-            </div> 
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-              {movie.overview || "No summary is available for this movie."}
-            </p>
-
-            <p className="mt-3 text-xs text-white/50">
-              {movie.audienceVoteCount.toLocaleString()} audience votes
-            </p>
-
-            <section className="mt-10">
-              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">IMDb</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
-                </div>
-                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {(movie.directors.length > 0 || movie.writers.length > 0) && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              {movie.directors.length > 0 && (
-                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                  <span className="font-semibold text-text-muted">Director</span>{" "}
-                  {movie.directors.map((director, index) => (
-                    <span key={director}>
-                      {index > 0 ? ", " : ""}
-                      <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                        {director}
-                      </a>
-                    </span>
-                  ))}
-                </p>
-              )}
-              {movie.writers.length > 0 && (
-                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                  <span className="font-semibold text-text-muted">Writer</span>{" "}
-                  {movie.writers.map((writer, index) => (
-                    <span key={writer}>
-                      {index > 0 ? ", " : ""}
-                      <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                        {writer}
-                      </a>
-                    </span>
-                  ))}
-                </p>
-              )}
-            </div>
-          </section>
-        )}
-
-        {movie.cast.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-              {movie.cast.map((person) => (
-                <div key={person.id} className="min-w-0 text-center">
-                  <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                                            {person.profilePath ? (
-                        <img 
-                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
-                          alt={person.name} 
-                          className="h-full w-full object-cover" 
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-                      )}
-                    </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-                  </a>
-                  <p className="truncate text-sm text-text-muted">{person.character}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
-        {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
-      </div>
-    </main>
-  );
-}
-
-// 🚀 THE TMDB-STYLE FLOATING MODAL (Overlays completely above the navbar!)
-function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: string; movieTitle: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-      >
-        <Play className="h-4 w-4 fill-current" />
-        <span>Watch Trailer</span>
-      </button>
-
-      {/* The Cinematic Popout Backdrop Layer */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
-          {/* Backdrop absolute close target area */}
-          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-          {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
-          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            
-            {/* Header controls layout block */}
-            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-              <h3 className="font-bold text-foreground text-sm truncate pr-4">
-                {movieTitle} — Trailer
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                aria-label="Close trailer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-              <iframe
-                src={`https://youtube.com/embed/${trailerKey}`}
-                title={`${movieTitle} Official Trailer`}
-                className="absolute inset-0 h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-</file>
-
-<file path="package.json">
-{
-  "name": "filmshift",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.116.0",
-    "@tiptap/extension-drag-handle-react": "^3.31.3",
-    "@tiptap/extension-dropcursor": "^3.31.3",
-    "@tiptap/extension-image": "^3.31.3",
-    "@tiptap/extension-placeholder": "^3.31.3",
-    "@tiptap/extension-text-align": "^3.31.3",
-    "@tiptap/extension-underline": "^3.31.3",
-    "@tiptap/pm": "^3.31.3",
-    "@tiptap/react": "^3.31.3",
-    "@tiptap/starter-kit": "^3.31.3",
-    "axios": "^1.20.0",
-    "lucide-react": "^1.46.0",
-    "next": "16.3.4",
-    "next-themes": "^0.4.6",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.4",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-</file>
-
-<file path="src/app/tv/[id]/page.tsx">
-// "use client";
-
-// import React, { useState } from "react";
-// import { getTvShowDetails, type TvShowDetails } from "@/utils/movieService";
-// import ContentCarousel from "@/components/ContentCarousel";
-// import RatingRing from "@/components/RatingRing";
-// import { Play, X } from "lucide-react";
-// import Link from "next/link";
-
-// const TMDB_POSTER_BASE_URL = "https://tmdb.org/t/p/w500";
-// const TMDB_BACKDROP_BASE_URL = "https://tmdb.org/t/p/w1280";
-// const TMDB_PROFILE_BASE_URL = "https://tmdb.org/t/p/w185";
-
-// function formatScore(score: number | null) {
-//   return score === null ? "N/A" : score.toFixed(1);
-// }
-
-// function googleSearchUrl(name: string, showName: string) {
-//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
-// }
-
-// export default function TvShowDetailPage({
-//   params,
-// }: {
-//   params: React.ComponentProps<any>["params"];
-// }) {
-//   const resolvedParams = React.use(params as any) as { id: string };
-//   const [show, setShow] = useState<TvShowDetails | null>(null);
-//   const [error, setError] = useState(false);
-
-//   React.useEffect(() => {
-//     getTvShowDetails(resolvedParams.id)
-//       .then((data) => {
-//         if (data) {
-//           setShow(data);
-//           window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-//         } else {
-//           setError(true);
-//         }
-//       })
-//       .catch(() => setError(true));
-//   }, [resolvedParams.id]);
-
-//   if (error) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-//         <p className="text-xl font-semibold">TV Series not found</p>
-//       </main>
-//     );
-//   }
-
-//   if (!show) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-//         <p className="text-xl font-semibold text-text-muted">Loading series details...</p>
-//       </main>
-//     );
-//   }
-
-//   const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
-//   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
-
+//   // ==========================================================================
+//   // 🚀 PHASE 3 - PART A: RENDERING FORM SETTINGS & METADATA CONTROLS
+//   // ==========================================================================
 //   return (
-//     <main className="min-h-screen bg-background text-foreground pb-12">
-//       {/* 1. Immersive Hero Backdrop Header */}
-//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-//         {backdropUrl && (
-//           <div
-//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-//             style={{ backgroundImage: `url(${backdropUrl})` }}
-//             aria-hidden="true"
-//           />
-//         )}
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          
-//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-//             {posterUrl ? (
-//               <img
-//                 src={posterUrl}
-//                 alt={`${show.name} poster`}
-//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-//               />
-//             ) : (
-//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-//                 Poster unavailable
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="min-w-0 flex-1">
-//             <Link href="/" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-//               ← Back to Journal Dashboard
-//             </Link>
-            
-//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-//               {show.name}
-//             </h1>
-            
-//             {show.tagline && (
-//               <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
-//             )}
-
-//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-//               <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
-//               <span aria-hidden="true">·</span>
-//               <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
-//               <span aria-hidden="true">·</span>
-//               <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
-//             </div>
-
-//             <div className="mt-5 flex flex-wrap gap-2">
-//               {show.genres?.map((genre) => (
-//                 <span
-//                   key={genre.id}
-//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-//                 >
-//                   {genre.name}
-//                 </span>
-//               ))}
-//             </div>
-
-//             {/* Action Bar Block matching Movie configuration styling layout perfectly */}
-//             <div className="mt-8 flex flex-wrap items-center gap-4">
-//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-//                 <div>
-//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-//                   <p className="text-xs text-white/60">Score Rating</p>
-//                 </div>
-//                 <RatingRing rating={show.vote_average} size="sm" />
-//               </div>
-              
-//               {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
-//             </div>
-
-//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-//               {show.overview || "No summary is available for this series."}
-//             </p>
-
-//             <p className="mt-3 text-xs text-white/50 mb-10">
-//               {show.vote_count?.toLocaleString() || 0} audience votes
-//             </p>
-
-//             {/* Critic Scores Section: Reconfigured for Metacritic Parity Checkers */}
-//             <section className="mt-10">
-//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {formatScore(show.ratings.imdb)}
-//                   </p>
-//                 </div>
-//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">TMDB Average</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {show.vote_average ? `${(show.vote_average * 10).toFixed(0)}%` : "N/A"}
-//                   </p>
-//                 </div>
-//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {/* Fallback cleanly without affecting media that contains meta fields */}
-//                     {"metascore" in (show.ratings as any) && (show.ratings as any).metascore 
-//                       ? formatScore((show.ratings as any).metascore) 
-//                       : "--"}
-//                   </p>
-//                   <p className="text-[10px] font-medium text-text-muted mt-0.5">
-//                     {"metascore" in (show.ratings as any) && (show.ratings as any).metascore 
-//                       ? "Official Metascore" 
-//                       : "No Score Available"}
-//                   </p>
-//                 </div>
-//               </div>
-//             </section>
-//           </div>
-//         </div>
-//       </section>
-
-//       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
-//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        
-//         {/* ✅ FIXED CREDITS SECTION: Placed gracefully back into the layout stream */}
-//         {show.creators && show.creators.length > 0 && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                 <span className="font-semibold text-text-muted">Created By:</span>{" "}
-//                 {show.creators.map((creator: string, index: number) => (
-//                   <span key={creator}>
-//                     {index > 0 ? ", " : ""}
-//                     <a
-//                       href={googleSearchUrl(creator, show.name)}
-//                       target="_blank"
-//                       rel="noreferrer"
-//                       className="no-underline transition-colors hover:text-accent"
-//                     >
-//                       {creator}
-//                     </a>
-//                   </span>
-//                 ))}
-//               </p>
-              
-//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                 <span className="font-semibold text-text-muted">Production Status:</span>{" "}
-//                 <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
-//               </p>
-//             </div>
-//           </section>
-//         )}
-
-//         {show.cast && show.cast.length > 0 && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-//               {show.cast.map((person) => (
-//                 <div key={person.id} className="min-w-0 text-center">
-//                   <a
-//                     href={googleSearchUrl(person.name, show.name)}
-//                     target="_blank"
-//                     rel="noreferrer"
-//                     className="block no-underline"
-//                   >
-//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-//                       {person.profilePath ? (
-//                         <img
-//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
-//                           alt={person.name}
-//                           className="h-full w-full object-cover"
-//                         />
-//                       ) : (
-//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-//                       )}
-//                     </div>
-//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-//                   </a>
-//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
-//                 </div>
-//               ))}
-//             </div>
-//           </section>
-//         )}
-
-//         {show.similar && show.similar.length > 0 && (
-//           <ContentCarousel title="Similar TV Shows" movies={show.similar} />
-//         )}
-
-//         {show.recommendations && show.recommendations.length > 0 && (
-//           <ContentCarousel title="Recommendations" movies={show.recommendations} />
-//         )}
+//     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+//       <div>
+//         <label htmlFor="post-title" className="text-sm font-semibold">Title</label>
+//         <input
+//           id="post-title"
+//           required
+//           value={title}
+//           onChange={(event) => setTitle(event.target.value)}
+//           placeholder="Your headline"
+//           maxLength={140}
+//           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+//         />
 //       </div>
-//     </main>
-//   );
-// }
 
-// // ✅ FIXED THEATER MODAL COMPONENT: Restored matching explicit layout routing string laws
-// function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string; seriesTitle: string }) {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   return (
-//     <>
-//       <button
-//         type="button"
-//         onClick={() => setIsOpen(true)}
-//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-//       >
-//         <Play className="h-4 w-4 fill-current" />
-//         <span>Watch Trailer</span>
-//       </button>
-
-//       {isOpen && (
-//         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
-//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
-//                 {seriesTitle} — Trailer
-//               </h3>
-//               <button
-//                 type="button"
-//                 onClick={() => setIsOpen(false)}
-//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-//                 aria-label="Close trailer"
-//               >
-//                 <X className="h-5 w-5" />
-//               </button>
-//             </div>
-
-//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-//               <iframe
-//                 src={`https://youtube.com/embed/${trailerKey}`}
-//                 title={`${seriesTitle} Official Trailer`}
-//                 className="absolute inset-0 h-full w-full border-0"
-//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                 allowFullScreen
-//               />
-//             </div>
-//           </div>
+//       <div className="grid gap-5 sm:grid-cols-2">
+//         <div>
+//           <label htmlFor="content-type" className="text-sm font-semibold">Post type</label>
+//           <select 
+//             id="content-type" 
+//             value={contentType} 
+//             onChange={(event) => setContentType(event.target.value as "review" | "article")} 
+//             className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+//           >
+//             <option value="review">Review</option>
+//             <option value="article">Article</option>
+//           </select>
 //         </div>
-//       )}
-//     </>
+//         <div>
+//           <label htmlFor="media-type" className="text-sm font-semibold">Media type</label>
+//           <select 
+//             id="media-type" 
+//             value={mediaType} 
+//             onChange={(event) => setMediaType(event.target.value)} 
+//             className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+//           >
+//             <option value="movie">Movie</option>
+//             <option value="series">Series</option>
+//             <option value="anime">Anime</option>
+//             <option value="animation">Animation</option>
+//             <option value="documentary">Documentary</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       <div>
+//         <label htmlFor="tmdb-id" className="text-sm font-semibold">
+//           TMDB ID <span className="font-normal text-text-muted">(optional)</span>
+//         </label>
+//         <input 
+//           id="tmdb-id" 
+//           type="number" 
+//           min="1" 
+//           value={tmdbId} 
+//           onChange={(event) => setTmdbId(event.target.value)} 
+//           placeholder="Link this post to a title" 
+//           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" 
+//         />
+//       </div>
+
+//       <div>
+//         <label htmlFor="post-excerpt" className="text-sm font-semibold">
+//           Excerpt <span className="font-normal text-text-muted">(optional)</span>
+//         </label>
+//         <textarea 
+//           id="post-excerpt" 
+//           value={excerpt} 
+//           onChange={(event) => setExcerpt(event.target.value)} 
+//           placeholder="A short introduction" 
+//           maxLength={280} 
+//           rows={3} 
+//           className="mt-2 w-full resize-y rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" 
+//         />
+//       </div>
+
+
+//       {/* ==========================================================================
+//           🚀 PHASE 3 - PART B (SUB-PHASE 1): TOOLBAR SETUP & TEXT ACTIONS
+//           ========================================================================== */}
+//       <div>
+//         <label className="text-sm font-semibold">Body</label>
+//         {editor && (
+//           <div className="mt-2 flex flex-wrap gap-1 border border-b-0 border-text-muted/20 bg-surface/50 p-2 rounded-t-xl items-center relative z-30">
+//             <button type="button" title="Bold" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("bold") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <Bold className="h-4 w-4" />
+//             </button>
+//             <button type="button" title="Italic" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("italic") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <Italic className="h-4 w-4" />
+//             </button>
+//             <button type="button" title="Underline" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("underline") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <UnderlineIcon className="h-4 w-4" />
+//             </button>
+            
+//             <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
+//             <div className="relative">
+//               <button type="button" onClick={() => setHeadingDropdownOpen(!headingDropdownOpen)} className={`flex items-center gap-1 px-3 py-2 rounded text-xs font-bold transition-colors cursor-pointer border border-text-muted/10 bg-background text-foreground hover:border-accent/40 hover:text-accent ${editor.isActive("heading") ? "border-accent text-accent" : ""}`}>
+//                 <span>
+//                   {editor.isActive("heading", { level: 1 }) ? "Heading 1" :
+//                    editor.isActive("heading", { level: 2 }) ? "Heading 2" :
+//                    editor.isActive("heading", { level: 3 }) ? "Heading 3" : "Heading"}
+//                 </span>
+//                 <ChevronDown className="h-3 w-3" />
+//               </button>
+
+//               {headingDropdownOpen && (
+//                 <>
+//                   <div className="fixed inset-0 z-40" onClick={() => setHeadingDropdownOpen(false)} />
+//                   <div className="absolute left-0 mt-1 w-36 rounded-xl border border-text-muted/15 bg-surface p-1 shadow-xl z-50 flex flex-col gap-0.5">
+//                     {([1, 2, 3] as const).map((level) => (
+//                       <button key={level} type="button" onClick={() => { editor.chain().focus().toggleHeading({ level }).run(); setHeadingDropdownOpen(false); }} className={`w-full text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${editor.isActive("heading", { level }) ? "bg-accent text-slate-950" : "hover:bg-accent/10 text-foreground"}`}>
+//                         Heading {level}
+//                       </button>
+//                     ))}
+//                   </div>
+//                 </>
+//               )}
+//             </div>
+
+//             <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
+//             <button type="button" title="Align Left" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive({ textAlign: 'left' }) ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h16" /></svg>
+//             </button>
+//             <button type="button" title="Align Center" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive({ textAlign: 'center' }) ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10M6 18h12" /></svg>
+//             </button>
+//             <button type="button" title="Align Right" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive({ textAlign: 'right' }) ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M8 12h12M4 18h16" /></svg>
+//             </button>
+//           </div>
+//         )}
+
+
+//           {/* ==========================================================================
+//               🚀 PHASE 3 - PART B (SUB-PHASE 2): MEDIA UPLOADS, CANVAS & STATUS
+//               ========================================================================== */}
+//           <div className="mt-2 flex flex-wrap gap-1 border border-b-0 border-text-muted/20 bg-surface/50 p-2 items-center relative z-20">
+//             <button type="button" title="Bullet List" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("bulletList") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <List className="h-4 w-4" />
+//             </button>
+//             <button type="button" title="Numbered List" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("orderedList") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <ListOrdered className="h-4 w-4" />
+//             </button>
+
+//             <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
+//             <button type="button" title="Blockquote" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("blockquote") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <Quote className="h-4 w-4" />
+//             </button>
+//             <button type="button" title="Code Block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("codeBlock") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
+//               <Code className="h-4 w-4" />
+//             </button>
+
+//             <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
+//             <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={(e: ChangeEvent<HTMLInputElement>) => {
+//               const file = e.target.files?.[0]; if (!file) return;
+//               if (file.size > 5 * 1024 * 1024) { alert("❌ Upload blocked: Image file size exceeds the 5 MB platform limit."); return; }
+//               const reader = new FileReader(); reader.onload = () => { const imageSrc = reader.result as string; if (editor && imageSrc) { editor.chain().focus().setImage({ src: imageSrc }).run(); } }; reader.readAsDataURL(file);
+//             }} />
+
+//             <button type="button" title="Upload Image (Max 5MB)" onClick={() => fileInputRef.current?.click()} className="p-2 rounded text-sm bg-background border border-text-muted/10 hover:border-accent/40 text-emerald-400 transition-colors cursor-pointer">
+//               <ImageIcon className="h-4 w-4" />
+//             </button>
+
+//             <button type="button" title="Insert Image by URL" onClick={() => { const url = window.prompt("Enter external image URL:"); if (url && editor) { editor.chain().focus().setImage({ src: url }).run(); } }} className="p-2 rounded text-sm bg-background border border-text-muted/10 hover:border-accent/40 text-accent transition-colors cursor-pointer">
+//               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+//             </button>
+//           </div>
+//         )}
+
+//         <div className="relative w-full">
+//           {editor && (
+//             <DragHandle editor={editor} pluginKey="drag-handle-workspace-key" computePositionConfig={{ placement: "right-start", strategy: "absolute" }}>
+//               <div className="flex h-6 w-6 items-center justify-center rounded bg-accent text-slate-950 shadow-md cursor-grab active:cursor-grabbing hover:scale-105 transition-transform font-bold text-xs select-none">⋮⋮</div>
+//             </DragHandle>
+//           )}
+//           <EditorContent editor={editor} />
+//         </div>
+//       </div>
+
+//       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-text-muted/15 bg-background/50 p-4">
+//         <div className="flex items-center gap-3">
+//           <label htmlFor="post-status" className="text-sm font-semibold">Save as</label>
+//           <select id="post-status" value={status} onChange={(event) => setStatus(event.target.value as "draft" | "published")} className="rounded-lg border border-text-muted/20 bg-surface px-3 py-2 text-sm text-foreground">
+//             <option value="draft">Draft</option>
+//             <option value="published">Published</option>
+//           </select>
+//         </div>
+        
+//         <div className="text-xs font-mono text-text-muted transition-all">
+//           {isAutosaving ? (
+//             <span className="flex items-center gap-1.5 text-accent animate-pulse">✨ Background syncing...</span>
+//           ) : autosaveTime ? (
+//             <span>Saved automatically at {autosaveTime}</span>
+//           ) : (
+//             status === "draft" && <span>Ready for background save</span>
+//           )}
+//         </div>
+//       </div>
+
+//       {message && <p role="status" className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm">{message}</p>}
+//       <button type="submit" disabled={isSaving} className="rounded-xl bg-accent px-5 py-3 font-bold text-slate-950 transition-colors hover:bg-yellow-300 disabled:cursor-wait disabled:opacity-60 cursor-pointer">
+//         {isSaving ? "Saving..." : status === "published" ? "Publish post" : "Save draft"}
+//       </button>
+//     </form> 
 //   );
 // }
-
-
-
-
-
-"use client";
-
-import React, { useState } from "react";
-import { getTvShowDetails, type TvShowDetails } from "@/utils/movieService";
-import ContentCarousel from "@/components/ContentCarousel";
-import RatingRing from "@/components/RatingRing";
-import { Play, X } from "lucide-react";
-import Link from "next/link";
-
-const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-function formatScore(score: number | null) {
-  return score === null ? "N/A" : score.toFixed(1);
-}
-
-// 🚀 Fixed secure template match mapping law
-function googleSearchUrl(name: string, showName: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
-}
-
-export default function TvShowDetailPage({
-  params,
-}: {
-  params: React.ComponentProps<any>["params"];
-}) {
-  const resolvedParams = React.use(params as any) as { id: string };
-  const [show, setShow] = useState<TvShowDetails | null>(null);
-  const [error, setError] = useState(false);
-
-  React.useEffect(() => {
-    getTvShowDetails(resolvedParams.id)
-      .then((data) => {
-        if (data) {
-          setShow(data);
-          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-        } else {
-          setError(true);
-        }
-      })
-      .catch(() => setError(true));
-  }, [resolvedParams.id]);
-
-  if (error) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-        <p className="text-xl font-semibold">TV Series not found</p>
-      </main>
-    );
-  }
-
-  if (!show) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-        <p className="text-xl font-semibold text-text-muted">Loading series details...</p>
-      </main>
-    );
-  }
-
-  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
-  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
-
-  return (
-    <main className="min-h-screen bg-background text-foreground pb-12">
-      {/* 1. Immersive Hero Backdrop Header */}
-      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-        {backdropUrl && (
-          <div
-            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: `url(${backdropUrl})` }}
-            aria-hidden="true"
-          />
-        )}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          
-          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-            {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={`${show.name} poster`}
-                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-                Poster unavailable
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-              ← Back to Journal Dashboard
-            </Link>
-            
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-              {show.name}
-            </h1>
-            
-            {show.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
-            )}
-
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {show.genres?.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-                >
-                  {genre.name}
-                </span>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-                  <p className="text-xs text-white/60">Score Rating</p>
-                </div>
-                <RatingRing rating={show.vote_average} size="sm" />
-              </div>
-              
-              {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
-            </div>
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-              {show.overview || "No summary is available for this series."}
-            </p>
-
-            <p className="mt-3 text-xs text-white/50 mb-10">
-              {show.vote_count?.toLocaleString() || 0} audience votes
-            </p>
-
-            {/* 🚀 UPGRADED: Clean, full type-safe parity metrics across IMDb, Rotten Tomatoes, and Metacritic */}
-            <section className="mt-10">
-              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {formatScore(show.ratings.imdb)}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.metascore === null ? "--" : show.ratings.metascore}
-                  </p>
-                  <p className="text-[10px] font-medium text-text-muted mt-0.5">
-                    {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
-                  </p>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Secondary Metadata Stack (Credits and Cast) */}
-      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {show.creators && show.creators.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Created By:</span>{" "}
-                {show.creators.map((creator: string, index: number) => (
-                  <span key={creator}>
-                    {index > 0 ? ", " : ""}
-                    <a
-                      href={googleSearchUrl(creator, show.name)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="no-underline transition-colors hover:text-accent"
-                    >
-                      {creator}
-                    </a>
-                  </span>
-                ))}
-              </p>
-              
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Production Status:</span>{" "}
-                <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
-              </p>
-            </div>
-          </section>
-        )}
-
-        {show.cast && show.cast.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-              {show.cast.map((person) => (
-                <div key={person.id} className="min-w-0 text-center">
-                  <a
-                    href={googleSearchUrl(person.name, show.name)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block no-underline"
-                  >
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                      {person.profilePath ? (
-                        <img
-                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
-                          alt={person.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-                      )}
-                    </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-                  </a>
-                  <p className="truncate text-sm text-text-muted">{person.character}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {show.similar && show.similar.length > 0 && (
-          <ContentCarousel title="Similar TV Shows" movies={show.similar} />
-        )}
-
-        {show.recommendations && show.recommendations.length > 0 && (
-          <ContentCarousel title="Recommendations" movies={show.recommendations} />
-        )}
-      </div>
-    </main>
-  );
-}
-
-function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string; seriesTitle: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-      >
-        <Play className="h-4 w-4 fill-current" />
-        <span>Watch Trailer</span>
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
-          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-              <h3 className="font-bold text-foreground text-sm truncate pr-4">
-                {seriesTitle} — Trailer
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                aria-label="Close trailer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-              <iframe
-                src={`https://youtube.com/embed/${trailerKey}`}
-                title={`${seriesTitle} Official Trailer`}
-                className="absolute inset-0 h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
 </file>
 
 <file path="src/app/globals.css">
@@ -4142,6 +4294,515 @@ body {
 }
 </file>
 
+<file path="src/app/tv/[id]/page.tsx">
+// "use client";
+
+// import React, { useState } from "react";
+// import { getTvShowDetails, type TvShowDetails } from "@/utils/movieService";
+// import ContentCarousel from "@/components/ContentCarousel";
+// import RatingRing from "@/components/RatingRing";
+// import { Play, X } from "lucide-react";
+// import Link from "next/link";
+
+// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+// function formatScore(score: number | null) {
+//   return score === null ? "N/A" : score.toFixed(1);
+// }
+
+// // 🚀 Fixed secure template match mapping law
+// function googleSearchUrl(name: string, showName: string) {
+//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
+// }
+
+// export default function TvShowDetailPage({
+//   params,
+// }: {
+//   params: React.ComponentProps<any>["params"];
+// }) {
+//   const resolvedParams = React.use(params as any) as { id: string };
+//   const [show, setShow] = useState<TvShowDetails | null>(null);
+//   const [error, setError] = useState(false);
+
+//   React.useEffect(() => {
+//     getTvShowDetails(resolvedParams.id)
+//       .then((data) => {
+//         if (data) {
+//           setShow(data);
+//           window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+//         } else {
+//           setError(true);
+//         }
+//       })
+//       .catch(() => setError(true));
+//   }, [resolvedParams.id]);
+
+//   if (error) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+//         <p className="text-xl font-semibold">TV Series not found</p>
+//       </main>
+//     );
+//   }
+
+//   if (!show) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
+//         <p className="text-xl font-semibold text-text-muted">Loading series details...</p>
+//       </main>
+//     );
+//   }
+
+//   const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
+//   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
+
+//   return (
+//     <main className="min-h-screen bg-background text-foreground pb-12">
+//       {/* 1. Immersive Hero Backdrop Header */}
+//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+//         {backdropUrl && (
+//           <div
+//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+//             style={{ backgroundImage: `url(${backdropUrl})` }}
+//             aria-hidden="true"
+//           />
+//         )}
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+//             {posterUrl ? (
+//               <img
+//                 src={posterUrl}
+//                 alt={`${show.name} poster`}
+//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+//               />
+//             ) : (
+//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+//                 Poster unavailable
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="min-w-0 flex-1">
+//             <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
+//               ← Back to Journal Dashboard
+//             </Link>
+            
+//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+//               {show.name}
+//             </h1>
+            
+//             {show.tagline && (
+//               <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+//             )}
+
+//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+//               <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
+//             </div>
+
+//             <div className="mt-5 flex flex-wrap gap-2">
+//               {show.genres?.map((genre) => (
+//                 <span
+//                   key={genre.id}
+//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+//                 >
+//                   {genre.name}
+//                 </span>
+//               ))}
+//             </div>
+//             <div className="mt-8 flex flex-wrap items-center gap-4">
+//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+//                   <p className="text-xs text-white/60">Score Rating</p>
+//                 </div>
+//                 <RatingRing rating={show.vote_average} size="sm" />
+//               </div>
+              
+//               {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
+//             </div>
+
+//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+//               {show.overview || "No summary is available for this series."}
+//             </p>
+
+//             <p className="mt-3 text-xs text-white/50 mb-10">
+//               {show.vote_count?.toLocaleString() || 0} audience votes
+//             </p>
+
+//             {/* 🚀 UPGRADED: Clean, full type-safe parity metrics across IMDb, Rotten Tomatoes, and Metacritic */}
+//             <section className="mt-10">
+//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {formatScore(show.ratings.imdb)}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {show.ratings.metascore === null ? "--" : show.ratings.metascore}
+//                   </p>
+//                   <p className="text-[10px] font-medium text-text-muted mt-0.5">
+//                     {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
+//                   </p>
+//                 </div>
+//               </div>
+//             </section>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
+//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+//         {show.creators && show.creators.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                 <span className="font-semibold text-text-muted">Created By:</span>{" "}
+//                 {show.creators.map((creator: string, index: number) => (
+//                   <span key={creator}>
+//                     {index > 0 ? ", " : ""}
+//                     <a
+//                       href={googleSearchUrl(creator, show.name)}
+//                       target="_blank"
+//                       rel="noreferrer"
+//                       className="no-underline transition-colors hover:text-accent"
+//                     >
+//                       {creator}
+//                     </a>
+//                   </span>
+//                 ))}
+//               </p>
+              
+//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                 <span className="font-semibold text-text-muted">Production Status:</span>{" "}
+//                 <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
+//               </p>
+//             </div>
+//           </section>
+//         )}
+
+//         {show.cast && show.cast.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+//               {show.cast.map((person) => (
+//                 <div key={person.id} className="min-w-0 text-center">
+//                   <a
+//                     href={googleSearchUrl(person.name, show.name)}
+//                     target="_blank"
+//                     rel="noreferrer"
+//                     className="block no-underline"
+//                   >
+//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+//                       {person.profilePath ? (
+//                         <img
+//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
+//                           alt={person.name}
+//                           className="h-full w-full object-cover"
+//                         />
+//                       ) : (
+//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+//                       )}
+//                     </div>
+//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+//                   </a>
+//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
+//                 </div>
+//               ))}
+//             </div>
+//           </section>
+//         )}
+
+//         {show.similar && show.similar.length > 0 && (
+//           <ContentCarousel title="Similar TV Shows" movies={show.similar} />
+//         )}
+
+//         {show.recommendations && show.recommendations.length > 0 && (
+//           <ContentCarousel title="Recommendations" movies={show.recommendations} />
+//         )}
+//       </div>
+//     </main>
+//   );
+// }
+
+// function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string; seriesTitle: string }) {
+//   const [isOpen, setIsOpen] = useState(false);
+
+//   return (
+//     <>
+//       <button
+//         type="button"
+//         onClick={() => setIsOpen(true)}
+//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+//       >
+//         <Play className="h-4 w-4 fill-current" />
+//         <span>Watch Trailer</span>
+//       </button>
+
+//       {isOpen && (
+//         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
+//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
+//                 {seriesTitle} — Trailer
+//               </h3>
+//               <button
+//                 type="button"
+//                 onClick={() => setIsOpen(false)}
+//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+//                 aria-label="Close trailer"
+//               >
+//                 <X className="h-5 w-5" />
+//               </button>
+//             </div>
+
+//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+//               <iframe
+//                 src={`https://youtube.com/embed/${trailerKey}`}
+//                 title={`${seriesTitle} Official Trailer`}
+//                 className="absolute inset-0 h-full w-full border-0"
+//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//                 allowFullScreen
+//               />
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// }
+
+
+
+
+import React from "react";
+import { getTvShowDetails } from "@/utils/movieService";
+import ContentCarousel from "@/components/ContentCarousel";
+import RatingRing from "@/components/RatingRing";
+import Link from "next/link";
+import { TvTrailerModalButton } from "./TvTrailerModalButton";
+
+
+  const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+	const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+	const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+
+function formatScore(score: number | null) {
+  return score === null ? "N/A" : score.toFixed(1);
+}
+
+function googleSearchUrl(name: string, showName: string) {
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function TvShowDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const show = await getTvShowDetails(id);
+
+  if (!show) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+        <p className="text-xl font-semibold">TV Series not found</p>
+      </main>
+    );
+  }
+
+  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
+  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
+
+  return (
+    <main className="min-h-screen bg-background text-foreground pb-12">
+      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+        {backdropUrl && (
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: `url(${backdropUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${show.name} poster`}
+                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+              />
+            ) : (
+              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+                Poster unavailable
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
+              ← Back to Journal Dashboard
+            </Link>
+            
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+              {show.name}
+            </h1>
+            
+            {show.tagline && (
+              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {show.genres?.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+                  <p className="text-xs text-white/60">Score Rating</p>
+                </div>
+                <RatingRing rating={show.vote_average} size="sm" />
+              </div>
+              
+              {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
+            </div>
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+              {show.overview || "No summary is available for this series."}
+            </p>
+
+            <p className="mt-3 text-xs text-white/50 mb-10">
+              {show.vote_count?.toLocaleString() || 0} audience votes
+            </p>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {formatScore(show.ratings.imdb)}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {show.ratings.metascore === null ? "--" : show.ratings.metascore}
+                  </p>
+                  <p className="text-[10px] font-medium text-text-muted mt-0.5">
+                    {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        {show.creators && show.creators.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <span className="font-semibold text-text-muted">Created By:</span>{" "}
+                {show.creators.map((creator: string, index: number) => (
+                  <span key={creator}>
+                    {index > 0 ? ", " : ""}
+                    <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                      {creator}
+                    </a>
+                  </span>
+                ))}
+              </p>
+              
+              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <span className="font-semibold text-text-muted">Production Status:</span>{" "}
+                <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
+              </p>
+            </div>
+          </section>
+        )}
+
+        {show.cast && show.cast.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+              {show.cast.map((person) => (
+                <div key={person.id} className="min-w-0 text-center">
+                  <a href={googleSearchUrl(person.name, show.name)} target="_blank" rel="noreferrer" className="block no-underline">
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+                      {person.profilePath ? (
+                        <img src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} alt={person.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+                      )}
+                    </div>
+                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                  </a>
+                  <p className="truncate text-sm text-text-muted">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {show.similar && show.similar.length > 0 && <ContentCarousel title="Similar TV Shows" movies={show.similar} />}
+        {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/components/Navbar.tsx">
 "use client";
 
@@ -4189,6 +4850,7 @@ const animationCategories = [
 
 type OpenMenu = "movies" | "series" | "animation" | null;
 
+{/* 🚀 CategoryMenu component header */}
 function CategoryMenu({
   label,
   menuId,
@@ -4206,10 +4868,10 @@ function CategoryMenu({
         type="button"
         aria-haspopup="menu"
         aria-controls={menuId}
-        className="inline-flex items-center gap-1 transition-colors hover:text-accent cursor-pointer"
+        className="inline-flex items-center gap-0.5 transition-colors hover:text-accent cursor-pointer text-sm font-semibold"
       >
-        {label}
-        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+        {label && <span>{label}</span>}
+        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180 opacity-60" aria-hidden="true" />
       </button>
       
       <div
@@ -4383,23 +5045,39 @@ export default function Navbar() {
 
         {/* 2. Main Navigation Block */}
         <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-          <CategoryMenu
-            label="Movies"
-            menuId="movie-categories"
-            categories={movieCategories}
-          />
-          <CategoryMenu
-            label="Series"
-            menuId="series-categories"
-            categories={seriesCategories}
-            className="hidden sm:block"
-          />
-          <CategoryMenu
+          
+          {/* 🎬 1. Link Movies Header directly to our curated /movies catalog index */}
+          <div className="flex items-center gap-1">
+            <Link href="/movies" className="transition-colors hover:text-accent">
+              Movies
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="movie-categories"
+              categories={movieCategories}
+              className="!py-0"
+            />
+          </div>
+
+          {/* 📺 2. Link Series Header directly to our new /tv hub layout */}
+          <div className="flex items-center gap-1 hidden sm:flex">
+            <Link href="/tv" className="transition-colors hover:text-accent">
+              TV Series
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="series-categories"
+              categories={seriesCategories}
+              className="!py-0"
+            />
+          </div>
+
+          {/* <CategoryMenu
             label="Animation"
             menuId="animation-categories"
             categories={animationCategories}
             className="hidden md:block"
-          />
+          /> */}
           <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
 
 
@@ -4552,6 +5230,34 @@ export default function Navbar() {
 
 <file path="src/utils/movieService.ts">
 import axios from "axios";
+
+
+// 🚀 Fetch both trending movies and TV shows, then blend them together cleanly
+export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
+  try {
+    const [movies, tvShows] = await Promise.all([
+      getTrendingMoviesByPeriod(period),
+      // Fallback to "week" if period is "year" since TMDB tv endpoint defaults to day/week
+      getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
+    ]);
+
+    // Interleave them or combine and slice
+    const combined: ContentItem[] = [];
+    const maxLength = Math.max(movies.length, tvShows.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
+      if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
+    }
+
+    return combined;
+  } catch (error) {
+    console.error("❌ Failed to fetch unified trending content:", error);
+    return getTrendingMoviesByPeriod(period); // Fallback to movies if it fails
+  }
+}
+
+
 
 interface TmdbGenre {
   id: number;
@@ -5076,34 +5782,43 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
     ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
 
+// 🚀 Place this updated logic inside your getTvShowDetails function in src/utils/movieService.ts
     let imdbRating: number | null = null;
     let rottenTomatoes: number | null = null;
     let metascore: number | null = null;
 
-    // 🚀 Background query mapping to fetch authentic multi-source OMDb metrics
-    if (show.external_ids?.imdb_id) {
+    // 🚀 FIXED: TV shows nest external_ids inside an appended block object. 
+    // We check both the root object and the nested sub-property fallback.
+    const tvImdbId = show.external_ids?.imdb_id || (show.external_ids as any)?.results?.imdb_id;
+
+    if (tvImdbId) {
       try {
         const omdbResponse = await axios.get<any>(
           getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
           {
             params: {
               apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-              i: show.external_ids.imdb_id,
+              i: tvImdbId,
             },
           }
         );
 
         const omdbData = omdbResponse.data;
+        
+        // 🚀 Extract and parse scores safely from the live OMDb stream
         imdbRating = parseScore(omdbData.imdbRating);
         metascore = parseScore(omdbData.Metascore);
-        rottenTomatoes = parseScore(
-          omdbData.Ratings?.find(
+        
+        if (omdbData.Ratings) {
+          const rtRating = omdbData.Ratings.find(
             (rating: any) => rating.Source === "Rotten Tomatoes"
-          )?.Value,
-          "%"
-        );
-      } catch {
-        // Fallback gracefully if OMDb endpoint limits are reached
+          );
+          if (rtRating) {
+            rottenTomatoes = parseScore(rtRating.Value, "%");
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ OMDb endpoint fallback for TV series:", error);
       }
     }
 
@@ -5151,6 +5866,75 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     console.error("❌ movieService TV Fetch Error:", error);
     return null;
   }
+}
+
+
+// 🚀 Add this new function to fetch real trending TV shows from TMDB
+export async function getTrendingTvByPeriod(
+  period: "day" | "week"
+): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/tv/${period}`),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? item.title ?? "Untitled", // TV uses .name instead of .title
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
+
+
+// 🚀 1. Fetch current live airing schedules (TV Parity for Now Playing)
+export async function getTvAiringToday(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/airing_today"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
+
+// 🚀 2. Fetch all-time critical television masterpieces
+export async function getTopRatedTv(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
+}
+
+// 🚀 3. Fetch scheduled upcoming network additions (TV Parity for Upcoming)
+export async function getTvOnTheAir(): Promise<ContentItem[]> {
+  const response = await axios.get<{ results: any[] }>(
+    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/on_the_air"),
+    { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+  );
+  return response.data.results.map((item) => ({
+    id: item.id,
+    title: item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.first_air_date || "",
+    vote_average: item.vote_average ?? 0,
+    media_type: "tv",
+  }));
 }
 </file>
 
