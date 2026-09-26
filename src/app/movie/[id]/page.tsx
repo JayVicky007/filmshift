@@ -316,7 +316,7 @@ import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButto
     const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
     const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
-    
+
 function formatRuntime(runtime: number | null) {
   if (!runtime) return "Runtime unavailable";
   const hours = Math.floor(runtime / 60);
@@ -342,7 +342,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
 
   if (!movie) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-fade-entry">
         <p className="text-xl font-semibold">Movie not found</p>
       </main>
     );
@@ -352,7 +352,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
   const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground animate-fade-entry">
       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
         {backdropUrl && (
           <div

@@ -403,89 +403,97 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
-  const tmdbResponse = await axios.get<TmdbMovie>(
-    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`),
-    {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        append_to_response: "external_ids,videos,credits,similar,recommendations",
-      },
-    },
-  );
+  // 🚀 Phase 1: Fetch the lightweight core TMDB data first to get the external IMDB ID as fast as possible
+  const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
+  const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+  });
 
-  const movie = tmdbResponse.data;
-  const trailer = movie.videos?.results.find(
-    (video) =>
-      video.site === "YouTube" &&
-      video.type === "Trailer" &&
-      video.official,
-  ) ?? movie.videos?.results.find(
-    (video) => video.site === "YouTube" && video.type === "Trailer",
-  ) ?? null;
+  const movieData = coreTmdbResponse.data;
+  const imdbId = movieData.external_ids?.imdb_id;
+
+  // 🚀 Phase 2: Kick off the OMDb Critic request and the heavy TMDB sub-requests concurrently!
+  const omdbPromise = imdbId
+    ? axios.get<OmdbMovie>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+        params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: imdbId },
+      }).catch(() => null) // Gracefully catch network dropouts
+    : Promise.resolve(null);
+
+  const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/credits`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { cast: [], crew: [] } }));
+
+  const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/similar`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { results: [] } }));
+
+  const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/recommendations`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { results: [] } }));
+
+  // Execute all secondary lookups concurrently on the server background
+  const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+    omdbPromise,
+    creditsPromise,
+    similarPromise,
+    recommendationsPromise,
+  ]);
+
+  // 🚀 Phase 3: Parse and aggregate values cleanly into the layout contract
+  const trailer = movieData.videos?.results.find(
+    (video: any) => video.site === "YouTube" && video.type === "Trailer" && video.official
+  ) ?? movieData.videos?.results.find((video: any) => video.site === "YouTube" && video.type === "Trailer") ?? null;
+
   let imdbRating: number | null = null;
   let rottenTomatoes: number | null = null;
   let metascore: number | null = null;
 
-  if (movie.external_ids?.imdb_id) {
-    try {
-      const omdbResponse = await axios.get<OmdbMovie>(
-        getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
-        {
-          params: {
-            apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-            i: movie.external_ids.imdb_id,
-          },
-        },
-      );
-
-      const omdbMovie = omdbResponse.data;
-      imdbRating = parseScore(omdbMovie.imdbRating);
-      metascore = parseScore(omdbMovie.Metascore);
-      rottenTomatoes = parseScore(
-        omdbMovie.Ratings?.find(
-          (rating) => rating.Source === "Rotten Tomatoes",
-        )?.Value,
-        "%",
-      );
-    } catch {
-    }
+  if (omdbResult && omdbResult.data) {
+    const omdbMovie = omdbResult.data;
+    imdbRating = parseScore(omdbMovie.imdbRating);
+    metascore = parseScore(omdbMovie.Metascore);
+    rottenTomatoes = parseScore(
+      omdbMovie.Ratings?.find((rating) => rating.Source === "Rotten Tomatoes")?.Value,
+      "%"
+    );
   }
 
+  const crew = creditsResult.data.crew || [];
+  const cast = creditsResult.data.cast || [];
+
   return {
-    id: movie.id,
-    title: movie.title,
-    overview: movie.overview,
-    poster_path: movie.poster_path,
-    backdrop_path: movie.backdrop_path,
-    release_date: movie.release_date,
-    status: movie.status,
-    tagline: movie.tagline,
-    audienceRating: movie.vote_average,
-    audienceVoteCount: movie.vote_count,
-    trailer: trailer
-      ? { key: trailer.key, name: trailer.name }
-      : null,
-    directors: movie.credits?.crew
-      .filter((person) => person.job === "Director")
-      .map((person) => person.name)
-      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
-    writers: movie.credits?.crew
-      .filter((person) => person.job === "Writer" || person.job === "Screenplay")
-      .map((person) => person.name)
-      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
-    cast: movie.credits?.cast
-      .sort((first, second) => first.order - second.order)
+    id: movieData.id,
+    title: movieData.title,
+    overview: movieData.overview,
+    poster_path: movieData.poster_path,
+    backdrop_path: movieData.backdrop_path,
+    release_date: movieData.release_date,
+    status: movieData.status,
+    tagline: movieData.tagline,
+    audienceRating: movieData.vote_average,
+    audienceVoteCount: movieData.vote_count,
+    trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+    directors: crew
+      .filter((person: any) => person.job === "Director")
+      .map((person: any) => person.name)
+      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+    writers: crew
+      .filter((person: any) => person.job === "Writer" || person.job === "Screenplay")
+      .map((person: any) => person.name)
+      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+    cast: cast
+      .sort((first: any, second: any) => first.order - second.order)
       .slice(0, 6)
-      .map((person) => ({
+      .map((person: any) => ({
         id: person.id,
         name: person.name,
         character: person.character,
         profilePath: person.profile_path,
-      })) ?? [],
-    similar: movie.similar?.results.slice(0, 10) ?? [],
-    recommendations: movie.recommendations?.results.slice(0, 10) ?? [],
-    genres: movie.genres,
-    runtime: movie.runtime,
+      })),
+    similar: similarResult.data.results?.slice(0, 10) || [],
+    recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
+    genres: movieData.genres || [],
+    runtime: movieData.runtime,
     ratings: {
       imdb: imdbRating,
       rottenTomatoes,
@@ -535,59 +543,57 @@ export interface TvShowDetails {
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
-    const response = await axios.get<any>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`),
-      {
-        params: {
-          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          append_to_response: "credits,similar,recommendations,external_ids,videos",
-        },
-      }
-    );
+    // 🚀 Phase 1: Rapid core fetch to extract the TV external IDs block
+    const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
+    const coreTvResponse = await axios.get<any>(coreTvUrl, {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+    });
 
-    const show = response.data;
+    const showData = coreTvResponse.data;
+    const tvImdbId = showData.external_ids?.imdb_id || (showData.external_ids as any)?.results?.imdb_id;
 
-    const trailer = show.videos?.results.find(
+    // 🚀 Phase 2: Parallelize external OMDb metrics along with TV sub-catalogs
+    const omdbPromise = tvImdbId
+      ? axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+          params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: tvImdbId },
+        }).catch(() => null)
+      : Promise.resolve(null);
+
+    const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/credits`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { cast: [] } }));
+
+    const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/similar`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { results: [] } }));
+
+    const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/recommendations`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { results: [] } }));
+
+    const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+      omdbPromise,
+      creditsPromise,
+      similarPromise,
+      recommendationsPromise,
+    ]);
+
+    // 🚀 Phase 3: Parse elements into unified layout tokens
+    const trailer = showData.videos?.results.find(
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
-    ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
+    ) ?? showData.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
 
-// 🚀 Place this updated logic inside your getTvShowDetails function in src/utils/movieService.ts
     let imdbRating: number | null = null;
     let rottenTomatoes: number | null = null;
     let metascore: number | null = null;
 
-    // 🚀 FIXED: TV shows nest external_ids inside an appended block object. 
-    // We check both the root object and the nested sub-property fallback.
-    const tvImdbId = show.external_ids?.imdb_id || (show.external_ids as any)?.results?.imdb_id;
-
-    if (tvImdbId) {
-      try {
-        const omdbResponse = await axios.get<any>(
-          getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
-          {
-            params: {
-              apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-              i: tvImdbId,
-            },
-          }
-        );
-
-        const omdbData = omdbResponse.data;
-        
-        // 🚀 Extract and parse scores safely from the live OMDb stream
-        imdbRating = parseScore(omdbData.imdbRating);
-        metascore = parseScore(omdbData.Metascore);
-        
-        if (omdbData.Ratings) {
-          const rtRating = omdbData.Ratings.find(
-            (rating: any) => rating.Source === "Rotten Tomatoes"
-          );
-          if (rtRating) {
-            rottenTomatoes = parseScore(rtRating.Value, "%");
-          }
-        }
-      } catch (error) {
-        console.warn("⚠️ OMDb endpoint fallback for TV series:", error);
+    if (omdbResult && omdbResult.data) {
+      const omdbData = omdbResult.data;
+      imdbRating = parseScore(omdbData.imdbRating);
+      metascore = parseScore(omdbData.Metascore);
+      if (omdbData.Ratings) {
+        const rtRating = omdbData.Ratings.find((rating: any) => rating.Source === "Rotten Tomatoes");
+        if (rtRating) rottenTomatoes = parseScore(rtRating.Value, "%");
       }
     }
 
@@ -602,28 +608,28 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     });
 
     return {
-      id: show.id,
-      name: show.name,
-      overview: show.overview,
-      poster_path: show.poster_path,
-      backdrop_path: show.backdrop_path,
-      first_air_date: show.first_air_date,
-      status: show.status,
-      tagline: show.tagline,
-      vote_average: show.vote_average,
-      vote_count: show.vote_count,
-      number_of_seasons: show.number_of_seasons,
-      number_of_episodes: show.number_of_episodes,
-      creators: show.created_by?.map((c: any) => c.name) || [],
-      genres: show.genres || [],
-      cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
+      id: showData.id,
+      name: showData.name,
+      overview: showData.overview,
+      poster_path: showData.poster_path,
+      backdrop_path: showData.backdrop_path,
+      first_air_date: showData.first_air_date,
+      status: showData.status,
+      tagline: showData.tagline,
+      vote_average: showData.vote_average,
+      vote_count: showData.vote_count,
+      number_of_seasons: showData.number_of_seasons,
+      number_of_episodes: showData.number_of_episodes,
+      creators: showData.created_by?.map((c: any) => c.name) || [],
+      genres: showData.genres || [],
+      cast: creditsResult.data.cast?.slice(0, 6).map((person: any) => ({
         id: person.id,
         name: person.name,
         character: person.character,
         profilePath: person.profile_path,
       })) || [],
-      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      similar: similarResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
       ratings: {
         imdb: imdbRating,
         rottenTomatoes,
@@ -632,7 +638,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
     };
   } catch (error) {
-    console.error("❌ movieService TV Fetch Error:", error);
+    console.error("❌ movieService Parallel TV Fetch Error:", error);
     return null;
   }
 }

@@ -331,7 +331,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
 
   if (!show) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-fade-entry">
         <p className="text-xl font-semibold">TV Series not found</p>
       </main>
     );
@@ -341,7 +341,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-12">
+    <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
         {backdropUrl && (
           <div
