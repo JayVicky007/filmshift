@@ -331,7 +331,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
 
   if (!show) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-fade-entry">
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
         <p className="text-xl font-semibold">TV Series not found</p>
       </main>
     );

@@ -69,6 +69,7 @@ src/
       page.tsx
     movie/
       [id]/
+        loading.tsx
         MovieTrailerModalButton.tsx
         page.tsx
     movies/
@@ -83,6 +84,7 @@ src/
       page.tsx
     tv/
       [id]/
+        loading.tsx
         page.tsx
         TvTrailerModalButton.tsx
       page.tsx
@@ -130,128 +132,6 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/app/movie/[id]/MovieTrailerModalButton.tsx">
-"use client";
-
-import React, { useState } from "react";
-import { Play, X } from "lucide-react";
-
-interface TrailerProps {
-  trailerKey: string;
-  movieTitle: string;
-}
-
-export function MovieTrailerModalButton({ trailerKey, movieTitle }: TrailerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-      >
-        <Play className="h-4 w-4 fill-current" />
-        <span>Watch Trailer</span>
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
-          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-              <h3 className="font-bold text-foreground text-sm truncate pr-4">
-                {movieTitle} — Trailer
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                aria-label="Close trailer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-              <iframe
-                src={`https://youtube.com/embed/${trailerKey}`}
-                title={`${movieTitle} Official Trailer`}
-                className="absolute inset-0 h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-</file>
-
-<file path="src/app/tv/[id]/TvTrailerModalButton.tsx">
-"use client";
-
-import React, { useState } from "react";
-import { Play, X } from "lucide-react";
-
-interface TvTrailerProps {
-  trailerKey: string;
-  seriesTitle: string;
-}
-
-export function TvTrailerModalButton({ trailerKey, seriesTitle }: TvTrailerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-      >
-        <Play className="h-4 w-4 fill-current" />
-        <span>Watch Trailer</span>
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
-          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-              <h3 className="font-bold text-foreground text-sm truncate pr-4">
-                {seriesTitle} — Trailer
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                aria-label="Close trailer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-              <iframe
-                src={`https://youtube.com/embed/${trailerKey}`}
-                title={`${seriesTitle} Official Trailer`}
-                className="absolute inset-0 h-full w-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-</file>
 
 <file path="public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
@@ -517,6 +397,109 @@ export default function LoginPage() {
 }
 </file>
 
+<file path="src/app/movie/[id]/loading.tsx">
+import React from "react";
+
+export default function DetailsLoadingSkeleton() {
+  return (
+    <main className="min-h-screen bg-background text-foreground animate-pulse">
+      {/* Hero Header Frame Backdrop Silhouette */}
+      <section className="relative h-[65vh] w-full border-b border-text-muted/15 bg-surface/30">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+          {/* Poster placeholder block */}
+          <div className="aspect-[2/3] w-full max-w-[350px] shrink-0 rounded-[28px] bg-text-muted/10" />
+
+          {/* Core titles placeholders */}
+          <div className="flex-1 space-y-4 pt-4">
+            <div className="h-4 w-44 rounded bg-text-muted/20" />
+            <div className="h-12 w-3/4 rounded-xl bg-text-muted/10" />
+            <div className="h-5 w-1/2 rounded bg-text-muted/10" />
+            <div className="h-14 w-64 rounded-2xl bg-text-muted/20 mt-8" />
+            <div className="h-24 w-full rounded-xl bg-text-muted/10 mt-6" />
+          </div>
+          
+        </div>
+      </section>
+
+      {/* Cast list loading row context blocks */}
+      <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 space-y-6">
+        <div className="h-8 w-48 rounded bg-text-muted/20" />
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="flex flex-col items-center gap-3">
+              <div className="aspect-square w-full max-w-32 rounded-full bg-text-muted/10" />
+              <div className="h-4 w-20 rounded bg-text-muted/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/movie/[id]/MovieTrailerModalButton.tsx">
+"use client";
+
+import React, { useState } from "react";
+import { Play, X } from "lucide-react";
+
+interface TrailerProps {
+  trailerKey: string;
+  movieTitle: string;
+}
+
+export function MovieTrailerModalButton({ trailerKey, movieTitle }: TrailerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+      >
+        <Play className="h-4 w-4 fill-current" />
+        <span>Watch Trailer</span>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+              <h3 className="font-bold text-foreground text-sm truncate pr-4">
+                {movieTitle} — Trailer
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+                aria-label="Close trailer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+              <iframe
+                src={`https://youtube.com/embed/${trailerKey}`}
+                title={`${movieTitle} Official Trailer`}
+                className="absolute inset-0 h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+</file>
+
 <file path="src/app/sandbox/page.tsx">
 "use client";
 
@@ -644,6 +627,109 @@ export default function SandboxPage() {
 
       </div>
     </main>
+  );
+}
+</file>
+
+<file path="src/app/tv/[id]/loading.tsx">
+import React from "react";
+
+export default function DetailsLoadingSkeleton() {
+  return (
+    <main className="min-h-screen bg-background text-foreground animate-pulse">
+      {/* Hero Header Frame Backdrop Silhouette */}
+      <section className="relative h-[65vh] w-full border-b border-text-muted/15 bg-surface/30">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+          {/* Poster placeholder block */}
+          <div className="aspect-[2/3] w-full max-w-[350px] shrink-0 rounded-[28px] bg-text-muted/10" />
+
+          {/* Core titles placeholders */}
+          <div className="flex-1 space-y-4 pt-4">
+            <div className="h-4 w-44 rounded bg-text-muted/20" />
+            <div className="h-12 w-3/4 rounded-xl bg-text-muted/10" />
+            <div className="h-5 w-1/2 rounded bg-text-muted/10" />
+            <div className="h-14 w-64 rounded-2xl bg-text-muted/20 mt-8" />
+            <div className="h-24 w-full rounded-xl bg-text-muted/10 mt-6" />
+          </div>
+          
+        </div>
+      </section>
+
+      {/* Cast list loading row context blocks */}
+      <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12 space-y-6">
+        <div className="h-8 w-48 rounded bg-text-muted/20" />
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="flex flex-col items-center gap-3">
+              <div className="aspect-square w-full max-w-32 rounded-full bg-text-muted/10" />
+              <div className="h-4 w-20 rounded bg-text-muted/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/tv/[id]/TvTrailerModalButton.tsx">
+"use client";
+
+import React, { useState } from "react";
+import { Play, X } from "lucide-react";
+
+interface TvTrailerProps {
+  trailerKey: string;
+  seriesTitle: string;
+}
+
+export function TvTrailerModalButton({ trailerKey, seriesTitle }: TvTrailerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+      >
+        <Play className="h-4 w-4 fill-current" />
+        <span>Watch Trailer</span>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+          <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+              <h3 className="font-bold text-foreground text-sm truncate pr-4">
+                {seriesTitle} — Trailer
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+                aria-label="Close trailer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+              <iframe
+                src={`https://youtube.com/embed/${trailerKey}`}
+                title={`${seriesTitle} Official Trailer`}
+                className="absolute inset-0 h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 </file>
@@ -2901,530 +2987,6 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
 }
 </file>
 
-<file path="src/app/movie/[id]/page.tsx">
-// "use client";
-
-// import React, { useState } from "react";
-// import { getMovieDetails, type MovieDetails } from "@/utils/movieService";
-// import ContentCarousel from "@/components/ContentCarousel";
-// import RatingRing from "@/components/RatingRing";
-// import { Play, X } from "lucide-react";
-
-// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-// function formatRuntime(runtime: number | null) {
-//   if (!runtime) return "Runtime unavailable";
-//   const hours = Math.floor(runtime / 60);
-//   const minutes = runtime % 60;
-//   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-// }
-
-// function formatScore(score: number | null) {
-//   return score === null ? "N/A" : score.toFixed(1);
-// }
-
-// function googleSearchUrl(name: string, movieTitle: string) {
-//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
-
-// }
-
-
-// // 🚀 Core Page Server Component logic wrapped cleanly
-// export default function MovieDetailsPageWrapper({
-//   params,
-// }: {
-//   params: React.ComponentProps<any>["params"];
-// }) {
-//   const resolvedParams = React.use(params as any) as { id: string };
-//   const [movie, setMovie] = useState<MovieDetails | null>(null);
-//   const [error, setError] = useState(false);
-
-// React.useEffect(() => {
-//   getMovieDetails(resolvedParams.id)
-//     .then((data) => {
-//       if (data) {
-//         setMovie(data);
-//         // 🚀 Snap the browser back to the top of the screen when a new title loads!
-//         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-//       }
-//       else setError(true);
-//     })
-//     .catch(() => setError(true));
-// }, [resolvedParams.id]);
-
-//   if (error) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-//         <p className="text-xl font-semibold">Movie not found</p>
-//       </main>
-//     );
-//   }
-
-//   if (!movie) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-//         <p className="text-xl font-semibold text-text-muted">Loading movie details...</p>
-//       </main>
-//     );
-//   }
-
-//   const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
-//   const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
-
-//   return (
-//     <main className="min-h-screen bg-background text-foreground">
-//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-//         {backdropUrl && (
-//           <div
-//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-//             style={{ backgroundImage: `url(${backdropUrl})` }}
-//             aria-hidden="true"
-//           />
-//         )}
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-//             {posterUrl ? (
-//               <img
-//                 src={posterUrl}
-//                 alt={`${movie.title} poster`}
-//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-//               />
-//             ) : (
-//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-//                 Poster unavailable
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="min-w-0 flex-1">
-//             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-//               FilmShift movie guide
-//             </p>
-//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-//               {movie.title}
-//             </h1>
-//             {movie.tagline && (
-//               <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
-//             )}
-//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-//               <span>{movie.status || "Status unavailable"}</span>
-//               <span aria-hidden="true">·</span>
-//               <span>{movie.release_date || "Release date unavailable"}</span>
-//               <span aria-hidden="true" className="text-text-muted/60">·</span>
-//               <span>{formatRuntime(movie.runtime)}</span>
-//             </div>
-
-//             <div className="mt-5 flex flex-wrap gap-2">
-//               {movie.genres.map((genre) => (
-//                 <span
-//                   key={genre.id}
-//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-//                 >
-//                   {genre.name}
-//                 </span>
-//               ))}
-//             </div>
-
-//           {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
-//             <div className="mt-8 flex flex-wrap items-center gap-4">
-//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-//                 <div>
-//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-//                   <p className="text-xs text-white/60">Score Rating</p>
-//                 </div>
-//                 <RatingRing rating={movie.audienceRating} size="sm" />
-//               </div>
-              
-//                {/* The Smart Action Button Trigger */}
-//               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
-//             </div> 
-
-//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-//               {movie.overview || "No summary is available for this movie."}
-//             </p>
-
-//             <p className="mt-3 text-xs text-white/50">
-//               {movie.audienceVoteCount.toLocaleString()} audience votes
-//             </p>
-
-//             <section className="mt-10">
-//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">IMDb</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
-//                 </div>
-//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
-//                   </p>
-//                 </div>
-//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
-//                 </div>
-//               </div>
-//             </section>
-//           </div>
-//         </div>
-//       </section>
-
-//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-//         {(movie.directors.length > 0 || movie.writers.length > 0) && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-//               {movie.directors.length > 0 && (
-//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                   <span className="font-semibold text-text-muted">Director</span>{" "}
-//                   {movie.directors.map((director, index) => (
-//                     <span key={director}>
-//                       {index > 0 ? ", " : ""}
-//                       <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-//                         {director}
-//                       </a>
-//                     </span>
-//                   ))}
-//                 </p>
-//               )}
-//               {movie.writers.length > 0 && (
-//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                   <span className="font-semibold text-text-muted">Writer</span>{" "}
-//                   {movie.writers.map((writer, index) => (
-//                     <span key={writer}>
-//                       {index > 0 ? ", " : ""}
-//                       <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-//                         {writer}
-//                       </a>
-//                     </span>
-//                   ))}
-//                 </p>
-//               )}
-//             </div>
-//           </section>
-//         )}
-
-//         {movie.cast.length > 0 && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-//               {movie.cast.map((person) => (
-//                 <div key={person.id} className="min-w-0 text-center">
-//                   <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
-//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-//                                             {person.profilePath ? (
-//                         <img 
-//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
-//                           alt={person.name} 
-//                           className="h-full w-full object-cover" 
-//                         />
-//                       ) : (
-//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-//                       )}
-//                     </div>
-//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-//                   </a>
-//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
-//                 </div>
-//               ))}
-//             </div>
-//           </section>
-//         )}
-
-//         {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
-//         {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
-//       </div>
-//     </main>
-//   );
-// }
-
-// // 🚀 THE TMDB-STYLE FLOATING MODAL (Overlays completely above the navbar!)
-// function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: string; movieTitle: string }) {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   return (
-//     <>
-//       <button
-//         type="button"
-//         onClick={() => setIsOpen(true)}
-//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-//       >
-//         <Play className="h-4 w-4 fill-current" />
-//         <span>Watch Trailer</span>
-//       </button>
-
-//       {/* The Cinematic Popout Backdrop Layer */}
-//       {isOpen && (
-//         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
-//           {/* Backdrop absolute close target area */}
-//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-//           {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
-//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            
-//             {/* Header controls layout block */}
-//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
-//                 {movieTitle} — Trailer
-//               </h3>
-//               <button
-//                 type="button"
-//                 onClick={() => setIsOpen(false)}
-//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-//                 aria-label="Close trailer"
-//               >
-//                 <X className="h-5 w-5" />
-//               </button>
-//             </div>
-
-//             {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
-//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-//               <iframe
-//                 src={`https://youtube.com/embed/${trailerKey}`}
-//                 title={`${movieTitle} Official Trailer`}
-//                 className="absolute inset-0 h-full w-full border-0"
-//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                 allowFullScreen
-//               />
-//             </div>
-
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
-
-
-
-
-
-
-
-
-import React from "react";
-import { getMovieDetails } from "@/utils/movieService";
-import ContentCarousel from "@/components/ContentCarousel";
-import RatingRing from "@/components/RatingRing";
-import Link from "next/link";
-import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
-
-
-    const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-    const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-    const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-    
-function formatRuntime(runtime: number | null) {
-  if (!runtime) return "Runtime unavailable";
-  const hours = Math.floor(runtime / 60);
-  const minutes = runtime % 60;
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-}
-
-function formatScore(score: number | null) {
-  return score === null ? "N/A" : score.toFixed(1);
-}
-
-function googleSearchUrl(name: string, movieTitle: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
-}
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function MovieDetailsPage({ params }: PageProps) {
-  const { id } = await params;
-  const movie = await getMovieDetails(id);
-
-  if (!movie) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-        <p className="text-xl font-semibold">Movie not found</p>
-      </main>
-    );
-  }
-
-  const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
-  const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
-
-  return (
-    <main className="min-h-screen bg-background text-foreground">
-      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-        {backdropUrl && (
-          <div
-            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: `url(${backdropUrl})` }}
-            aria-hidden="true"
-          />
-        )}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-            {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={`${movie.title} poster`}
-                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-                Poster unavailable
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-              FilmShift movie guide
-            </p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-              {movie.title}
-            </h1>
-            {movie.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
-            )}
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span>{movie.status || "Status unavailable"}</span>
-              <span aria-hidden="true">·</span>
-              <span>{movie.release_date || "Release date unavailable"}</span>
-              <span aria-hidden="true" className="text-text-muted/60">·</span>
-              <span>{formatRuntime(movie.runtime)}</span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {movie.genres.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-                >
-                  {genre.name}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-                  <p className="text-xs text-white/60">Score Rating</p>
-                </div>
-                <RatingRing rating={movie.audienceRating} size="sm" />
-              </div>
-              
-              {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
-            </div> 
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-              {movie.overview || "No summary is available for this movie."}
-            </p>
-
-            <p className="mt-3 text-xs text-white/50">
-              {movie.audienceVoteCount.toLocaleString()} audience votes
-            </p>
-
-            <section className="mt-10">
-              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">IMDb</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
-                </div>
-                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {(movie.directors.length > 0 || movie.writers.length > 0) && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              {movie.directors.length > 0 && (
-                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                  <span className="font-semibold text-text-muted">Director</span>{" "}
-                  {movie.directors.map((director, index) => (
-                    <span key={director}>
-                      {index > 0 ? ", " : ""}
-                      <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                        {director}
-                      </a>
-                    </span>
-                  ))}
-                </p>
-              )}
-              {movie.writers.length > 0 && (
-                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                  <span className="font-semibold text-text-muted">Writer</span>{" "}
-                  {movie.writers.map((writer, index) => (
-                    <span key={writer}>
-                      {index > 0 ? ", " : ""}
-                      <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                        {writer}
-                      </a>
-                    </span>
-                  ))}
-                </p>
-              )}
-            </div>
-          </section>
-        )}
-
-        {movie.cast.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-              {movie.cast.map((person) => (
-                <div key={person.id} className="min-w-0 text-center">
-                  <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                      {person.profilePath ? (
-                        <img 
-                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
-                          alt={person.name} 
-                          className="h-full w-full object-cover" 
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-                      )}
-                    </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-                  </a>
-                  <p className="truncate text-sm text-text-muted">{person.character}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-{movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
-{movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
-      </div>
-    </main>
-  );
-}
-</file>
-
 <file path="package.json">
 {
   "name": "filmshift",
@@ -4098,6 +3660,530 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 // }
 </file>
 
+<file path="src/app/movie/[id]/page.tsx">
+// "use client";
+
+// import React, { useState } from "react";
+// import { getMovieDetails, type MovieDetails } from "@/utils/movieService";
+// import ContentCarousel from "@/components/ContentCarousel";
+// import RatingRing from "@/components/RatingRing";
+// import { Play, X } from "lucide-react";
+
+// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+// function formatRuntime(runtime: number | null) {
+//   if (!runtime) return "Runtime unavailable";
+//   const hours = Math.floor(runtime / 60);
+//   const minutes = runtime % 60;
+//   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+// }
+
+// function formatScore(score: number | null) {
+//   return score === null ? "N/A" : score.toFixed(1);
+// }
+
+// function googleSearchUrl(name: string, movieTitle: string) {
+//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
+
+// }
+
+
+// // 🚀 Core Page Server Component logic wrapped cleanly
+// export default function MovieDetailsPageWrapper({
+//   params,
+// }: {
+//   params: React.ComponentProps<any>["params"];
+// }) {
+//   const resolvedParams = React.use(params as any) as { id: string };
+//   const [movie, setMovie] = useState<MovieDetails | null>(null);
+//   const [error, setError] = useState(false);
+
+// React.useEffect(() => {
+//   getMovieDetails(resolvedParams.id)
+//     .then((data) => {
+//       if (data) {
+//         setMovie(data);
+//         // 🚀 Snap the browser back to the top of the screen when a new title loads!
+//         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+//       }
+//       else setError(true);
+//     })
+//     .catch(() => setError(true));
+// }, [resolvedParams.id]);
+
+//   if (error) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+//         <p className="text-xl font-semibold">Movie not found</p>
+//       </main>
+//     );
+//   }
+
+//   if (!movie) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
+//         <p className="text-xl font-semibold text-text-muted">Loading movie details...</p>
+//       </main>
+//     );
+//   }
+
+//   const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
+//   const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
+
+//   return (
+//     <main className="min-h-screen bg-background text-foreground">
+//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+//         {backdropUrl && (
+//           <div
+//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+//             style={{ backgroundImage: `url(${backdropUrl})` }}
+//             aria-hidden="true"
+//           />
+//         )}
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+//             {posterUrl ? (
+//               <img
+//                 src={posterUrl}
+//                 alt={`${movie.title} poster`}
+//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+//               />
+//             ) : (
+//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+//                 Poster unavailable
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="min-w-0 flex-1">
+//             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+//               FilmShift movie guide
+//             </p>
+//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+//               {movie.title}
+//             </h1>
+//             {movie.tagline && (
+//               <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
+//             )}
+//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+//               <span>{movie.status || "Status unavailable"}</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{movie.release_date || "Release date unavailable"}</span>
+//               <span aria-hidden="true" className="text-text-muted/60">·</span>
+//               <span>{formatRuntime(movie.runtime)}</span>
+//             </div>
+
+//             <div className="mt-5 flex flex-wrap gap-2">
+//               {movie.genres.map((genre) => (
+//                 <span
+//                   key={genre.id}
+//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+//                 >
+//                   {genre.name}
+//                 </span>
+//               ))}
+//             </div>
+
+//           {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
+//             <div className="mt-8 flex flex-wrap items-center gap-4">
+//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+//                   <p className="text-xs text-white/60">Score Rating</p>
+//                 </div>
+//                 <RatingRing rating={movie.audienceRating} size="sm" />
+//               </div>
+              
+//                {/* The Smart Action Button Trigger */}
+//               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
+//             </div> 
+
+//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+//               {movie.overview || "No summary is available for this movie."}
+//             </p>
+
+//             <p className="mt-3 text-xs text-white/50">
+//               {movie.audienceVoteCount.toLocaleString()} audience votes
+//             </p>
+
+//             <section className="mt-10">
+//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">IMDb</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
+//                 </div>
+//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
+//                 </div>
+//               </div>
+//             </section>
+//           </div>
+//         </div>
+//       </section>
+
+//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+//         {(movie.directors.length > 0 || movie.writers.length > 0) && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+//               {movie.directors.length > 0 && (
+//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                   <span className="font-semibold text-text-muted">Director</span>{" "}
+//                   {movie.directors.map((director, index) => (
+//                     <span key={director}>
+//                       {index > 0 ? ", " : ""}
+//                       <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+//                         {director}
+//                       </a>
+//                     </span>
+//                   ))}
+//                 </p>
+//               )}
+//               {movie.writers.length > 0 && (
+//                 <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                   <span className="font-semibold text-text-muted">Writer</span>{" "}
+//                   {movie.writers.map((writer, index) => (
+//                     <span key={writer}>
+//                       {index > 0 ? ", " : ""}
+//                       <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+//                         {writer}
+//                       </a>
+//                     </span>
+//                   ))}
+//                 </p>
+//               )}
+//             </div>
+//           </section>
+//         )}
+
+//         {movie.cast.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+//               {movie.cast.map((person) => (
+//                 <div key={person.id} className="min-w-0 text-center">
+//                   <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
+//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+//                                             {person.profilePath ? (
+//                         <img 
+//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
+//                           alt={person.name} 
+//                           className="h-full w-full object-cover" 
+//                         />
+//                       ) : (
+//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+//                       )}
+//                     </div>
+//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+//                   </a>
+//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
+//                 </div>
+//               ))}
+//             </div>
+//           </section>
+//         )}
+
+//         {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
+//         {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+//       </div>
+//     </main>
+//   );
+// }
+
+// // 🚀 THE TMDB-STYLE FLOATING MODAL (Overlays completely above the navbar!)
+// function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: string; movieTitle: string }) {
+//   const [isOpen, setIsOpen] = useState(false);
+
+//   return (
+//     <>
+//       <button
+//         type="button"
+//         onClick={() => setIsOpen(true)}
+//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
+//       >
+//         <Play className="h-4 w-4 fill-current" />
+//         <span>Watch Trailer</span>
+//       </button>
+
+//       {/* The Cinematic Popout Backdrop Layer */}
+//       {isOpen && (
+//         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
+//           {/* Backdrop absolute close target area */}
+//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+          
+//           {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
+//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
+            
+//             {/* Header controls layout block */}
+//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
+//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
+//                 {movieTitle} — Trailer
+//               </h3>
+//               <button
+//                 type="button"
+//                 onClick={() => setIsOpen(false)}
+//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
+//                 aria-label="Close trailer"
+//               >
+//                 <X className="h-5 w-5" />
+//               </button>
+//             </div>
+
+//             {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
+//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
+//               <iframe
+//                 src={`https://youtube.com/embed/${trailerKey}`}
+//                 title={`${movieTitle} Official Trailer`}
+//                 className="absolute inset-0 h-full w-full border-0"
+//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//                 allowFullScreen
+//               />
+//             </div>
+
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+import React from "react";
+import { getMovieDetails } from "@/utils/movieService";
+import ContentCarousel from "@/components/ContentCarousel";
+import RatingRing from "@/components/RatingRing";
+import Link from "next/link";
+import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
+
+
+    const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+    const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+    const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+
+function formatRuntime(runtime: number | null) {
+  if (!runtime) return "Runtime unavailable";
+  const hours = Math.floor(runtime / 60);
+  const minutes = runtime % 60;
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
+function formatScore(score: number | null) {
+  return score === null ? "N/A" : score.toFixed(1);
+}
+
+function googleSearchUrl(name: string, movieTitle: string) {
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function MovieDetailsPage({ params }: PageProps) {
+  const { id } = await params;
+  const movie = await getMovieDetails(id);
+
+  if (!movie) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-fade-entry">
+        <p className="text-xl font-semibold">Movie not found</p>
+      </main>
+    );
+  }
+
+  const posterUrl = movie.poster_path ? `${TMDB_POSTER_BASE_URL}${movie.poster_path}` : null;
+  const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
+
+  return (
+    <main className="min-h-screen bg-background text-foreground animate-fade-entry">
+      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+        {backdropUrl && (
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: `url(${backdropUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${movie.title} poster`}
+                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+              />
+            ) : (
+              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+                Poster unavailable
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+              FilmShift movie guide
+            </p>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+              {movie.title}
+            </h1>
+            {movie.tagline && (
+              <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
+            )}
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span>{movie.status || "Status unavailable"}</span>
+              <span aria-hidden="true">·</span>
+              <span>{movie.release_date || "Release date unavailable"}</span>
+              <span aria-hidden="true" className="text-text-muted/60">·</span>
+              <span>{formatRuntime(movie.runtime)}</span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {movie.genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+                  <p className="text-xs text-white/60">Score Rating</p>
+                </div>
+                <RatingRing rating={movie.audienceRating} size="sm" />
+              </div>
+              
+              {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
+            </div> 
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+              {movie.overview || "No summary is available for this movie."}
+            </p>
+
+            <p className="mt-3 text-xs text-white/50">
+              {movie.audienceVoteCount.toLocaleString()} audience votes
+            </p>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">IMDb</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.imdb)}</p>
+                </div>
+                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {movie.ratings.rottenTomatoes === null ? "N/A" : `${movie.ratings.rottenTomatoes}%`}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{formatScore(movie.ratings.metascore)}</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        {(movie.directors.length > 0 || movie.writers.length > 0) && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              {movie.directors.length > 0 && (
+                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">Director</span>{" "}
+                  {movie.directors.map((director, index) => (
+                    <span key={director}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(director, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {director}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
+              {movie.writers.length > 0 && (
+                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">Writer</span>{" "}
+                  {movie.writers.map((writer, index) => (
+                    <span key={writer}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(writer, movie.title)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {writer}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {movie.cast.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+              {movie.cast.map((person) => (
+                <div key={person.id} className="min-w-0 text-center">
+                  <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+                      {person.profilePath ? (
+                        <img 
+                          src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
+                          alt={person.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+                      )}
+                    </div>
+                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                  </a>
+                  <p className="truncate text-sm text-text-muted">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+{movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
+{movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/app/globals.css">
 @import "tailwindcss";
 
@@ -4291,6 +4377,23 @@ body {
   content: "";
   display: table;
   clear: both;
+}
+
+
+/* ==========================================================================
+   🎬 CINEMATIC ENTRY MOTION TRANSITIONS (Modal Safe)
+   ========================================================================== */
+@keyframes cinematic-fade-entry {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-entry {
+  animation: cinematic-fade-entry 400ms ease-out forwards;
 }
 </file>
 
@@ -4638,7 +4741,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-12">
+    <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
         {backdropUrl && (
           <div
@@ -5634,89 +5737,97 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
-  const tmdbResponse = await axios.get<TmdbMovie>(
-    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`),
-    {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        append_to_response: "external_ids,videos,credits,similar,recommendations",
-      },
-    },
-  );
+  // 🚀 Phase 1: Fetch the lightweight core TMDB data first to get the external IMDB ID as fast as possible
+  const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
+  const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+  });
 
-  const movie = tmdbResponse.data;
-  const trailer = movie.videos?.results.find(
-    (video) =>
-      video.site === "YouTube" &&
-      video.type === "Trailer" &&
-      video.official,
-  ) ?? movie.videos?.results.find(
-    (video) => video.site === "YouTube" && video.type === "Trailer",
-  ) ?? null;
+  const movieData = coreTmdbResponse.data;
+  const imdbId = movieData.external_ids?.imdb_id;
+
+  // 🚀 Phase 2: Kick off the OMDb Critic request and the heavy TMDB sub-requests concurrently!
+  const omdbPromise = imdbId
+    ? axios.get<OmdbMovie>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+        params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: imdbId },
+      }).catch(() => null) // Gracefully catch network dropouts
+    : Promise.resolve(null);
+
+  const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/credits`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { cast: [], crew: [] } }));
+
+  const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/similar`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { results: [] } }));
+
+  const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/recommendations`), {
+    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+  }).catch(() => ({ data: { results: [] } }));
+
+  // Execute all secondary lookups concurrently on the server background
+  const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+    omdbPromise,
+    creditsPromise,
+    similarPromise,
+    recommendationsPromise,
+  ]);
+
+  // 🚀 Phase 3: Parse and aggregate values cleanly into the layout contract
+  const trailer = movieData.videos?.results.find(
+    (video: any) => video.site === "YouTube" && video.type === "Trailer" && video.official
+  ) ?? movieData.videos?.results.find((video: any) => video.site === "YouTube" && video.type === "Trailer") ?? null;
+
   let imdbRating: number | null = null;
   let rottenTomatoes: number | null = null;
   let metascore: number | null = null;
 
-  if (movie.external_ids?.imdb_id) {
-    try {
-      const omdbResponse = await axios.get<OmdbMovie>(
-        getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
-        {
-          params: {
-            apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-            i: movie.external_ids.imdb_id,
-          },
-        },
-      );
-
-      const omdbMovie = omdbResponse.data;
-      imdbRating = parseScore(omdbMovie.imdbRating);
-      metascore = parseScore(omdbMovie.Metascore);
-      rottenTomatoes = parseScore(
-        omdbMovie.Ratings?.find(
-          (rating) => rating.Source === "Rotten Tomatoes",
-        )?.Value,
-        "%",
-      );
-    } catch {
-    }
+  if (omdbResult && omdbResult.data) {
+    const omdbMovie = omdbResult.data;
+    imdbRating = parseScore(omdbMovie.imdbRating);
+    metascore = parseScore(omdbMovie.Metascore);
+    rottenTomatoes = parseScore(
+      omdbMovie.Ratings?.find((rating) => rating.Source === "Rotten Tomatoes")?.Value,
+      "%"
+    );
   }
 
+  const crew = creditsResult.data.crew || [];
+  const cast = creditsResult.data.cast || [];
+
   return {
-    id: movie.id,
-    title: movie.title,
-    overview: movie.overview,
-    poster_path: movie.poster_path,
-    backdrop_path: movie.backdrop_path,
-    release_date: movie.release_date,
-    status: movie.status,
-    tagline: movie.tagline,
-    audienceRating: movie.vote_average,
-    audienceVoteCount: movie.vote_count,
-    trailer: trailer
-      ? { key: trailer.key, name: trailer.name }
-      : null,
-    directors: movie.credits?.crew
-      .filter((person) => person.job === "Director")
-      .map((person) => person.name)
-      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
-    writers: movie.credits?.crew
-      .filter((person) => person.job === "Writer" || person.job === "Screenplay")
-      .map((person) => person.name)
-      .filter((name, index, names) => names.indexOf(name) === index) ?? [],
-    cast: movie.credits?.cast
-      .sort((first, second) => first.order - second.order)
+    id: movieData.id,
+    title: movieData.title,
+    overview: movieData.overview,
+    poster_path: movieData.poster_path,
+    backdrop_path: movieData.backdrop_path,
+    release_date: movieData.release_date,
+    status: movieData.status,
+    tagline: movieData.tagline,
+    audienceRating: movieData.vote_average,
+    audienceVoteCount: movieData.vote_count,
+    trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+    directors: crew
+      .filter((person: any) => person.job === "Director")
+      .map((person: any) => person.name)
+      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+    writers: crew
+      .filter((person: any) => person.job === "Writer" || person.job === "Screenplay")
+      .map((person: any) => person.name)
+      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+    cast: cast
+      .sort((first: any, second: any) => first.order - second.order)
       .slice(0, 6)
-      .map((person) => ({
+      .map((person: any) => ({
         id: person.id,
         name: person.name,
         character: person.character,
         profilePath: person.profile_path,
-      })) ?? [],
-    similar: movie.similar?.results.slice(0, 10) ?? [],
-    recommendations: movie.recommendations?.results.slice(0, 10) ?? [],
-    genres: movie.genres,
-    runtime: movie.runtime,
+      })),
+    similar: similarResult.data.results?.slice(0, 10) || [],
+    recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
+    genres: movieData.genres || [],
+    runtime: movieData.runtime,
     ratings: {
       imdb: imdbRating,
       rottenTomatoes,
@@ -5766,59 +5877,57 @@ export interface TvShowDetails {
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
-    const response = await axios.get<any>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`),
-      {
-        params: {
-          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          append_to_response: "credits,similar,recommendations,external_ids,videos",
-        },
-      }
-    );
+    // 🚀 Phase 1: Rapid core fetch to extract the TV external IDs block
+    const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
+    const coreTvResponse = await axios.get<any>(coreTvUrl, {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+    });
 
-    const show = response.data;
+    const showData = coreTvResponse.data;
+    const tvImdbId = showData.external_ids?.imdb_id || (showData.external_ids as any)?.results?.imdb_id;
 
-    const trailer = show.videos?.results.find(
+    // 🚀 Phase 2: Parallelize external OMDb metrics along with TV sub-catalogs
+    const omdbPromise = tvImdbId
+      ? axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+          params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: tvImdbId },
+        }).catch(() => null)
+      : Promise.resolve(null);
+
+    const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/credits`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { cast: [] } }));
+
+    const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/similar`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { results: [] } }));
+
+    const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/recommendations`), {
+      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+    }).catch(() => ({ data: { results: [] } }));
+
+    const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+      omdbPromise,
+      creditsPromise,
+      similarPromise,
+      recommendationsPromise,
+    ]);
+
+    // 🚀 Phase 3: Parse elements into unified layout tokens
+    const trailer = showData.videos?.results.find(
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
-    ) ?? show.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
+    ) ?? showData.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
 
-// 🚀 Place this updated logic inside your getTvShowDetails function in src/utils/movieService.ts
     let imdbRating: number | null = null;
     let rottenTomatoes: number | null = null;
     let metascore: number | null = null;
 
-    // 🚀 FIXED: TV shows nest external_ids inside an appended block object. 
-    // We check both the root object and the nested sub-property fallback.
-    const tvImdbId = show.external_ids?.imdb_id || (show.external_ids as any)?.results?.imdb_id;
-
-    if (tvImdbId) {
-      try {
-        const omdbResponse = await axios.get<any>(
-          getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""),
-          {
-            params: {
-              apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY,
-              i: tvImdbId,
-            },
-          }
-        );
-
-        const omdbData = omdbResponse.data;
-        
-        // 🚀 Extract and parse scores safely from the live OMDb stream
-        imdbRating = parseScore(omdbData.imdbRating);
-        metascore = parseScore(omdbData.Metascore);
-        
-        if (omdbData.Ratings) {
-          const rtRating = omdbData.Ratings.find(
-            (rating: any) => rating.Source === "Rotten Tomatoes"
-          );
-          if (rtRating) {
-            rottenTomatoes = parseScore(rtRating.Value, "%");
-          }
-        }
-      } catch (error) {
-        console.warn("⚠️ OMDb endpoint fallback for TV series:", error);
+    if (omdbResult && omdbResult.data) {
+      const omdbData = omdbResult.data;
+      imdbRating = parseScore(omdbData.imdbRating);
+      metascore = parseScore(omdbData.Metascore);
+      if (omdbData.Ratings) {
+        const rtRating = omdbData.Ratings.find((rating: any) => rating.Source === "Rotten Tomatoes");
+        if (rtRating) rottenTomatoes = parseScore(rtRating.Value, "%");
       }
     }
 
@@ -5833,28 +5942,28 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     });
 
     return {
-      id: show.id,
-      name: show.name,
-      overview: show.overview,
-      poster_path: show.poster_path,
-      backdrop_path: show.backdrop_path,
-      first_air_date: show.first_air_date,
-      status: show.status,
-      tagline: show.tagline,
-      vote_average: show.vote_average,
-      vote_count: show.vote_count,
-      number_of_seasons: show.number_of_seasons,
-      number_of_episodes: show.number_of_episodes,
-      creators: show.created_by?.map((c: any) => c.name) || [],
-      genres: show.genres || [],
-      cast: show.credits?.cast?.slice(0, 6).map((person: any) => ({
+      id: showData.id,
+      name: showData.name,
+      overview: showData.overview,
+      poster_path: showData.poster_path,
+      backdrop_path: showData.backdrop_path,
+      first_air_date: showData.first_air_date,
+      status: showData.status,
+      tagline: showData.tagline,
+      vote_average: showData.vote_average,
+      vote_count: showData.vote_count,
+      number_of_seasons: showData.number_of_seasons,
+      number_of_episodes: showData.number_of_episodes,
+      creators: showData.created_by?.map((c: any) => c.name) || [],
+      genres: showData.genres || [],
+      cast: creditsResult.data.cast?.slice(0, 6).map((person: any) => ({
         id: person.id,
         name: person.name,
         character: person.character,
         profilePath: person.profile_path,
       })) || [],
-      similar: show.similar?.results?.slice(0, 10).map(mapTvToContentItem) || [],
-      recommendations: show.recommendations?.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      similar: similarResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
       ratings: {
         imdb: imdbRating,
         rottenTomatoes,
@@ -5863,7 +5972,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
     };
   } catch (error) {
-    console.error("❌ movieService TV Fetch Error:", error);
+    console.error("❌ movieService Parallel TV Fetch Error:", error);
     return null;
   }
 }
