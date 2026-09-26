@@ -189,8 +189,20 @@ export interface MovieDetails {
   };
 }
 
-const getApiUrl = (baseUrl: string | undefined, path: string) =>
-  `${baseUrl?.replace(/\/+$/, "") ?? ""}/${path.replace(/^\/+/, "")}`;
+const getApiUrl = (baseUrl: string | undefined, path: string) => {
+  // If the passed baseUrl is undefined, look up the target endpoint type to provide the correct default
+  let cleanBaseUrl = baseUrl;
+  
+  if (!cleanBaseUrl) {
+    if (path.includes("movie") || path.includes("tv") || path.includes("trending") || path.includes("discover") || path.includes("search")) {
+      cleanBaseUrl = "https://themoviedb.org";
+    } else {
+      cleanBaseUrl = "https://omdbapi.com";
+    }
+  }
+
+  return `${cleanBaseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+};
 
 const parseScore = (score: string | undefined, suffix = "") => {
   if (!score) {
@@ -403,10 +415,17 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
-  // 🚀 Phase 1: Fetch the lightweight core TMDB data first to get the external IMDB ID as fast as possible
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  
+  // 🚀 Early return if API Key is missing during static site building phase
+  if (!apiKey) {
+    throw new Error("TMDB API Key is missing from the server environment config.");
+  }
+
+  // Phase 1: Fetch lightweight core TMDB data...
   const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
   const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
-    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+    params: { api_key: apiKey, append_to_response: "external_ids,videos" },
   });
 
   const movieData = coreTmdbResponse.data;
@@ -543,10 +562,18 @@ export interface TvShowDetails {
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
-    // 🚀 Phase 1: Rapid core fetch to extract the TV external IDs block
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    
+    // 🚀 Early return safety check for TV pipeline
+    if (!apiKey) {
+      console.warn("⚠️ TV Fetch aborted: TMDB API Key missing.");
+      return null;
+    }
+
+    // Phase 1: Rapid core fetch...
     const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
     const coreTvResponse = await axios.get<any>(coreTvUrl, {
-      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+      params: { api_key: apiKey, append_to_response: "external_ids,videos" },
     });
 
     const showData = coreTvResponse.data;
