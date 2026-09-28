@@ -500,137 +500,6 @@ export function MovieTrailerModalButton({ trailerKey, movieTitle }: TrailerProps
 }
 </file>
 
-<file path="src/app/sandbox/page.tsx">
-"use client";
-
-import React, { useState, useRef } from "react";
-import ContentCard from "@/components/ContentCard";
-import SearchSuggestions from "@/components/SearchSuggestions";
-
-// 1. Mock Data representing your TMDB search payload stream
-const mockSearchResults = [
-  { id: 27205, title: "Inception", poster_path: "/9gk7adHY9CjST6Y29X9wZg2R7Y8.jpg", release_date: "2010-07-15", vote_average: 8.4 },
-  { id: 157336, title: "Interstellar", poster_path: "/gEU2QniE6E77NIvHGvPbgDcwtgC.jpg", release_date: "2014-11-05", vote_average: 8.4 },
-  { id: 11324, title: "Shutter Island", poster_path: "/kve20wIIgZzb68g1g4jZOCjIY9g.jpg", release_date: "2010-02-14", vote_average: 8.2 },
-  { id: 49051, title: "The Hobbit", poster_path: "/b8568Y7Du6bM666g67v6u6gB.jpg", release_date: "2012-11-26", vote_average: 7.7 },
-  { id: 120, title: "The Lord of the Rings", poster_path: "/6oom6Q72z6r7J6Bw67v6U6gB.jpg", release_date: "2001-12-18", vote_average: 8.4 },
-];
-
-// 2. Mock Data simulating autocomplete drop items
-const mockSuggestions = [
-  { id: 27205, title: "Inception (2010)", mediaType: "Movie", rawMediaType: "movie" as const, posterPath: "/9gk7adHY9CjST6Y29X9wZg2R7Y8.jpg" },
-  { id: 1399, title: "Game of Thrones (2011)", mediaType: "TV Series", rawMediaType: "tv" as const, posterPath: "/1xsYj8477DDZZ6gB.jpg" },
-];
-
-export default function SandboxPage() {
-  // Test states for simulating the Navbar interactive panel behavior
-  const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(true);
-  const [suggestions, setSuggestions] = useState(mockSuggestions);
-  const [sandboxLog, setSandboxLog] = useState("Waiting for interaction...");
-  
-  // Isolated containment ref context rule
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <main className="min-h-screen bg-background p-6 text-foreground sm:p-10 md:p-14">
-      {/* Sandbox Header Control Context */}
-      <header className="mx-auto mb-10 max-w-7xl border-b border-text-muted/20 pb-6">
-        <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent uppercase tracking-wider">
-          🛠️ Isolated Component Test Kitchen
-        </span>
-        <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-          Dell Latitude Layout Monitor
-        </h1>
-        <p className="mt-2 text-sm text-text-muted">
-          Simulating interactive event timelines and responsive grids on your local 1366x768 screen resolution canvas.
-        </p>
-      </header>
-
-      <div className="mx-auto max-w-7xl space-y-12">
-        
-        {/* TEST ZONE 1: INPUT AUTOCOMPLETE FOCUS & RACE CONDITION CHECKER */}
-        <section className="rounded-2xl border border-text-muted/15 bg-surface p-6 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-accent mb-2">
-            Test Zone 1: Focus Event Race Condition Playground
-          </h2>
-          <p className="text-xs text-text-muted mb-4">
-            Click into the input box below, then try clicking a selection card or clicking completely outside. Watch the console logger underneath to verify if clicks register successfully before the popover layout panel collapses!
-          </p>
-
-          {/* This matches the exact event structure proposed for Navbar.tsx */}
-          <div 
-            ref={searchContainerRef}
-            className="relative inline-flex items-center gap-2 border border-text-muted/20 rounded-full bg-background px-4 py-2 w-full max-w-md"
-            onBlur={(event) => {
-              if (!searchContainerRef.current?.contains(event.relatedTarget as Node)) {
-                setSandboxLog("❌ Main container lost focus (onBlur). Dropping dropdown state.");
-                setSuggestions([]);
-              }
-            }}
-          >
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setSuggestions(e.target.value ? mockSuggestions : []);
-              }}
-              onFocus={() => {
-                setSandboxLog("🔍 Input focused (onFocus). Showing mock drop listings.");
-                setSuggestions(mockSuggestions);
-              }}
-              placeholder="Click inside to test timing focus..."
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-text-muted"
-            />
-            
-            {suggestions.length > 0 && (
-              <SearchSuggestions
-                suggestions={suggestions}
-                isLoading={false}
-                className="absolute left-0 right-0 top-full z-50 mt-2 w-full"
-                onSelect={(suggestion) => {
-                  setSandboxLog(`✅ Selection Click SUCCESSFUL! Routed item ID: ${suggestion.id} (Format Type: ${suggestion.rawMediaType})`);
-                  setSuggestions([]);
-                  setQuery("");
-                }}
-              />
-            )}
-          </div>
-
-          {/* Sandbox Live System Logger */}
-          <div className="mt-24 rounded-xl bg-background/50 border border-text-muted/10 p-3 font-mono text-xs">
-            <span className="font-bold text-text-muted">Live Event Output Log:</span>{" "}
-            <span className="text-emerald-400 font-semibold">{sandboxLog}</span>
-          </div>
-        </section>
-
-
-        {/* TEST ZONE 2: SEARCH DIRECTORY RESPONSIVE AUTO-GRID PREVIEW */}
-        <section className="rounded-2xl border border-text-muted/15 bg-surface p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-accent">
-              Test Zone 2: Search Directory Responsive Card Cluster
-            </h2>
-            <p className="text-xs text-text-muted mt-1">
-              This renders your updated multi-breakpoint responsive loop ruleset (<code className="bg-background px-1 py-0.5 rounded text-rose-400">grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5</code>). Resize your window framework right now to guarantee content layout scaling fits completely without card overcrowding.
-            </p>
-          </div>
-
-          {/* This matches the exact grid payload proposed for search/page.tsx */}
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {mockSearchResults.map((movie) => (
-              <ContentCard key={movie.id} movie={movie} />
-            ))}
-          </div>
-        </section>
-
-      </div>
-    </main>
-  );
-}
-</file>
-
 <file path="src/app/tv/[id]/loading.tsx">
 import React from "react";
 
@@ -1669,6 +1538,41 @@ export default async function MoviesIndexPage() {
       </div>
     </main>
   );
+}
+</file>
+
+<file path="src/app/sandbox/page.tsx">
+"use client";
+
+import React, { useState, useRef } from "react";
+import ContentCard from "@/components/ContentCard";
+import SearchSuggestions from "@/components/SearchSuggestions";
+import { redirect } from "next/navigation";
+
+export default function SandboxPage() {
+  // 🚀 Turn off the sandbox layout route for production compilation runs
+  if (process.env.NODE_ENV === "production") {
+    redirect("/");
+  }
+
+  
+
+// 1. Mock Data representing your TMDB search payload stream
+const mockSearchResults = [
+  { id: 27205, title: "Inception", poster_path: "/9gk7adHY9CjST6Y29X9wZg2R7Y8.jpg", release_date: "2010-07-15", vote_average: 8.4 },
+  { id: 157336, title: "Interstellar", poster_path: "/gEU2QniE6E77NIvHGvPbgDcwtgC.jpg", release_date: "2014-11-05", vote_average: 8.4 },
+  { id: 11324, title: "Shutter Island", poster_path: "/kve20wIIgZzb68g1g4jZOCjIY9g.jpg", release_date: "2010-02-14", vote_average: 8.2 },
+  { id: 49051, title: "The Hobbit", poster_path: "/b8568Y7Du6bM666g67v6u6gB.jpg", release_date: "2012-11-26", vote_average: 7.7 },
+  { id: 120, title: "The Lord of the Rings", poster_path: "/6oom6Q72z6r7J6Bw67v6U6gB.jpg", release_date: "2001-12-18", vote_average: 8.4 },
+];
+
+// 2. Mock Data simulating autocomplete drop items
+const mockSuggestions = [
+  { id: 27205, title: "Inception (2010)", mediaType: "Movie", rawMediaType: "movie" as const, posterPath: "/9gk7adHY9CjST6Y29X9wZg2R7Y8.jpg" },
+  { id: 1399, title: "Game of Thrones (2011)", mediaType: "TV Series", rawMediaType: "tv" as const, posterPath: "/1xsYj8477DDZZ6gB.jpg" },
+];
+
+
 }
 </file>
 
@@ -4397,6 +4301,431 @@ body {
 }
 </file>
 
+<file path="src/components/Navbar.tsx">
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Search, User, PenSquare, LogOut } from "lucide-react";
+import type { SearchSuggestion } from "@/utils/movieService";
+import { createClient } from "@/utils/supabase/client";
+import SearchSuggestions from "./SearchSuggestions";
+import ThemeToggle from "./ThemeToggle";
+
+const movieCategories = [
+  "Hollywood",
+  "British Cinema",
+  "European Cinema",
+  "Bollywood",
+  "Nollywood",
+  "East Asian Cinema",
+  "Animation",
+  "Anime",
+];
+
+const seriesCategories = [
+  "American Series",
+  "British Series",
+  "European Series",
+  "Indian Series",
+  "East Asian Series",
+  "Latin American Series",
+  "Turkish Series",
+  "African Series",
+];
+
+const animationCategories = [
+  "American Animation",
+  "European Animation",
+  "Japanese Anime",
+  "Chinese Donghua",
+  "Korean Animation",
+  "Indian Animation",
+  "Latin American Animation",
+  "African Animation",
+];
+
+type OpenMenu = "movies" | "series" | "animation" | null;
+
+{/* 🚀 CategoryMenu component header */}
+function CategoryMenu({
+  label,
+  menuId,
+  categories,
+  className = "",
+}: {
+  label: string;
+  menuId: string;
+  categories: string[];
+  className?: string;
+}) {
+  return (
+    <div className={`relative group/menu py-2 ${className}`}>
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        className="inline-flex items-center gap-0.5 transition-colors hover:text-accent cursor-pointer text-sm font-semibold"
+      >
+        {label && <span>{label}</span>}
+        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180 opacity-60" aria-hidden="true" />
+      </button>
+      
+      <div
+        id={menuId}
+        role="menu"
+        className="absolute left-0 top-full z-50 mt-1 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+      >
+        {categories.map((category) => (
+          <Link
+            key={category}
+            href={`/search?q=${encodeURIComponent(category)}`}
+            role="menuitem"
+            className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
+          >
+            {category}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
+  const navRef = useRef<HTMLElement>(null);
+  
+  // 🚀 Added focus sandbox tracking reference here
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  
+  const isHomePage = pathname === "/";
+
+  useEffect(() => {
+    let isCurrent = true;
+    const supabase = createClient();
+
+    async function loadUserProfile(userId: string | null, email: string | null) {
+      if (!userId) {
+        setUserEmail(null);
+        setUsername(null);
+        setAvatarUrl(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (isCurrent) {
+        setUserEmail(email);
+        setUsername(profile?.username ?? null);
+        setAvatarUrl(profile?.avatar_url ?? null);
+      }
+    }
+
+    supabase.auth.getUser().then(({ data }) => {
+      void loadUserProfile(data.user?.id ?? null, data.user?.email ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      void loadUserProfile(session?.user?.id ?? null, session?.user?.email ?? null);
+    });
+
+    return () => {
+      isCurrent = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!openMenu) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!navRef.current?.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openMenu]);
+
+  useEffect(() => {
+    const searchTerm = query.trim();
+
+    if (!searchOpen || searchTerm.length < 2) {
+      setSuggestions([]);
+      setIsSuggesting(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      setIsSuggesting(true);
+      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
+        .then((response) => response.json())
+        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setSuggestions([]);
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsSuggesting(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query, searchOpen]);
+
+  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchTerm = query.trim();
+
+    if (searchTerm) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  }
+
+  async function handleSignOut() {
+    await createClient().auth.signOut();
+    router.refresh();
+  }
+
+  const accountLabel = username || userEmail?.split("@")[0] || "Account";
+  const accountInitial = accountLabel.charAt(0).toUpperCase();
+
+  return (
+    <header
+      className={`z-50 w-full transition-all duration-200 ${
+        isHomePage
+          ? "absolute left-0 right-0 top-0 border-transparent bg-transparent"
+          : "sticky top-0 border-b border-text-muted/10 bg-background/75 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-8">
+        
+        {/* 1. Main Application Brand Title */}
+        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl shrink-0 ${isHomePage ? "text-white" : "text-foreground"}`}>
+          <span>Film</span><span className="text-accent">Shift</span>
+        </Link>
+
+        {/* 2. Main Navigation Block */}
+        <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+          
+          {/* 🎬 1. Link Movies Header directly to our curated /movies catalog index */}
+          <div className="flex items-center gap-1">
+            <Link href="/movies" className="transition-colors hover:text-accent">
+              Movies
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="movie-categories"
+              categories={movieCategories}
+              className="!py-0"
+            />
+          </div>
+
+          {/* 📺 2. Link Series Header directly to our new /tv hub layout */}
+          <div className="flex items-center gap-1 hidden sm:flex">
+            <Link href="/tv" className="transition-colors hover:text-accent">
+              TV Series
+            </Link>
+            <CategoryMenu
+              label=""
+              menuId="series-categories"
+              categories={seriesCategories}
+              className="!py-0"
+            />
+          </div>
+
+          {/* <CategoryMenu
+            label="Animation"
+            menuId="animation-categories"
+            categories={animationCategories}
+            className="hidden md:block"
+          /> */}
+          <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
+
+
+          {/* 🔍 Search Input Layout Layer */}
+          <div 
+            ref={searchContainerRef}
+            className="ml-1 flex items-center gap-2"
+            onBlur={(event) => {
+              // 🚀 Bulletproof blur check from our playground: only shuts dropdown if clicking completely outside
+              if (!searchContainerRef.current?.contains(event.relatedTarget as Node)) {
+                setSuggestions([]);
+              }
+            }}
+          >
+            {searchOpen && (
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <label className="sr-only" htmlFor="nav-search">Search</label>
+                <input
+                  id="nav-search"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onFocus={() => {
+                    // 🚀 INSTANT RE-TRIGGER: If there is text already in the box on click-in, instantly re-fetch suggestions!
+                    const searchTerm = query.trim();
+                    if (searchTerm.length >= 2) {
+                      setIsSuggesting(true);
+                      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`)
+                        .then((response) => response.json())
+                        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+                        .catch(() => setSuggestions([]))
+                        .finally(() => setIsSuggesting(false));
+                    }
+                  }}
+                  placeholder="Search"
+                  autoFocus
+                  className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
+                />
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  isLoading={isSuggesting}
+                  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
+                  onSelect={(suggestion) => {
+                    setSuggestions([]);
+                    setQuery("");
+                    setSearchOpen(false);
+                    
+                    // 🚀 Follows the Global Search Routing Law
+                    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+                    router.push(`/${routeType}/${suggestion.id}`);
+                  }}
+                />
+              </form>
+            )}
+            <button
+              type="button"
+              aria-label={searchOpen ? "Close search" : "Open search"}
+              onClick={() => {
+                setSearchOpen((open) => !open);
+                setSuggestions([]);
+              }}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white" : "text-foreground"}`}
+            >
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
+
+        {/* 3. Account Settings and Mode Actions Block */}
+        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
+          {userEmail ? (
+            <div className="relative group/menu py-2">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent cursor-pointer ${
+                  isHomePage ? "text-white/90" : "text-text-muted"
+                }`}
+                title={typeof accountLabel === "string" ? accountLabel : userEmail}
+              >
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${
+                  isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"
+                }`}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold">{accountInitial}</span>
+                  )}
+                </span>
+                <span className="hidden truncate sm:inline">
+                  {typeof accountLabel === "string" ? accountLabel : accountLabel}
+                </span>
+                <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
+              </button>
+
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
+                invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
+              >
+                <Link
+                  href="/profile"
+                  role="menuitem"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+                >
+                  <User className="h-4 w-4 opacity-70" />
+                  <span>My Profile</span>
+                </Link>
+                
+                <Link
+                  href="/write"
+                  role="menuitem"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
+                >
+                  <PenSquare className="h-4 w-4 opacity-70" />
+                  <span>Write Post</span>
+                </Link>
+                
+                <hr className="my-1 border-text-muted/10" />
+                
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  role="menuitem"
+                  className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 opacity-70" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
+              Login
+            </Link>
+          )}
+
+          <ThemeToggle
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${
+              isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"
+            }`}
+          />
+        </div>
+
+      </div>
+    </header>
+  );
+}
+</file>
+
 <file path="src/app/tv/[id]/page.tsx">
 // "use client";
 
@@ -4906,431 +5235,6 @@ export default async function TvShowDetailPage({ params }: PageProps) {
 }
 </file>
 
-<file path="src/components/Navbar.tsx">
-"use client";
-
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, PenSquare, LogOut } from "lucide-react";
-import type { SearchSuggestion } from "@/utils/movieService";
-import { createClient } from "@/utils/supabase/client";
-import SearchSuggestions from "./SearchSuggestions";
-import ThemeToggle from "./ThemeToggle";
-
-const movieCategories = [
-  "Hollywood",
-  "British Cinema",
-  "European Cinema",
-  "Bollywood",
-  "Nollywood",
-  "East Asian Cinema",
-  "Animation",
-  "Anime",
-];
-
-const seriesCategories = [
-  "American Series",
-  "British Series",
-  "European Series",
-  "Indian Series",
-  "East Asian Series",
-  "Latin American Series",
-  "Turkish Series",
-  "African Series",
-];
-
-const animationCategories = [
-  "American Animation",
-  "European Animation",
-  "Japanese Anime",
-  "Chinese Donghua",
-  "Korean Animation",
-  "Indian Animation",
-  "Latin American Animation",
-  "African Animation",
-];
-
-type OpenMenu = "movies" | "series" | "animation" | null;
-
-{/* 🚀 CategoryMenu component header */}
-function CategoryMenu({
-  label,
-  menuId,
-  categories,
-  className = "",
-}: {
-  label: string;
-  menuId: string;
-  categories: string[];
-  className?: string;
-}) {
-  return (
-    <div className={`relative group/menu py-2 ${className}`}>
-      <button
-        type="button"
-        aria-haspopup="menu"
-        aria-controls={menuId}
-        className="inline-flex items-center gap-0.5 transition-colors hover:text-accent cursor-pointer text-sm font-semibold"
-      >
-        {label && <span>{label}</span>}
-        <ChevronDown className="h-4 w-4 transition-transform group-hover/menu:rotate-180 opacity-60" aria-hidden="true" />
-      </button>
-      
-      <div
-        id={menuId}
-        role="menu"
-        className="absolute left-0 top-full z-50 mt-1 grid w-64 gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
-        invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
-      >
-        {categories.map((category) => (
-          <Link
-            key={category}
-            href={`/search?q=${encodeURIComponent(category)}`}
-            role="menuitem"
-            className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
-          >
-            {category}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
-  const navRef = useRef<HTMLElement>(null);
-  
-  // 🚀 Added focus sandbox tracking reference here
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-  
-  const isHomePage = pathname === "/";
-
-  useEffect(() => {
-    let isCurrent = true;
-    const supabase = createClient();
-
-    async function loadUserProfile(userId: string | null, email: string | null) {
-      if (!userId) {
-        setUserEmail(null);
-        setUsername(null);
-        setAvatarUrl(null);
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, avatar_url")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (isCurrent) {
-        setUserEmail(email);
-        setUsername(profile?.username ?? null);
-        setAvatarUrl(profile?.avatar_url ?? null);
-      }
-    }
-
-    supabase.auth.getUser().then(({ data }) => {
-      void loadUserProfile(data.user?.id ?? null, data.user?.email ?? null);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      void loadUserProfile(session?.user?.id ?? null, session?.user?.email ?? null);
-    });
-
-    return () => {
-      isCurrent = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!openMenu) {
-      return;
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      if (!navRef.current?.contains(event.target as Node)) {
-        setOpenMenu(null);
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpenMenu(null);
-      }
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [openMenu]);
-
-  useEffect(() => {
-    const searchTerm = query.trim();
-
-    if (!searchOpen || searchTerm.length < 2) {
-      setSuggestions([]);
-      setIsSuggesting(false);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      setIsSuggesting(true);
-      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
-        .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setSuggestions([]);
-          }
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setIsSuggesting(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query, searchOpen]);
-
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const searchTerm = query.trim();
-
-    if (searchTerm) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    }
-  }
-
-  async function handleSignOut() {
-    await createClient().auth.signOut();
-    router.refresh();
-  }
-
-  const accountLabel = username || userEmail?.split("@")[0] || "Account";
-  const accountInitial = accountLabel.charAt(0).toUpperCase();
-
-  return (
-    <header
-      className={`z-50 w-full transition-all duration-200 ${
-        isHomePage
-          ? "absolute left-0 right-0 top-0 border-transparent bg-transparent"
-          : "sticky top-0 border-b border-text-muted/10 bg-background/75 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)]"
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-8">
-        
-        {/* 1. Main Application Brand Title */}
-        <Link href="/" className={`text-2xl font-black tracking-tight transition-colors hover:text-accent md:text-3xl shrink-0 ${isHomePage ? "text-white" : "text-foreground"}`}>
-          <span>Film</span><span className="text-accent">Shift</span>
-        </Link>
-
-        {/* 2. Main Navigation Block */}
-        <nav className={`flex flex-1 items-center gap-5 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-          
-          {/* 🎬 1. Link Movies Header directly to our curated /movies catalog index */}
-          <div className="flex items-center gap-1">
-            <Link href="/movies" className="transition-colors hover:text-accent">
-              Movies
-            </Link>
-            <CategoryMenu
-              label=""
-              menuId="movie-categories"
-              categories={movieCategories}
-              className="!py-0"
-            />
-          </div>
-
-          {/* 📺 2. Link Series Header directly to our new /tv hub layout */}
-          <div className="flex items-center gap-1 hidden sm:flex">
-            <Link href="/tv" className="transition-colors hover:text-accent">
-              TV Series
-            </Link>
-            <CategoryMenu
-              label=""
-              menuId="series-categories"
-              categories={seriesCategories}
-              className="!py-0"
-            />
-          </div>
-
-          {/* <CategoryMenu
-            label="Animation"
-            menuId="animation-categories"
-            categories={animationCategories}
-            className="hidden md:block"
-          /> */}
-          <Link href="/blog" className="hidden transition-colors hover:text-accent sm:inline">Blog</Link>
-
-
-          {/* 🔍 Search Input Layout Layer */}
-          <div 
-            ref={searchContainerRef}
-            className="ml-1 flex items-center gap-2"
-            onBlur={(event) => {
-              // 🚀 Bulletproof blur check from our playground: only shuts dropdown if clicking completely outside
-              if (!searchContainerRef.current?.contains(event.relatedTarget as Node)) {
-                setSuggestions([]);
-              }
-            }}
-          >
-            {searchOpen && (
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <label className="sr-only" htmlFor="nav-search">Search</label>
-                <input
-                  id="nav-search"
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  onFocus={() => {
-                    // 🚀 INSTANT RE-TRIGGER: If there is text already in the box on click-in, instantly re-fetch suggestions!
-                    const searchTerm = query.trim();
-                    if (searchTerm.length >= 2) {
-                      setIsSuggesting(true);
-                      fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`)
-                        .then((response) => response.json())
-                        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
-                        .catch(() => setSuggestions([]))
-                        .finally(() => setIsSuggesting(false));
-                    }
-                  }}
-                  placeholder="Search"
-                  autoFocus
-                  className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 pl-3 pr-3 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-32"
-                />
-                <SearchSuggestions
-                  suggestions={suggestions}
-                  isLoading={isSuggesting}
-                  className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
-                  onSelect={(suggestion) => {
-                    setSuggestions([]);
-                    setQuery("");
-                    setSearchOpen(false);
-                    
-                    // 🚀 Follows the Global Search Routing Law
-                    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
-                    router.push(`/${routeType}/${suggestion.id}`);
-                  }}
-                />
-              </form>
-            )}
-            <button
-              type="button"
-              aria-label={searchOpen ? "Close search" : "Open search"}
-              onClick={() => {
-                setSearchOpen((open) => !open);
-                setSuggestions([]);
-              }}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white" : "text-foreground"}`}
-            >
-              <Search className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </nav>
-
-        {/* 3. Account Settings and Mode Actions Block */}
-        <div className="ml-auto flex items-center gap-3 text-sm font-semibold pr-1">
-          {userEmail ? (
-            <div className="relative group/menu py-2">
-              <button
-                type="button"
-                aria-haspopup="menu"
-                className={`inline-flex max-w-28 items-center gap-2 truncate transition-colors hover:text-accent cursor-pointer ${
-                  isHomePage ? "text-white/90" : "text-text-muted"
-                }`}
-                title={typeof accountLabel === "string" ? accountLabel : userEmail}
-              >
-                <span className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border ${
-                  isHomePage ? "border-white/30 bg-white/10" : "border-text-muted/20 bg-surface"
-                }`}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold">{accountInitial}</span>
-                  )}
-                </span>
-                <span className="hidden truncate sm:inline">
-                  {typeof accountLabel === "string" ? accountLabel : accountLabel}
-                </span>
-                <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
-              </button>
-
-              <div
-                role="menu"
-                className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-[0_18px_45px_rgba(0,0,0,0.18)] 
-                invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out"
-              >
-                <Link
-                  href="/profile"
-                  role="menuitem"
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
-                >
-                  <User className="h-4 w-4 opacity-70" />
-                  <span>My Profile</span>
-                </Link>
-                
-                <Link
-                  href="/write"
-                  role="menuitem"
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-accent/10 hover:text-accent"
-                >
-                  <PenSquare className="h-4 w-4 opacity-70" />
-                  <span>Write Post</span>
-                </Link>
-                
-                <hr className="my-1 border-text-muted/10" />
-                
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  role="menuitem"
-                  className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
-                >
-                  <LogOut className="h-4 w-4 opacity-70" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Link href="/login" className={`transition-colors hover:text-accent ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
-              Login
-            </Link>
-          )}
-
-          <ThemeToggle
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/80 hover:text-accent cursor-pointer ${
-              isHomePage ? "border-white/25 bg-black/20 text-white" : "border-text-muted/20 bg-surface text-foreground"
-            }`}
-          />
-        </div>
-
-      </div>
-    </header>
-  );
-}
-</file>
-
 <file path="src/utils/movieService.ts">
 import axios from "axios";
 
@@ -5523,8 +5427,20 @@ export interface MovieDetails {
   };
 }
 
-const getApiUrl = (baseUrl: string | undefined, path: string) =>
-  `${baseUrl?.replace(/\/+$/, "") ?? ""}/${path.replace(/^\/+/, "")}`;
+const getApiUrl = (baseUrl: string | undefined, path: string) => {
+  // If the passed baseUrl is undefined, look up the target endpoint type to provide the correct default
+  let cleanBaseUrl = baseUrl;
+  
+  if (!cleanBaseUrl) {
+    if (path.includes("movie") || path.includes("tv") || path.includes("trending") || path.includes("discover") || path.includes("search")) {
+      cleanBaseUrl = "https://themoviedb.org";
+    } else {
+      cleanBaseUrl = "https://omdbapi.com";
+    }
+  }
+
+  return `${cleanBaseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+};
 
 const parseScore = (score: string | undefined, suffix = "") => {
   if (!score) {
@@ -5737,10 +5653,17 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
-  // 🚀 Phase 1: Fetch the lightweight core TMDB data first to get the external IMDB ID as fast as possible
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  
+  // 🚀 Early return if API Key is missing during static site building phase
+  if (!apiKey) {
+    throw new Error("TMDB API Key is missing from the server environment config.");
+  }
+
+  // Phase 1: Fetch lightweight core TMDB data...
   const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
   const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
-    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+    params: { api_key: apiKey, append_to_response: "external_ids,videos" },
   });
 
   const movieData = coreTmdbResponse.data;
@@ -5877,10 +5800,18 @@ export interface TvShowDetails {
 
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
-    // 🚀 Phase 1: Rapid core fetch to extract the TV external IDs block
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    
+    // 🚀 Early return safety check for TV pipeline
+    if (!apiKey) {
+      console.warn("⚠️ TV Fetch aborted: TMDB API Key missing.");
+      return null;
+    }
+
+    // Phase 1: Rapid core fetch...
     const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
     const coreTvResponse = await axios.get<any>(coreTvUrl, {
-      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY, append_to_response: "external_ids,videos" },
+      params: { api_key: apiKey, append_to_response: "external_ids,videos" },
     });
 
     const showData = coreTvResponse.data;

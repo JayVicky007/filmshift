@@ -195,10 +195,16 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
         </form>
 
         {currentMovie && (
-          <p className="mt-6 text-sm text-white/60">
+          <p className="mt-6 text-sm text-white/60 relative z-10">
             Now featuring{" "}
             <Link
-              href={`/movie/${currentMovie.id}`}
+              href={
+                currentMovie.media_type === "tv" || 
+                'first_air_date' in currentMovie || 
+                !('release_date' in currentMovie)
+                  ? `/tv/${currentMovie.id}`
+                  : `/movie/${currentMovie.id}`
+              }
               className="font-semibold text-white/85 underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
             >
               {currentMovie.title}
