@@ -1,59 +1,36 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import { getTvShowDetails, type TvShowDetails } from "@/utils/movieService";
+// import React from "react";
+// import { getTvShowDetails } from "@/utils/movieService";
 // import ContentCarousel from "@/components/ContentCarousel";
 // import RatingRing from "@/components/RatingRing";
-// import { Play, X } from "lucide-react";
 // import Link from "next/link";
+// import { TvTrailerModalButton } from "./TvTrailerModalButton";
 
-// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+//   const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// 	const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+// 	const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
 
 // function formatScore(score: number | null) {
 //   return score === null ? "N/A" : score.toFixed(1);
 // }
 
-// // 🚀 Fixed secure template match mapping law
 // function googleSearchUrl(name: string, showName: string) {
 //   return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
 // }
 
-// export default function TvShowDetailPage({
-//   params,
-// }: {
-//   params: React.ComponentProps<any>["params"];
-// }) {
-//   const resolvedParams = React.use(params as any) as { id: string };
-//   const [show, setShow] = useState<TvShowDetails | null>(null);
-//   const [error, setError] = useState(false);
+// interface PageProps {
+//   params: Promise<{ id: string }>;
+// }
 
-//   React.useEffect(() => {
-//     getTvShowDetails(resolvedParams.id)
-//       .then((data) => {
-//         if (data) {
-//           setShow(data);
-//           window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-//         } else {
-//           setError(true);
-//         }
-//       })
-//       .catch(() => setError(true));
-//   }, [resolvedParams.id]);
-
-//   if (error) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-//         <p className="text-xl font-semibold">TV Series not found</p>
-//       </main>
-//     );
-//   }
+// export default async function TvShowDetailPage({ params }: PageProps) {
+//   const { id } = await params;
+//   const show = await getTvShowDetails(id);
 
 //   if (!show) {
 //     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-//         <p className="text-xl font-semibold text-text-muted">Loading series details...</p>
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+//         <p className="text-xl font-semibold">TV Series not found</p>
 //       </main>
 //     );
 //   }
@@ -62,8 +39,7 @@
 //   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
 
 //   return (
-//     <main className="min-h-screen bg-background text-foreground pb-12">
-//       {/* 1. Immersive Hero Backdrop Header */}
+//     <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
 //       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
 //         {backdropUrl && (
 //           <div
@@ -142,7 +118,6 @@
 //               {show.vote_count?.toLocaleString() || 0} audience votes
 //             </p>
 
-//             {/* 🚀 UPGRADED: Clean, full type-safe parity metrics across IMDb, Rotten Tomatoes, and Metacritic */}
 //             <section className="mt-10">
 //               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
 //               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -173,7 +148,6 @@
 //         </div>
 //       </section>
 
-//       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
 //       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
 //         {show.creators && show.creators.length > 0 && (
 //           <section className="md:px-4">
@@ -184,12 +158,7 @@
 //                 {show.creators.map((creator: string, index: number) => (
 //                   <span key={creator}>
 //                     {index > 0 ? ", " : ""}
-//                     <a
-//                       href={googleSearchUrl(creator, show.name)}
-//                       target="_blank"
-//                       rel="noreferrer"
-//                       className="no-underline transition-colors hover:text-accent"
-//                     >
+//                     <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
 //                       {creator}
 //                     </a>
 //                   </span>
@@ -210,19 +179,10 @@
 //             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
 //               {show.cast.map((person) => (
 //                 <div key={person.id} className="min-w-0 text-center">
-//                   <a
-//                     href={googleSearchUrl(person.name, show.name)}
-//                     target="_blank"
-//                     rel="noreferrer"
-//                     className="block no-underline"
-//                   >
+//                   <a href={googleSearchUrl(person.name, show.name)} target="_blank" rel="noreferrer" className="block no-underline">
 //                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
 //                       {person.profilePath ? (
-//                         <img
-//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
-//                           alt={person.name}
-//                           className="h-full w-full object-cover"
-//                         />
+//                         <img src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} alt={person.name} className="h-full w-full object-cover" />
 //                       ) : (
 //                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
 //                       )}
@@ -236,66 +196,13 @@
 //           </section>
 //         )}
 
-//         {show.similar && show.similar.length > 0 && (
-//           <ContentCarousel title="Similar TV Shows" movies={show.similar} />
-//         )}
-
-//         {show.recommendations && show.recommendations.length > 0 && (
-//           <ContentCarousel title="Recommendations" movies={show.recommendations} />
-//         )}
+//         {show.similar && show.similar.length > 0 && <ContentCarousel title="Similar TV Shows" movies={show.similar} />}
+//         {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
 //       </div>
 //     </main>
 //   );
 // }
 
-// function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string; seriesTitle: string }) {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   return (
-//     <>
-//       <button
-//         type="button"
-//         onClick={() => setIsOpen(true)}
-//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-//       >
-//         <Play className="h-4 w-4 fill-current" />
-//         <span>Watch Trailer</span>
-//       </button>
-
-//       {isOpen && (
-//         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
-//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
-//                 {seriesTitle} — Trailer
-//               </h3>
-//               <button
-//                 type="button"
-//                 onClick={() => setIsOpen(false)}
-//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-//                 aria-label="Close trailer"
-//               >
-//                 <X className="h-5 w-5" />
-//               </button>
-//             </div>
-
-//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-//               <iframe
-//                 src={`https://youtube.com/embed/${trailerKey}`}
-//                 title={`${seriesTitle} Official Trailer`}
-//                 className="absolute inset-0 h-full w-full border-0"
-//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                 allowFullScreen
-//               />
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
 
 
 
@@ -307,11 +214,9 @@ import RatingRing from "@/components/RatingRing";
 import Link from "next/link";
 import { TvTrailerModalButton } from "./TvTrailerModalButton";
 
-
-  const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-	const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-	const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
+const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
 function formatScore(score: number | null) {
   return score === null ? "N/A" : score.toFixed(1);
@@ -412,6 +317,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
               {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
             </div>
 
+
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
               {show.overview || "No summary is available for this series."}
             </p>
@@ -498,10 +404,10 @@ export default async function TvShowDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {show.similar && show.similar.length > 0 && <ContentCarousel title="Similar TV Shows" movies={show.similar} />}
+        {/* 🚀 CONNECTED DYNAMIC LABELS: The refactored TV series slider row interface layout */}
+        {show.similar && show.similar.length > 0 && <ContentCarousel title="More From This Creator" movies={show.similar} />}
         {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
       </div>
     </main>
   );
 }
-
