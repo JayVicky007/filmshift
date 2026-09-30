@@ -404,9 +404,13 @@ export default async function TvShowDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* 🚀 CONNECTED DYNAMIC LABELS: The refactored TV series slider row interface layout */}
-        {show.similar && show.similar.length > 0 && <ContentCarousel title="More From This Creator" movies={show.similar} />}
-        {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
+        {/* 🚀 CONNECTED DYNAMIC LABELS: Displays the updated text contract header */}
+        {show.similar && show.similar.length > 0 && (
+          <ContentCarousel title="More From This Creator" movies={show.similar} />
+        )}
+        {show.recommendations && show.recommendations.length > 0 && (
+          <ContentCarousel title="Recommendations" movies={show.recommendations} />
+        )}
       </div>
     </main>
   );

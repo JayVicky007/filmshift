@@ -1118,6 +1118,49 @@ export async function getMoviesByDirector(directorName: string, excludeMovieId: 
   }
 }
 
+// export async function getTvShowsByCreator(creatorName: string, excludeTvId: number): Promise<ContentItem[]> {
+//   try {
+//     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+//     if (!apiKey || !creatorName) return [];
+
+//     // Step 1: Find the Creator's unique TMDB Person ID
+//     const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
+//       { params: { api_key: apiKey, query: creatorName } }
+//     );
+
+//     const personId = searchResponse.data.results?.[0]?.id;
+//     if (!personId) return [];
+
+//     // Step 2: Use discover/tv to find other shows involving this person ID as a creator
+//     const discoverResponse = await axios.get<{ results: any[] }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
+//       {
+//         params: {
+//           api_key: apiKey,
+//           with_people: personId,
+//           sort_by: "popularity.desc",
+//         },
+//       }
+//     );
+
+//     return discoverResponse.data.results
+//       .filter((show) => show.id !== excludeTvId)
+//       .map((show) => ({
+//         id: show.id,
+//         title: show.name ?? "Untitled",
+//         poster_path: show.poster_path,
+//         release_date: show.first_air_date || "",
+//         vote_average: show.vote_average ?? 0,
+//         media_type: "tv"
+//       }))
+//       .slice(0, 10);
+//   } catch (error) {
+//     console.error("❌ Error fetching TV shows by creator:", error);
+//     return [];
+//   }
+// }
+
 export async function getTvShowsByCreator(creatorName: string, excludeTvId: number): Promise<ContentItem[]> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -1132,20 +1175,32 @@ export async function getTvShowsByCreator(creatorName: string, excludeTvId: numb
     const personId = searchResponse.data.results?.[0]?.id;
     if (!personId) return [];
 
-    // Step 2: Use discover/tv to find other shows involving this person ID as a creator
-    const discoverResponse = await axios.get<{ results: any[] }>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
-      {
-        params: {
-          api_key: apiKey,
-          with_people: personId,
-          sort_by: "popularity.desc",
-        },
-      }
+    // Step 2: Query their explicit person tv_credits profile directly (Bypasses discover parameters)
+    const creditsResponse = await axios.get<{ crew: any[], cast: any[] }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${personId}/tv_credits`),
+      { params: { api_key: apiKey } }
     );
 
-    return discoverResponse.data.results
-      .filter((show) => show.id !== excludeTvId)
+    // Filter for unique shows where they were a "Creator", "Executive Producer", or "Writer"
+    const crewCredits = creditsResponse.data.crew || [];
+    const createdShows = crewCredits
+      .filter((credit) => 
+        credit.job === "Creator" || 
+        credit.job === "Executive Producer" || 
+        credit.job === "Writer"
+      )
+      .filter((show) => show.id !== excludeTvId);
+
+    // Remove any duplicate entries from matching episodes
+    const uniqueShowsMap = new Map<number, any>();
+    createdShows.forEach((show) => {
+      if (!uniqueShowsMap.has(show.id)) {
+        uniqueShowsMap.set(show.id, show);
+      }
+    });
+
+    return Array.from(uniqueShowsMap.values())
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
       .map((show) => ({
         id: show.id,
         title: show.name ?? "Untitled",
@@ -1160,6 +1215,7 @@ export async function getTvShowsByCreator(creatorName: string, excludeTvId: numb
     return [];
   }
 }
+
 
 
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
@@ -1407,7 +1463,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     const creators = showData.created_by?.map((c: any) => c.name) || [];
 
     // 🚀 CRUCIAL REFACTOR ELEMENT: Query by primary creator instead of generic TMDB recommendations
-    const primaryCreator = creators || "";
+    const primaryCreator = creators[0] || "";
     const creatorTvShows = primaryCreator
       ? await getTvShowsByCreator(primaryCreator, showData.id)
       : [];
