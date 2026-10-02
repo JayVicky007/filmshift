@@ -79,7 +79,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
     }),
     
     TextAlign.configure({
-      types: ['heading', 'paragraph'],
+      types: ['heading', 'paragraph', 'blockquote', 'image'],
     }),
     
     Image.configure({

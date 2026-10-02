@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import DeleteDraftButton from "@/components/DeleteDraftButton";
+// import ProfileForm from "@/components/ProfileForm"; // 🚀 Import the modification form tool!
+import ProfileSettingsDrawer from "@/components/ProfileSettingsDrawer";
 
 function formatDate(value: string | null) {
   if (!value) return "Not published";
@@ -55,6 +57,35 @@ export default async function ProfilePage() {
             {profile?.bio && <p className="mt-2 text-sm text-foreground/80">{profile.bio}</p>}
           </div>
         </header>
+
+
+           {/* 🚀 NEW: Integrated Edit Form Section */}
+        <section className="rounded-3xl border border-text-muted/15 bg-surface p-6 sm:p-8">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent mb-2">
+            Update My Details
+          </h2>
+          <p className="text-xs text-text-muted mb-6">
+            Modify how your identity appears across comments, articles, and public reviews.
+          </p>
+          
+          {/* Piping database states down into our input streams */}
+          {/* <ProfileForm 
+            userId={user.id}
+            email={user.email ?? ""}
+            initialUsername={profile?.username ?? ""}
+            initialDisplayName={profile?.display_name ?? ""}
+            initialAvatarUrl={profile?.avatar_url ?? ""}
+            initialBio={profile?.bio ?? ""}
+          /> */}
+
+          {/* 🚀 NEW DROPDOWN DRAWER: This replaces the open edit form section cleanly */}
+        <ProfileSettingsDrawer 
+          userId={user.id}
+          email={user.email ?? ""}
+          profile={profile}
+        />
+        
+        </section>
 
         {/* Dynamic Drafts Workspace Section (Only visible to the owner) */}
         <section>

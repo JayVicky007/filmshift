@@ -192,11 +192,25 @@ body {
   clear: both;
 }
 
+/* 🎯 TIPTAP EDITING CANVAS PARAGRAPH DEFAULTS */
+.prose .tiptap p,
+.prose-invert .tiptap p {
+  margin-top: 0.85rem !important;
+  margin-bottom: 0.85rem !important;
+  line-height: 1.8 !important;
+}
+
+/* Ensure floated elements don't collapse text wrappers */
+.prose .tiptap::after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
 /* ==========================================================================
    🎬 CINEMATIC ENTRY MOTION TRANSITIONS (Modal Safe)
    ========================================================================== */
-@keyframes cinematic-fade-entry {
+/* @keyframes cinematic-fade-entry {
   from {
     opacity: 0;
   }
@@ -207,5 +221,5 @@ body {
 
 .animate-fade-entry {
   animation: cinematic-fade-entry 400ms ease-out forwards;
-}
+} */
 

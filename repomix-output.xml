@@ -3791,17 +3791,18 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 </file>
 
 <file path="src/app/movie/[id]/page.tsx">
-// "use client";
-
-// import React, { useState } from "react";
-// import { getMovieDetails, type MovieDetails } from "@/utils/movieService";
+// import React from "react";
+// import { getMovieDetails } from "@/utils/movieService";
 // import ContentCarousel from "@/components/ContentCarousel";
 // import RatingRing from "@/components/RatingRing";
-// import { Play, X } from "lucide-react";
+// import Link from "next/link";
+// import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
 
-// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+//     const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+//     const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+//     const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
 
 // function formatRuntime(runtime: number | null) {
 //   if (!runtime) return "Runtime unavailable";
@@ -3816,45 +3817,20 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
 // function googleSearchUrl(name: string, movieTitle: string) {
 //   return `https://google.com/search?q=${encodeURIComponent(`${name} ${movieTitle}`)}`;
-
 // }
 
+// interface PageProps {
+//   params: Promise<{ id: string }>;
+// }
 
-// // 🚀 Core Page Server Component logic wrapped cleanly
-// export default function MovieDetailsPageWrapper({
-//   params,
-// }: {
-//   params: React.ComponentProps<any>["params"];
-// }) {
-//   const resolvedParams = React.use(params as any) as { id: string };
-//   const [movie, setMovie] = useState<MovieDetails | null>(null);
-//   const [error, setError] = useState(false);
-
-// React.useEffect(() => {
-//   getMovieDetails(resolvedParams.id)
-//     .then((data) => {
-//       if (data) {
-//         setMovie(data);
-//         // 🚀 Snap the browser back to the top of the screen when a new title loads!
-//         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-//       }
-//       else setError(true);
-//     })
-//     .catch(() => setError(true));
-// }, [resolvedParams.id]);
-
-//   if (error) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-//         <p className="text-xl font-semibold">Movie not found</p>
-//       </main>
-//     );
-//   }
+// export default async function MovieDetailsPage({ params }: PageProps) {
+//   const { id } = await params;
+//   const movie = await getMovieDetails(id);
 
 //   if (!movie) {
 //     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-//         <p className="text-xl font-semibold text-text-muted">Loading movie details...</p>
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-fade-entry">
+//         <p className="text-xl font-semibold">Movie not found</p>
 //       </main>
 //     );
 //   }
@@ -3863,7 +3839,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 //   const backdropUrl = movie.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${movie.backdrop_path}` : null;
 
 //   return (
-//     <main className="min-h-screen bg-background text-foreground">
+//     <main className="min-h-screen bg-background text-foreground animate-fade-entry">
 //       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
 //         {backdropUrl && (
 //           <div
@@ -3919,7 +3895,6 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 //               ))}
 //             </div>
 
-//           {/* 🚀 FIXED: Your design idea implemented seamlessly! Button sits cleanly side-by-side with score ring */}
 //             <div className="mt-8 flex flex-wrap items-center gap-4">
 //               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
 //                 <div>
@@ -3929,7 +3904,6 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 //                 <RatingRing rating={movie.audienceRating} size="sm" />
 //               </div>
               
-//                {/* The Smart Action Button Trigger */}
 //               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
 //             </div> 
 
@@ -4007,7 +3981,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 //                 <div key={person.id} className="min-w-0 text-center">
 //                   <a href={googleSearchUrl(person.name, movie.title)} target="_blank" rel="noreferrer" className="block no-underline">
 //                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-//                                             {person.profilePath ? (
+//                       {person.profilePath ? (
 //                         <img 
 //                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} 
 //                           alt={person.name} 
@@ -4026,73 +4000,12 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 //           </section>
 //         )}
 
-//         {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
-//         {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+// {movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
+// {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
 //       </div>
 //     </main>
 //   );
 // }
-
-// // 🚀 THE TMDB-STYLE FLOATING MODAL (Overlays completely above the navbar!)
-// function MovieTrailerModalButton({ trailerKey, movieTitle }: { trailerKey: string; movieTitle: string }) {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   return (
-//     <>
-//       <button
-//         type="button"
-//         onClick={() => setIsOpen(true)}
-//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-//       >
-//         <Play className="h-4 w-4 fill-current" />
-//         <span>Watch Trailer</span>
-//       </button>
-
-//       {/* The Cinematic Popout Backdrop Layer */}
-//       {isOpen && (
-//         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md animate-search-placeholder">
-//           {/* Backdrop absolute close target area */}
-//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-//           {/* Main Modal Card Box Component — Adjusted max-w-4xl for comfortable video playback */}
-//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-            
-//             {/* Header controls layout block */}
-//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
-//                 {movieTitle} — Trailer
-//               </h3>
-//               <button
-//                 type="button"
-//                 onClick={() => setIsOpen(false)}
-//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-//                 aria-label="Close trailer"
-//               >
-//                 <X className="h-5 w-5" />
-//               </button>
-//             </div>
-
-//             {/* ✅ FIXED: Added aspect-video and explicit layout relative controls */}
-//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-//               <iframe
-//                 src={`https://youtube.com/embed/${trailerKey}`}
-//                 title={`${movieTitle} Official Trailer`}
-//                 className="absolute inset-0 h-full w-full border-0"
-//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                 allowFullScreen
-//               />
-//             </div>
-
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
-
-
-
-
 
 
 
@@ -4104,11 +4017,9 @@ import RatingRing from "@/components/RatingRing";
 import Link from "next/link";
 import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
 
-
-    const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-    const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-    const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
+const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
 function formatRuntime(runtime: number | null) {
   if (!runtime) return "Runtime unavailable";
@@ -4211,7 +4122,8 @@ export default async function MovieDetailsPage({ params }: PageProps) {
               </div>
               
               {movie.trailer && <MovieTrailerModalButton trailerKey={movie.trailer.key} movieTitle={movie.title} />}
-            </div> 
+            </div>
+
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
               {movie.overview || "No summary is available for this movie."}
@@ -4306,8 +4218,9 @@ export default async function MovieDetailsPage({ params }: PageProps) {
           </section>
         )}
 
-{movie.similar.length > 0 && <ContentCarousel title="Similar Movies" movies={movie.similar} />}
-{movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
+        {/* 🚀 CONNECTED DYNAMIC LABELS: The refactored movie slider layout row */}
+        {movie.similar.length > 0 && <ContentCarousel title="More From This Director" movies={movie.similar} />}
+        {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
       </div>
     </main>
   );
@@ -4524,515 +4437,6 @@ body {
 
 .animate-fade-entry {
   animation: cinematic-fade-entry 400ms ease-out forwards;
-}
-</file>
-
-<file path="src/app/tv/[id]/page.tsx">
-// "use client";
-
-// import React, { useState } from "react";
-// import { getTvShowDetails, type TvShowDetails } from "@/utils/movieService";
-// import ContentCarousel from "@/components/ContentCarousel";
-// import RatingRing from "@/components/RatingRing";
-// import { Play, X } from "lucide-react";
-// import Link from "next/link";
-
-// const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-// const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-// const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-// function formatScore(score: number | null) {
-//   return score === null ? "N/A" : score.toFixed(1);
-// }
-
-// // 🚀 Fixed secure template match mapping law
-// function googleSearchUrl(name: string, showName: string) {
-//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
-// }
-
-// export default function TvShowDetailPage({
-//   params,
-// }: {
-//   params: React.ComponentProps<any>["params"];
-// }) {
-//   const resolvedParams = React.use(params as any) as { id: string };
-//   const [show, setShow] = useState<TvShowDetails | null>(null);
-//   const [error, setError] = useState(false);
-
-//   React.useEffect(() => {
-//     getTvShowDetails(resolvedParams.id)
-//       .then((data) => {
-//         if (data) {
-//           setShow(data);
-//           window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-//         } else {
-//           setError(true);
-//         }
-//       })
-//       .catch(() => setError(true));
-//   }, [resolvedParams.id]);
-
-//   if (error) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-//         <p className="text-xl font-semibold">TV Series not found</p>
-//       </main>
-//     );
-//   }
-
-//   if (!show) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground animate-pulse">
-//         <p className="text-xl font-semibold text-text-muted">Loading series details...</p>
-//       </main>
-//     );
-//   }
-
-//   const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
-//   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
-
-//   return (
-//     <main className="min-h-screen bg-background text-foreground pb-12">
-//       {/* 1. Immersive Hero Backdrop Header */}
-//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-//         {backdropUrl && (
-//           <div
-//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-//             style={{ backgroundImage: `url(${backdropUrl})` }}
-//             aria-hidden="true"
-//           />
-//         )}
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          
-//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-//             {posterUrl ? (
-//               <img
-//                 src={posterUrl}
-//                 alt={`${show.name} poster`}
-//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-//               />
-//             ) : (
-//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-//                 Poster unavailable
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="min-w-0 flex-1">
-//             <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-//               ← Back to Journal Dashboard
-//             </Link>
-            
-//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-//               {show.name}
-//             </h1>
-            
-//             {show.tagline && (
-//               <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
-//             )}
-
-//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-//               <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
-//               <span aria-hidden="true">·</span>
-//               <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
-//               <span aria-hidden="true">·</span>
-//               <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
-//             </div>
-
-//             <div className="mt-5 flex flex-wrap gap-2">
-//               {show.genres?.map((genre) => (
-//                 <span
-//                   key={genre.id}
-//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-//                 >
-//                   {genre.name}
-//                 </span>
-//               ))}
-//             </div>
-//             <div className="mt-8 flex flex-wrap items-center gap-4">
-//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-//                 <div>
-//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-//                   <p className="text-xs text-white/60">Score Rating</p>
-//                 </div>
-//                 <RatingRing rating={show.vote_average} size="sm" />
-//               </div>
-              
-//               {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
-//             </div>
-
-//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-//               {show.overview || "No summary is available for this series."}
-//             </p>
-
-//             <p className="mt-3 text-xs text-white/50 mb-10">
-//               {show.vote_count?.toLocaleString() || 0} audience votes
-//             </p>
-
-//             {/* 🚀 UPGRADED: Clean, full type-safe parity metrics across IMDb, Rotten Tomatoes, and Metacritic */}
-//             <section className="mt-10">
-//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {formatScore(show.ratings.imdb)}
-//                   </p>
-//                 </div>
-//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
-//                   </p>
-//                 </div>
-//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-//                   <p className="mt-1 text-2xl font-bold text-foreground">
-//                     {show.ratings.metascore === null ? "--" : show.ratings.metascore}
-//                   </p>
-//                   <p className="text-[10px] font-medium text-text-muted mt-0.5">
-//                     {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
-//                   </p>
-//                 </div>
-//               </div>
-//             </section>
-//           </div>
-//         </div>
-//       </section>
-
-//       {/* 2. Secondary Metadata Stack (Credits and Cast) */}
-//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-//         {show.creators && show.creators.length > 0 && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                 <span className="font-semibold text-text-muted">Created By:</span>{" "}
-//                 {show.creators.map((creator: string, index: number) => (
-//                   <span key={creator}>
-//                     {index > 0 ? ", " : ""}
-//                     <a
-//                       href={googleSearchUrl(creator, show.name)}
-//                       target="_blank"
-//                       rel="noreferrer"
-//                       className="no-underline transition-colors hover:text-accent"
-//                     >
-//                       {creator}
-//                     </a>
-//                   </span>
-//                 ))}
-//               </p>
-              
-//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-//                 <span className="font-semibold text-text-muted">Production Status:</span>{" "}
-//                 <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
-//               </p>
-//             </div>
-//           </section>
-//         )}
-
-//         {show.cast && show.cast.length > 0 && (
-//           <section className="md:px-4">
-//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-//               {show.cast.map((person) => (
-//                 <div key={person.id} className="min-w-0 text-center">
-//                   <a
-//                     href={googleSearchUrl(person.name, show.name)}
-//                     target="_blank"
-//                     rel="noreferrer"
-//                     className="block no-underline"
-//                   >
-//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-//                       {person.profilePath ? (
-//                         <img
-//                           src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`}
-//                           alt={person.name}
-//                           className="h-full w-full object-cover"
-//                         />
-//                       ) : (
-//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-//                       )}
-//                     </div>
-//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-//                   </a>
-//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
-//                 </div>
-//               ))}
-//             </div>
-//           </section>
-//         )}
-
-//         {show.similar && show.similar.length > 0 && (
-//           <ContentCarousel title="Similar TV Shows" movies={show.similar} />
-//         )}
-
-//         {show.recommendations && show.recommendations.length > 0 && (
-//           <ContentCarousel title="Recommendations" movies={show.recommendations} />
-//         )}
-//       </div>
-//     </main>
-//   );
-// }
-
-// function TvTrailerModalButton({ trailerKey, seriesTitle }: { trailerKey: string; seriesTitle: string }) {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   return (
-//     <>
-//       <button
-//         type="button"
-//         onClick={() => setIsOpen(true)}
-//         className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 h-14 font-bold text-slate-950 transition-all hover:bg-yellow-300 hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer"
-//       >
-//         <Play className="h-4 w-4 fill-current" />
-//         <span>Watch Trailer</span>
-//       </button>
-
-//       {isOpen && (
-//         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 sm:p-6 backdrop-blur-md">
-//           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-          
-//           <div className="relative w-full max-w-4xl rounded-2xl border border-text-muted/20 bg-surface p-4 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10">
-//             <div className="flex items-center justify-between pb-3 px-1 border-b border-text-muted/10 shrink-0 mb-3">
-//               <h3 className="font-bold text-foreground text-sm truncate pr-4">
-//                 {seriesTitle} — Trailer
-//               </h3>
-//               <button
-//                 type="button"
-//                 onClick={() => setIsOpen(false)}
-//                 className="rounded-full p-2 text-text-muted hover:bg-text-muted/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-//                 aria-label="Close trailer"
-//               >
-//                 <X className="h-5 w-5" />
-//               </button>
-//             </div>
-
-//             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-text-muted/10">              
-//               <iframe
-//                 src={`https://youtube.com/embed/${trailerKey}`}
-//                 title={`${seriesTitle} Official Trailer`}
-//                 className="absolute inset-0 h-full w-full border-0"
-//                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                 allowFullScreen
-//               />
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
-
-
-
-
-import React from "react";
-import { getTvShowDetails } from "@/utils/movieService";
-import ContentCarousel from "@/components/ContentCarousel";
-import RatingRing from "@/components/RatingRing";
-import Link from "next/link";
-import { TvTrailerModalButton } from "./TvTrailerModalButton";
-
-
-  const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
-	const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
-	const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
-
-
-function formatScore(score: number | null) {
-  return score === null ? "N/A" : score.toFixed(1);
-}
-
-function googleSearchUrl(name: string, showName: string) {
-  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
-}
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function TvShowDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const show = await getTvShowDetails(id);
-
-  if (!show) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
-        <p className="text-xl font-semibold">TV Series not found</p>
-      </main>
-    );
-  }
-
-  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
-  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
-
-  return (
-    <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
-      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
-        {backdropUrl && (
-          <div
-            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: `url(${backdropUrl})` }}
-            aria-hidden="true"
-          />
-        )}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
-
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
-          
-          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
-            {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={`${show.name} poster`}
-                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
-                Poster unavailable
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-              ← Back to Journal Dashboard
-            </Link>
-            
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
-              {show.name}
-            </h1>
-            
-            {show.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
-            )}
-
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
-              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
-              <span aria-hidden="true">·</span>
-              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {show.genres?.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
-                >
-                  {genre.name}
-                </span>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
-                  <p className="text-xs text-white/60">Score Rating</p>
-                </div>
-                <RatingRing rating={show.vote_average} size="sm" />
-              </div>
-              
-              {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
-            </div>
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
-              {show.overview || "No summary is available for this series."}
-            </p>
-
-            <p className="mt-3 text-xs text-white/50 mb-10">
-              {show.vote_count?.toLocaleString() || 0} audience votes
-            </p>
-
-            <section className="mt-10">
-              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {formatScore(show.ratings.imdb)}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
-                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {show.ratings.metascore === null ? "--" : show.ratings.metascore}
-                  </p>
-                  <p className="text-[10px] font-medium text-text-muted mt-0.5">
-                    {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
-                  </p>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {show.creators && show.creators.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Created By:</span>{" "}
-                {show.creators.map((creator: string, index: number) => (
-                  <span key={creator}>
-                    {index > 0 ? ", " : ""}
-                    <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                      {creator}
-                    </a>
-                  </span>
-                ))}
-              </p>
-              
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Production Status:</span>{" "}
-                <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
-              </p>
-            </div>
-          </section>
-        )}
-
-        {show.cast && show.cast.length > 0 && (
-          <section className="md:px-4">
-            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
-            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
-              {show.cast.map((person) => (
-                <div key={person.id} className="min-w-0 text-center">
-                  <a href={googleSearchUrl(person.name, show.name)} target="_blank" rel="noreferrer" className="block no-underline">
-                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
-                      {person.profilePath ? (
-                        <img src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} alt={person.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
-                      )}
-                    </div>
-                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
-                  </a>
-                  <p className="truncate text-sm text-text-muted">{person.character}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {show.similar && show.similar.length > 0 && <ContentCarousel title="Similar TV Shows" movies={show.similar} />}
-        {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
-      </div>
-    </main>
-  );
 }
 </file>
 
@@ -5421,85 +4825,1177 @@ export default function Navbar() {
 }
 </file>
 
-<file path="src/utils/movieService.ts">
-import axios from "axios";
+<file path="src/app/tv/[id]/page.tsx">
+// import React from "react";
+// import { getTvShowDetails } from "@/utils/movieService";
+// import ContentCarousel from "@/components/ContentCarousel";
+// import RatingRing from "@/components/RatingRing";
+// import Link from "next/link";
+// import { TvTrailerModalButton } from "./TvTrailerModalButton";
 
 
-// 🚀 Fetch both trending movies and TV shows, then blend them together cleanly
-export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
-  try {
-    const [movies, tvShows] = await Promise.all([
-      getTrendingMoviesByPeriod(period),
-      // Fallback to "week" if period is "year" since TMDB tv endpoint defaults to day/week
-      getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
-    ]);
+//   const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// 	const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+// 	const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
 
-    // Interleave them or combine and slice
-    const combined: ContentItem[] = [];
-    const maxLength = Math.max(movies.length, tvShows.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
-      if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
-    }
 
-    return combined;
-  } catch (error) {
-    console.error("❌ Failed to fetch unified trending content:", error);
-    return getTrendingMoviesByPeriod(period); // Fallback to movies if it fails
+// function formatScore(score: number | null) {
+//   return score === null ? "N/A" : score.toFixed(1);
+// }
+
+// function googleSearchUrl(name: string, showName: string) {
+//   return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
+// }
+
+// interface PageProps {
+//   params: Promise<{ id: string }>;
+// }
+
+// export default async function TvShowDetailPage({ params }: PageProps) {
+//   const { id } = await params;
+//   const show = await getTvShowDetails(id);
+
+//   if (!show) {
+//     return (
+//       <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+//         <p className="text-xl font-semibold">TV Series not found</p>
+//       </main>
+//     );
+//   }
+
+//   const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
+//   const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
+
+//   return (
+//     <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
+//       <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+//         {backdropUrl && (
+//           <div
+//             className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+//             style={{ backgroundImage: `url(${backdropUrl})` }}
+//             aria-hidden="true"
+//           />
+//         )}
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+//         <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+//         <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+//           <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+//             {posterUrl ? (
+//               <img
+//                 src={posterUrl}
+//                 alt={`${show.name} poster`}
+//                 className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+//               />
+//             ) : (
+//               <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+//                 Poster unavailable
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="min-w-0 flex-1">
+//             <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
+//               ← Back to Journal Dashboard
+//             </Link>
+            
+//             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+//               {show.name}
+//             </h1>
+            
+//             {show.tagline && (
+//               <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+//             )}
+
+//             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+//               <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
+//               <span aria-hidden="true">·</span>
+//               <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
+//             </div>
+
+//             <div className="mt-5 flex flex-wrap gap-2">
+//               {show.genres?.map((genre) => (
+//                 <span
+//                   key={genre.id}
+//                   className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+//                 >
+//                   {genre.name}
+//                 </span>
+//               ))}
+//             </div>
+//             <div className="mt-8 flex flex-wrap items-center gap-4">
+//               <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+//                   <p className="text-xs text-white/60">Score Rating</p>
+//                 </div>
+//                 <RatingRing rating={show.vote_average} size="sm" />
+//               </div>
+              
+//               {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
+//             </div>
+
+//             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+//               {show.overview || "No summary is available for this series."}
+//             </p>
+
+//             <p className="mt-3 text-xs text-white/50 mb-10">
+//               {show.vote_count?.toLocaleString() || 0} audience votes
+//             </p>
+
+//             <section className="mt-10">
+//               <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+//               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+//                 <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {formatScore(show.ratings.imdb)}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
+//                   </p>
+//                 </div>
+//                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+//                   <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+//                   <p className="mt-1 text-2xl font-bold text-foreground">
+//                     {show.ratings.metascore === null ? "--" : show.ratings.metascore}
+//                   </p>
+//                   <p className="text-[10px] font-medium text-text-muted mt-0.5">
+//                     {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
+//                   </p>
+//                 </div>
+//               </div>
+//             </section>
+//           </div>
+//         </div>
+//       </section>
+
+//       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+//         {show.creators && show.creators.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+//             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                 <span className="font-semibold text-text-muted">Created By:</span>{" "}
+//                 {show.creators.map((creator: string, index: number) => (
+//                   <span key={creator}>
+//                     {index > 0 ? ", " : ""}
+//                     <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+//                       {creator}
+//                     </a>
+//                   </span>
+//                 ))}
+//               </p>
+              
+//               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+//                 <span className="font-semibold text-text-muted">Production Status:</span>{" "}
+//                 <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
+//               </p>
+//             </div>
+//           </section>
+//         )}
+
+//         {show.cast && show.cast.length > 0 && (
+//           <section className="md:px-4">
+//             <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+//             <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+//               {show.cast.map((person) => (
+//                 <div key={person.id} className="min-w-0 text-center">
+//                   <a href={googleSearchUrl(person.name, show.name)} target="_blank" rel="noreferrer" className="block no-underline">
+//                     <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+//                       {person.profilePath ? (
+//                         <img src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} alt={person.name} className="h-full w-full object-cover" />
+//                       ) : (
+//                         <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+//                       )}
+//                     </div>
+//                     <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+//                   </a>
+//                   <p className="truncate text-sm text-text-muted">{person.character}</p>
+//                 </div>
+//               ))}
+//             </div>
+//           </section>
+//         )}
+
+//         {show.similar && show.similar.length > 0 && <ContentCarousel title="Similar TV Shows" movies={show.similar} />}
+//         {show.recommendations && show.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={show.recommendations} />}
+//       </div>
+//     </main>
+//   );
+// }
+
+
+
+
+
+import React from "react";
+import { getTvShowDetails } from "@/utils/movieService";
+import ContentCarousel from "@/components/ContentCarousel";
+import RatingRing from "@/components/RatingRing";
+import Link from "next/link";
+import { TvTrailerModalButton } from "./TvTrailerModalButton";
+
+const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
+const TMDB_PROFILE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+
+function formatScore(score: number | null) {
+  return score === null ? "N/A" : score.toFixed(1);
+}
+
+function googleSearchUrl(name: string, showName: string) {
+  return `https://google.com/search?q=${encodeURIComponent(`${name} ${showName}`)}`;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function TvShowDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const show = await getTvShowDetails(id);
+
+  if (!show) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-8 text-foreground">
+        <p className="text-xl font-semibold">TV Series not found</p>
+      </main>
+    );
   }
+
+  const posterUrl = show.poster_path ? `${TMDB_POSTER_BASE_URL}${show.poster_path}` : null;
+  const backdropUrl = show.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${show.backdrop_path}` : null;
+
+  return (
+    <main className="min-h-screen bg-background text-foreground pb-12 animate-fade-entry">
+      <section className="relative isolate overflow-hidden border-b border-text-muted/15">
+        {backdropUrl && (
+          <div
+            className="absolute inset-0 -z-20 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: `url(${backdropUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,18,35,0.98)_0%,rgba(7,18,35,0.9)_48%,rgba(7,18,35,0.62)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,var(--background)_0%,transparent_45%,rgba(7,18,35,0.4)_100%)]" />
+
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-8 px-5 pb-16 pt-8 sm:px-8 md:flex-row md:items-start md:gap-10 md:px-10 md:pt-14 lg:gap-12 lg:px-12">
+          
+          <div className="w-full min-w-0 flex-shrink-0 md:w-[300px] lg:w-[350px]">
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt={`${show.name} poster`}
+                className="h-auto w-full rounded-[28px] border border-text-muted/15 object-contain shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+              />
+            ) : (
+              <div className="flex aspect-[2/3] items-center justify-center rounded-[28px] border border-text-muted/15 bg-surface p-6 text-center text-text-muted">
+                Poster unavailable
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
+              ← Back to Journal Dashboard
+            </Link>
+            
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+              {show.name}
+            </h1>
+            
+            {show.tagline && (
+              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">TV Series</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.first_air_date ? show.first_air_date.slice(0, 4) : "N/A"}</span>
+              <span aria-hidden="true">·</span>
+              <span>{show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"} ({show.number_of_episodes} eps)</span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {show.genres?.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-sm text-white"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-2 flex items-center gap-3 h-14">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Audience</p>
+                  <p className="text-xs text-white/60">Score Rating</p>
+                </div>
+                <RatingRing rating={show.vote_average} size="sm" />
+              </div>
+              
+              {show.trailer && <TvTrailerModalButton trailerKey={show.trailer.key} seriesTitle={show.name} />}
+            </div>
+
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/85">
+              {show.overview || "No summary is available for this series."}
+            </p>
+
+            <p className="mt-3 text-xs text-white/50 mb-10">
+              {show.vote_count?.toLocaleString() || 0} audience votes
+            </p>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-white">Critic Scores</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">IMDb Rating</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {formatScore(show.ratings.imdb)}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Rotten Tomatoes</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {show.ratings.rottenTomatoes === null ? "N/A" : `${show.ratings.rottenTomatoes}%`}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-foreground shadow-sm">
+                  <p className="text-sm font-semibold text-text-muted">Metacritic</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {show.ratings.metascore === null ? "--" : show.ratings.metascore}
+                  </p>
+                  <p className="text-[10px] font-medium text-text-muted mt-0.5">
+                    {show.ratings.metascore !== null ? "Official Metascore" : "No Score Available"}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        {show.creators && show.creators.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Credits</h2>
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <span className="font-semibold text-text-muted">Created By:</span>{" "}
+                {show.creators.map((creator: string, index: number) => (
+                  <span key={creator}>
+                    {index > 0 ? ", " : ""}
+                    <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                      {creator}
+                    </a>
+                  </span>
+                ))}
+              </p>
+              
+              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                <span className="font-semibold text-text-muted">Production Status:</span>{" "}
+                <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
+              </p>
+            </div>
+          </section>
+        )}
+
+        {show.cast && show.cast.length > 0 && (
+          <section className="md:px-4">
+            <h2 className="pl-1 text-2xl font-bold">Top Cast</h2>
+            <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+              {show.cast.map((person) => (
+                <div key={person.id} className="min-w-0 text-center">
+                  <a href={googleSearchUrl(person.name, show.name)} target="_blank" rel="noreferrer" className="block no-underline">
+                    <div className="mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-full border border-text-muted/15 bg-surface">
+                      {person.profilePath ? (
+                        <img src={`${TMDB_PROFILE_BASE_URL}${person.profilePath}`} alt={person.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-2xl text-text-muted bg-surface/50">?</div>
+                      )}
+                    </div>
+                    <p className="mt-3 truncate font-semibold transition-colors hover:text-accent">{person.name}</p>
+                  </a>
+                  <p className="truncate text-sm text-text-muted">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 🚀 CONNECTED DYNAMIC LABELS: Displays the updated text contract header */}
+        {show.similar && show.similar.length > 0 && (
+          <ContentCarousel title="More From This Creator" movies={show.similar} />
+        )}
+        {show.recommendations && show.recommendations.length > 0 && (
+          <ContentCarousel title="Recommendations" movies={show.recommendations} />
+        )}
+      </div>
+    </main>
+  );
 }
+</file>
+
+<file path="src/utils/movieService.ts">
+// import axios from "axios";
+
+
+// // 🚀 Fetch both trending movies and TV shows, then blend them together cleanly
+// export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
+//   try {
+//     const [movies, tvShows] = await Promise.all([
+//       getTrendingMoviesByPeriod(period),
+//       // Fallback to "week" if period is "year" since TMDB tv endpoint defaults to day/week
+//       getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
+//     ]);
+
+//     // Interleave them or combine and slice
+//     const combined: ContentItem[] = [];
+//     const maxLength = Math.max(movies.length, tvShows.length);
+    
+//     for (let i = 0; i < maxLength; i++) {
+//       if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
+//       if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
+//     }
+
+//     return combined;
+//   } catch (error) {
+//     console.error("❌ Failed to fetch unified trending content:", error);
+//     return getTrendingMoviesByPeriod(period); // Fallback to movies if it fails
+//   }
+// }
 
 
 
-interface TmdbGenre {
-  id: number;
-  name: string;
-}
+// interface TmdbGenre {
+//   id: number;
+//   name: string;
+// }
 
-interface TmdbMovie {
-  id: number;
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  vote_average: number;
-  vote_count: number;
-  status: string;
-  tagline: string;
-  genres: TmdbGenre[];
-  runtime: number | null;
-  videos?: {
-    results: Array<{
-      key: string;
-      name: string;
-      site: string;
-      type: string;
-      official: boolean;
-    }>;
-  };
-  credits?: {
-    cast: Array<{
-      id: number;
-      name: string;
-      character: string;
-      profile_path: string | null;
-      order: number;
-    }>;
-    crew: Array<{
-      id: number;
-      name: string;
-      job: string;
-      department: string;
-    }>;
-  };
-  similar?: { results: ContentItem[] };
-  recommendations?: { results: ContentItem[] };
-  external_ids?: {
-    imdb_id?: string | null;
-  };
-}
+// interface TmdbMovie {
+//   id: number;
+//   title: string;
+//   overview: string;
+//   poster_path: string | null;
+//   backdrop_path: string | null;
+//   release_date: string;
+//   vote_average: number;
+//   vote_count: number;
+//   status: string;
+//   tagline: string;
+//   genres: TmdbGenre[];
+//   runtime: number | null;
+//   videos?: {
+//     results: Array<{
+//       key: string;
+//       name: string;
+//       site: string;
+//       type: string;
+//       official: boolean;
+//     }>;
+//   };
+//   credits?: {
+//     cast: Array<{
+//       id: number;
+//       name: string;
+//       character: string;
+//       profile_path: string | null;
+//       order: number;
+//     }>;
+//     crew: Array<{
+//       id: number;
+//       name: string;
+//       job: string;
+//       department: string;
+//     }>;
+//   };
+//   similar?: { results: ContentItem[] };
+//   recommendations?: { results: ContentItem[] };
+//   external_ids?: {
+//     imdb_id?: string | null;
+//   };
+// }
+
+// export interface ContentItem {
+//   id: number;
+//   title: string;
+//   poster_path: string | null;
+//   release_date: string;
+//   vote_average: number;
+//   vote_count?: number;
+//   media_type?: string;
+// }
+
+// /** @deprecated Use ContentItem for shared movie, series, and other content lists. */
+// export type TrendingMovie = ContentItem;
+
+// export interface SearchSuggestion {
+//   id: number;
+//   title: string;
+//   mediaType: "Movie" | "TV Series" | "Animation" | "Anime" | "Documentary" | "Person" | string;
+//   rawMediaType: "movie" | "tv" | "person"; // 🚀 Add this line!
+//   posterPath: string | null;
+// }
+
+// export const movieCategories = [
+//   "trending",
+//   "upcoming",
+//   "now-playing",
+//   "top-rated",
+// ] as const;
+
+// export type MovieCategory = (typeof movieCategories)[number];
+
+// export const trendingPeriods = ["day", "week", "month", "year"] as const;
+
+// export type TrendingPeriod = (typeof trendingPeriods)[number];
+
+// export const topRatedPeriods = ["all-time", "year", "month"] as const;
+
+// export type TopRatedPeriod = (typeof topRatedPeriods)[number];
+
+// export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
+//   const globalMean = movies.length > 0
+//     ? movies.reduce((sum, movie) => sum + movie.vote_average, 0) / movies.length
+//     : 7;
+//   const minimumVotes = 1000;
+
+//   return movies
+//     .map((movie) => {
+//       const voteCount = movie.vote_count ?? 0;
+//       const bayesianRating =
+//         (voteCount / (voteCount + minimumVotes)) * movie.vote_average +
+//         (minimumVotes / (voteCount + minimumVotes)) * globalMean;
+//       const releaseYear = Number.parseInt(movie.release_date.slice(0, 4), 10);
+//       const ageBonus = Number.isFinite(releaseYear)
+//         ? Math.min(0.15, Math.max(0, (new Date().getFullYear() - releaseYear) / 500))
+//         : 0;
+
+//       return { movie, score: bayesianRating + ageBonus };
+//     })
+//     .sort((first, second) => second.score - first.score)
+//     .map(({ movie }) => movie);
+// }
+
+// export function formatMovieRating(rating: number | null | undefined) {
+//   return rating && Number.isFinite(rating) && rating > 0
+//     ? `${rating.toFixed(1)}/10`
+//     : "--/10";
+// }
+
+// interface OmdbRating {
+//   Source: string;
+//   Value: string;
+// }
+
+// interface OmdbMovie {
+//   imdbRating?: string;
+//   Metascore?: string;
+//   Ratings?: OmdbRating[];
+// }
+
+// export interface MovieDetails {
+//   id: number;
+//   title: string;
+//   overview: string;
+//   poster_path: string | null;
+//   backdrop_path: string | null;
+//   release_date: string;
+//   status: string;
+//   tagline: string;
+//   audienceRating: number;
+//   audienceVoteCount: number;
+//   trailer: {
+//     key: string;
+//     name: string;
+//   } | null;
+//   directors: string[];
+//   writers: string[];
+//   cast: Array<{
+//     id: number;
+//     name: string;
+//     character: string;
+//     profilePath: string | null;
+//   }>;
+//   similar: ContentItem[];
+//   recommendations: ContentItem[];
+//   genres: TmdbGenre[];
+//   runtime: number | null;
+//   ratings: {
+//     imdb: number | null;
+//     rottenTomatoes: number | null;
+//     metascore: number | null;
+//   };
+// }
+
+// const getApiUrl = (baseUrl: string | undefined, path: string) => {
+//   // If the passed baseUrl is undefined, look up the target endpoint type to provide the correct default
+//   let cleanBaseUrl = baseUrl;
+  
+//   if (!cleanBaseUrl) {
+//     if (path.includes("movie") || path.includes("tv") || path.includes("trending") || path.includes("discover") || path.includes("search")) {
+//       cleanBaseUrl = "https://themoviedb.org";
+//     } else {
+//       cleanBaseUrl = "https://omdbapi.com";
+//     }
+//   }
+
+//   return `${cleanBaseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+// };
+
+// const parseScore = (score: string | undefined, suffix = "") => {
+//   if (!score) {
+//     return null;
+//   }
+
+//   const normalizedScore = suffix ? score.replace(suffix, "") : score;
+//   const parsedScore = Number.parseFloat(normalizedScore);
+
+//   return Number.isNaN(parsedScore) ? null : parsedScore;
+// };
+
+// export async function getTrendingMovies(): Promise<ContentItem[]> {
+//   return getMoviesByCategory("trending");
+// }
+
+// export async function getMoviesByCategory(
+//   category: MovieCategory,
+// ): Promise<ContentItem[]> {
+//   const endpoint = category === "trending"
+//     ? "trending/movie/week"
+//     : `movie/${category.replace("-", "_")}`;
+//   const response = await axios.get<{ results: ContentItem[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, endpoint),
+//     {
+//       params: {
+//         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//       },
+//     },
+//   );
+
+//   const movies = response.data.results;
+
+//   if (category === "upcoming") {
+//     const today = new Date().toISOString().slice(0, 10);
+//     return movies.filter((movie) => movie.release_date >= today);
+//   }
+
+//   return movies;
+// }
+
+// export async function getTrendingMoviesByPeriod(
+//   period: TrendingPeriod,
+// ): Promise<ContentItem[]> {
+//   if (period === "day" || period === "week") {
+//     const response = await axios.get<{ results: ContentItem[] }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/movie/${period}`),
+//       { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } },
+//     );
+
+//     return response.data.results;
+//   }
+
+//   const today = new Date();
+//   const startDate = new Date(today);
+//   startDate.setDate(today.getDate() - (period === "month" ? 30 : 365));
+//   const response = await axios.get<{ results: ContentItem[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+//     {
+//       params: {
+//         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//         sort_by: "popularity.desc",
+//         "primary_release_date.gte": startDate.toISOString().slice(0, 10),
+//         "primary_release_date.lte": today.toISOString().slice(0, 10),
+//       },
+//     },
+//   );
+
+//   return response.data.results;
+// }
+
+// export async function getTopRatedMoviesByPeriod(
+//   period: TopRatedPeriod,
+// ): Promise<ContentItem[]> {
+//   if (period === "all-time") {
+//     const today = new Date();
+//     const responses = await Promise.all(
+//       Array.from({ length: 25 }, (_, index) => index + 1).map((page) =>
+//         axios.get<{ results: ContentItem[] }>(
+//           getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+//           {
+//             params: {
+//               api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//               sort_by: "vote_count.desc",
+//               "vote_count.gte": 1000,
+//               page,
+//             },
+//           },
+//         ),
+//       ),
+//     );
+//     const candidates = responses
+//       .flatMap((response) => response.data.results)
+//       .filter((movie) => movie.release_date <= today.toISOString().slice(0, 10))
+//       .filter((movie) => {
+//         const releaseYear = Number.parseInt(movie.release_date.slice(0, 4), 10);
+//         const ageInYears = today.getFullYear() - releaseYear;
+//         const minimumVotes = ageInYears < 2
+//           ? 10000
+//           : ageInYears < 5
+//             ? 5000
+//             : 1000;
+
+//         return (movie.vote_count ?? 0) >= minimumVotes;
+//       });
+
+//     return rankAllTimeMovies(candidates);
+//   }
+
+//   const today = new Date();
+//   const startDate = new Date(today);
+//   const days = period === "year" ? 365 : 30;
+//   startDate.setDate(today.getDate() - days);
+
+//   const response = await axios.get<{ results: ContentItem[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+//     {
+//       params: {
+//         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//         sort_by: "vote_average.desc",
+//         "vote_count.gte": period === "year" ? 100 : 25,
+//         "primary_release_date.gte": startDate.toISOString().slice(0, 10),
+//         "primary_release_date.lte": today.toISOString().slice(0, 10),
+//       },
+//     },
+//   );
+
+//   return response.data.results;
+// }
+
+// export async function searchMovies(query: string): Promise<ContentItem[]> {
+//   if (!query.trim()) {
+//     return [];
+//   }
+
+//   // 🚀 Switch endpoint from search/movie to search/multi to match suggestions behavior
+//   const response = await axios.get<{ results: any[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/multi"),
+//     {
+//       params: {
+//         api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//         query: query.trim(),
+//         include_adult: false,
+//       },
+//     }
+//   );
+
+//   // Filter out people (actors) so the grid only renders clean watchable cards
+//   return response.data.results
+//     .filter((item) => item.media_type === "movie" || item.media_type === "tv")
+//     .map((item) => ({
+//       id: item.id,
+//       title: item.title ?? item.name ?? "Untitled", // Handle movie titles & tv names safely
+//       poster_path: item.poster_path,
+//       release_date: item.release_date || item.first_air_date || "",
+//       vote_average: item.vote_average ?? 0,
+//       media_type: item.media_type,
+//     }));
+// }
+
+// export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
+//   const response = await axios.get<{
+//     results: Array<{
+//       id: number;
+//       media_type: "movie" | "tv" | "person";
+//       title?: string;
+//       name?: string;
+//       poster_path?: string | null;
+//       profile_path?: string | null;
+//       genre_ids?: number[];
+//       original_language?: string;
+//       release_date?: string;
+//       first_air_date?: string;
+//     }>;
+//   }>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/multi"), {
+//     params: {
+//       api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+//       query: query.trim(),
+//       include_adult: false,
+//     },
+//   });
+
+//   return response.data.results
+//     .filter((result) => result.media_type === "movie" || result.media_type === "tv" || result.media_type === "person")
+//     .slice(0, 6)
+//     .map((result) => {
+//       // 🚀 Grab the release or first air year for brackets
+//       const rawDate = result.release_date || result.first_air_date || "";
+//       const year = rawDate ? ` (${rawDate.slice(0, 4)})` : "";
+//       const baseTitle = result.title ?? result.name ?? "Untitled";
+
+//       return {
+//         id: result.id,
+//         title: result.media_type === "person" ? baseTitle : `${baseTitle}${year}`,
+//         rawMediaType: result.media_type, // 🚀 Pass the absolute truth!
+//         mediaType: result.media_type === "person"
+//           ? "Person"
+//           : result.genre_ids?.includes(99)
+//             ? "Documentary"
+//             : result.genre_ids?.includes(16) && result.original_language === "ja"
+//               ? "Anime"
+//               : result.genre_ids?.includes(16)
+//                 ? "Animation"
+//                 : result.media_type === "tv"
+//                   ? "TV Series"
+//                   : "Movie",
+//         posterPath: result.poster_path ?? result.profile_path ?? null,
+//       };
+//     });
+// }
+
+// export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
+//   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  
+//   // 🚀 Early return if API Key is missing during static site building phase
+//   if (!apiKey) {
+//     throw new Error("TMDB API Key is missing from the server environment config.");
+//   }
+
+//   // Phase 1: Fetch lightweight core TMDB data...
+//   const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
+//   const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
+//     params: { api_key: apiKey, append_to_response: "external_ids,videos" },
+//   });
+
+//   const movieData = coreTmdbResponse.data;
+//   const imdbId = movieData.external_ids?.imdb_id;
+
+//   // 🚀 Phase 2: Kick off the OMDb Critic request and the heavy TMDB sub-requests concurrently!
+//   const omdbPromise = imdbId
+//     ? axios.get<OmdbMovie>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+//         params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: imdbId },
+//       }).catch(() => null) // Gracefully catch network dropouts
+//     : Promise.resolve(null);
+
+//   const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/credits`), {
+//     params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//   }).catch(() => ({ data: { cast: [], crew: [] } }));
+
+//   const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/similar`), {
+//     params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//   }).catch(() => ({ data: { results: [] } }));
+
+//   const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/recommendations`), {
+//     params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//   }).catch(() => ({ data: { results: [] } }));
+
+//   // Execute all secondary lookups concurrently on the server background
+//   const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+//     omdbPromise,
+//     creditsPromise,
+//     similarPromise,
+//     recommendationsPromise,
+//   ]);
+
+//   // 🚀 Phase 3: Parse and aggregate values cleanly into the layout contract
+//   const trailer = movieData.videos?.results.find(
+//     (video: any) => video.site === "YouTube" && video.type === "Trailer" && video.official
+//   ) ?? movieData.videos?.results.find((video: any) => video.site === "YouTube" && video.type === "Trailer") ?? null;
+
+//   let imdbRating: number | null = null;
+//   let rottenTomatoes: number | null = null;
+//   let metascore: number | null = null;
+
+//   if (omdbResult && omdbResult.data) {
+//     const omdbMovie = omdbResult.data;
+//     imdbRating = parseScore(omdbMovie.imdbRating);
+//     metascore = parseScore(omdbMovie.Metascore);
+//     rottenTomatoes = parseScore(
+//       omdbMovie.Ratings?.find((rating) => rating.Source === "Rotten Tomatoes")?.Value,
+//       "%"
+//     );
+//   }
+
+//   const crew = creditsResult.data.crew || [];
+//   const cast = creditsResult.data.cast || [];
+
+//   return {
+//     id: movieData.id,
+//     title: movieData.title,
+//     overview: movieData.overview,
+//     poster_path: movieData.poster_path,
+//     backdrop_path: movieData.backdrop_path,
+//     release_date: movieData.release_date,
+//     status: movieData.status,
+//     tagline: movieData.tagline,
+//     audienceRating: movieData.vote_average,
+//     audienceVoteCount: movieData.vote_count,
+//     trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+//     directors: crew
+//       .filter((person: any) => person.job === "Director")
+//       .map((person: any) => person.name)
+//       .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+//     writers: crew
+//       .filter((person: any) => person.job === "Writer" || person.job === "Screenplay")
+//       .map((person: any) => person.name)
+//       .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+//     cast: cast
+//       .sort((first: any, second: any) => first.order - second.order)
+//       .slice(0, 6)
+//       .map((person: any) => ({
+//         id: person.id,
+//         name: person.name,
+//         character: person.character,
+//         profilePath: person.profile_path,
+//       })),
+//     similar: similarResult.data.results?.slice(0, 10) || [],
+//     recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
+//     genres: movieData.genres || [],
+//     runtime: movieData.runtime,
+//     ratings: {
+//       imdb: imdbRating,
+//       rottenTomatoes,
+//       metascore,
+//     },
+//   };
+// }
+
+
+// export interface TvShowDetails {
+//   id: number;
+//   name: string;
+//   overview: string;
+//   poster_path: string | null;
+//   backdrop_path: string | null;
+//   first_air_date: string;
+//   status: string;
+//   tagline: string;
+//   vote_average: number;
+//   vote_count: number;
+//   number_of_seasons: number;
+//   number_of_episodes: number;
+//   creators: string[];
+//   genres: TmdbGenre[];
+//   cast: Array<{
+//     id: number;
+//     name: string;
+//     character: string;
+//     profilePath: string | null;
+//   }>;
+//   similar: ContentItem[];
+//   recommendations: ContentItem[];
+  
+//   // 🚀 UPGRADED: Unified multi-source tracking fields to support Metacritic parity
+//   ratings: {
+//     imdb: number | null;
+//     rottenTomatoes: number | null;
+//     metascore: number | null;
+//   };
+//   trailer: {
+//     key: string;
+//     name: string;
+//   } | null;
+// }
+
+
+
+// export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
+//   try {
+//     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    
+//     // 🚀 Early return safety check for TV pipeline
+//     if (!apiKey) {
+//       console.warn("⚠️ TV Fetch aborted: TMDB API Key missing.");
+//       return null;
+//     }
+
+//     // Phase 1: Rapid core fetch...
+//     const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
+//     const coreTvResponse = await axios.get<any>(coreTvUrl, {
+//       params: { api_key: apiKey, append_to_response: "external_ids,videos" },
+//     });
+
+//     const showData = coreTvResponse.data;
+//     const tvImdbId = showData.external_ids?.imdb_id || (showData.external_ids as any)?.results?.imdb_id;
+
+//     // 🚀 Phase 2: Parallelize external OMDb metrics along with TV sub-catalogs
+//     const omdbPromise = tvImdbId
+//       ? axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
+//           params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: tvImdbId },
+//         }).catch(() => null)
+//       : Promise.resolve(null);
+
+//     const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/credits`), {
+//       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//     }).catch(() => ({ data: { cast: [] } }));
+
+//     const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/similar`), {
+//       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//     }).catch(() => ({ data: { results: [] } }));
+
+//     const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/recommendations`), {
+//       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
+//     }).catch(() => ({ data: { results: [] } }));
+
+//     const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+//       omdbPromise,
+//       creditsPromise,
+//       similarPromise,
+//       recommendationsPromise,
+//     ]);
+
+//     // 🚀 Phase 3: Parse elements into unified layout tokens
+//     const trailer = showData.videos?.results.find(
+//       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
+//     ) ?? showData.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
+
+//     let imdbRating: number | null = null;
+//     let rottenTomatoes: number | null = null;
+//     let metascore: number | null = null;
+
+//     if (omdbResult && omdbResult.data) {
+//       const omdbData = omdbResult.data;
+//       imdbRating = parseScore(omdbData.imdbRating);
+//       metascore = parseScore(omdbData.Metascore);
+//       if (omdbData.Ratings) {
+//         const rtRating = omdbData.Ratings.find((rating: any) => rating.Source === "Rotten Tomatoes");
+//         if (rtRating) rottenTomatoes = parseScore(rtRating.Value, "%");
+//       }
+//     }
+
+//     const mapTvToContentItem = (item: any): ContentItem => ({
+//       id: item.id,
+//       title: item.name,
+//       poster_path: item.poster_path,
+//       release_date: item.first_air_date || "",
+//       vote_average: item.vote_average || 0,
+//       vote_count: item.vote_count || 0,
+//       media_type: "tv",
+//     });
+
+//     return {
+//       id: showData.id,
+//       name: showData.name,
+//       overview: showData.overview,
+//       poster_path: showData.poster_path,
+//       backdrop_path: showData.backdrop_path,
+//       first_air_date: showData.first_air_date,
+//       status: showData.status,
+//       tagline: showData.tagline,
+//       vote_average: showData.vote_average,
+//       vote_count: showData.vote_count,
+//       number_of_seasons: showData.number_of_seasons,
+//       number_of_episodes: showData.number_of_episodes,
+//       creators: showData.created_by?.map((c: any) => c.name) || [],
+//       genres: showData.genres || [],
+//       cast: creditsResult.data.cast?.slice(0, 6).map((person: any) => ({
+//         id: person.id,
+//         name: person.name,
+//         character: person.character,
+//         profilePath: person.profile_path,
+//       })) || [],
+//       similar: similarResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+//       recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+//       ratings: {
+//         imdb: imdbRating,
+//         rottenTomatoes,
+//         metascore,
+//       },
+//       trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
+//     };
+//   } catch (error) {
+//     console.error("❌ movieService Parallel TV Fetch Error:", error);
+//     return null;
+//   }
+// }
+
+
+// // 🚀 Add this new function to fetch real trending TV shows from TMDB
+// export async function getTrendingTvByPeriod(
+//   period: "day" | "week"
+// ): Promise<ContentItem[]> {
+//   const response = await axios.get<{ results: any[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/tv/${period}`),
+//     { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+//   );
+
+//   return response.data.results.map((item) => ({
+//     id: item.id,
+//     title: item.name ?? item.title ?? "Untitled", // TV uses .name instead of .title
+//     poster_path: item.poster_path,
+//     release_date: item.first_air_date || "",
+//     vote_average: item.vote_average ?? 0,
+//     media_type: "tv",
+//   }));
+// }
+
+
+// // 🚀 1. Fetch current live airing schedules (TV Parity for Now Playing)
+// export async function getTvAiringToday(): Promise<ContentItem[]> {
+//   const response = await axios.get<{ results: any[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/airing_today"),
+//     { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+//   );
+//   return response.data.results.map((item) => ({
+//     id: item.id,
+//     title: item.name ?? "Untitled",
+//     poster_path: item.poster_path,
+//     release_date: item.first_air_date || "",
+//     vote_average: item.vote_average ?? 0,
+//     media_type: "tv",
+//   }));
+// }
+
+// // 🚀 2. Fetch all-time critical television masterpieces
+// export async function getTopRatedTv(): Promise<ContentItem[]> {
+//   const response = await axios.get<{ results: any[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
+//     { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+//   );
+//   return response.data.results.map((item) => ({
+//     id: item.id,
+//     title: item.name ?? "Untitled",
+//     poster_path: item.poster_path,
+//     release_date: item.first_air_date || "",
+//     vote_average: item.vote_average ?? 0,
+//     media_type: "tv",
+//   }));
+// }
+
+// // 🚀 3. Fetch scheduled upcoming network additions (TV Parity for Upcoming)
+// export async function getTvOnTheAir(): Promise<ContentItem[]> {
+//   const response = await axios.get<{ results: any[] }>(
+//     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/on_the_air"),
+//     { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+//   );
+//   return response.data.results.map((item) => ({
+//     id: item.id,
+//     title: item.name ?? "Untitled",
+//     poster_path: item.poster_path,
+//     release_date: item.first_air_date || "",
+//     vote_average: item.vote_average ?? 0,
+//     media_type: "tv",
+//   }));
+// }
+
+
+
+
+
+
+
+
+
+import axios from "axios";
 
 export interface ContentItem {
   id: number;
@@ -5514,11 +6010,16 @@ export interface ContentItem {
 /** @deprecated Use ContentItem for shared movie, series, and other content lists. */
 export type TrendingMovie = ContentItem;
 
+interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
 export interface SearchSuggestion {
   id: number;
   title: string;
   mediaType: "Movie" | "TV Series" | "Animation" | "Anime" | "Documentary" | "Person" | string;
-  rawMediaType: "movie" | "tv" | "person"; // 🚀 Add this line!
+  rawMediaType: "movie" | "tv" | "person";
   posterPath: string | null;
 }
 
@@ -5530,14 +6031,21 @@ export const movieCategories = [
 ] as const;
 
 export type MovieCategory = (typeof movieCategories)[number];
-
 export const trendingPeriods = ["day", "week", "month", "year"] as const;
-
 export type TrendingPeriod = (typeof trendingPeriods)[number];
-
 export const topRatedPeriods = ["all-time", "year", "month"] as const;
-
 export type TopRatedPeriod = (typeof topRatedPeriods)[number];
+
+interface OmdbRating {
+  Source: string;
+  Value: string;
+}
+
+interface OmdbMovie {
+  imdbRating?: string;
+  Metascore?: string;
+  Ratings?: OmdbRating[];
+}
 
 export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
   const globalMean = movies.length > 0
@@ -5568,53 +6076,7 @@ export function formatMovieRating(rating: number | null | undefined) {
     : "--/10";
 }
 
-interface OmdbRating {
-  Source: string;
-  Value: string;
-}
-
-interface OmdbMovie {
-  imdbRating?: string;
-  Metascore?: string;
-  Ratings?: OmdbRating[];
-}
-
-export interface MovieDetails {
-  id: number;
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  status: string;
-  tagline: string;
-  audienceRating: number;
-  audienceVoteCount: number;
-  trailer: {
-    key: string;
-    name: string;
-  } | null;
-  directors: string[];
-  writers: string[];
-  cast: Array<{
-    id: number;
-    name: string;
-    character: string;
-    profilePath: string | null;
-  }>;
-  similar: ContentItem[];
-  recommendations: ContentItem[];
-  genres: TmdbGenre[];
-  runtime: number | null;
-  ratings: {
-    imdb: number | null;
-    rottenTomatoes: number | null;
-    metascore: number | null;
-  };
-}
-
 const getApiUrl = (baseUrl: string | undefined, path: string) => {
-  // If the passed baseUrl is undefined, look up the target endpoint type to provide the correct default
   let cleanBaseUrl = baseUrl;
   
   if (!cleanBaseUrl) {
@@ -5638,6 +6100,7 @@ const parseScore = (score: string | undefined, suffix = "") => {
 
   return Number.isNaN(parsedScore) ? null : parsedScore;
 };
+
 
 export async function getTrendingMovies(): Promise<ContentItem[]> {
   return getMoviesByCategory("trending");
@@ -5757,12 +6220,34 @@ export async function getTopRatedMoviesByPeriod(
   return response.data.results;
 }
 
+
+export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
+  try {
+    const [movies, tvShows] = await Promise.all([
+      getTrendingMoviesByPeriod(period),
+      getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
+    ]);
+
+    const combined: ContentItem[] = [];
+    const maxLength = Math.max(movies.length, tvShows.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
+      if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
+    }
+
+    return combined;
+  } catch (error) {
+    console.error("❌ Failed to fetch unified trending content:", error);
+    return getTrendingMoviesByPeriod(period);
+  }
+}
+
 export async function searchMovies(query: string): Promise<ContentItem[]> {
   if (!query.trim()) {
     return [];
   }
 
-  // 🚀 Switch endpoint from search/movie to search/multi to match suggestions behavior
   const response = await axios.get<{ results: any[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/multi"),
     {
@@ -5774,12 +6259,11 @@ export async function searchMovies(query: string): Promise<ContentItem[]> {
     }
   );
 
-  // Filter out people (actors) so the grid only renders clean watchable cards
   return response.data.results
     .filter((item) => item.media_type === "movie" || item.media_type === "tv")
     .map((item) => ({
       id: item.id,
-      title: item.title ?? item.name ?? "Untitled", // Handle movie titles & tv names safely
+      title: item.title ?? item.name ?? "Untitled",
       poster_path: item.poster_path,
       release_date: item.release_date || item.first_air_date || "",
       vote_average: item.vote_average ?? 0,
@@ -5813,7 +6297,6 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
     .filter((result) => result.media_type === "movie" || result.media_type === "tv" || result.media_type === "person")
     .slice(0, 6)
     .map((result) => {
-      // 🚀 Grab the release or first air year for brackets
       const rawDate = result.release_date || result.first_air_date || "";
       const year = rawDate ? ` (${rawDate.slice(0, 4)})` : "";
       const baseTitle = result.title ?? result.name ?? "Untitled";
@@ -5821,7 +6304,7 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
       return {
         id: result.id,
         title: result.media_type === "person" ? baseTitle : `${baseTitle}${year}`,
-        rawMediaType: result.media_type, // 🚀 Pass the absolute truth!
+        rawMediaType: result.media_type,
         mediaType: result.media_type === "person"
           ? "Person"
           : result.genre_ids?.includes(99)
@@ -5838,15 +6321,210 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
     });
 }
 
+
+// export async function getMoviesByDirector(directorName: string, excludeMovieId: number): Promise<ContentItem[]> {
+//   try {
+//     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+//     if (!apiKey || !directorName) return [];
+
+//     // Step 1: Find the Director's unique TMDB Person ID
+//     const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
+//       { params: { api_key: apiKey, query: directorName } }
+//     );
+
+//     const personId = searchResponse.data.results?.[0]?.id;
+//     if (!personId) return [];
+
+//     // Step 2: Use discover/movie to find other films directed by this person ID
+//     const discoverResponse = await axios.get<{ results: any[] }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+//       {
+//         params: {
+//           api_key: apiKey,
+//           with_crew: personId,
+//           crew_role: "Director",
+//           sort_by: "popularity.desc",
+//         },
+//       }
+//     );
+
+//     return discoverResponse.data.results
+//       .filter((movie) => movie.id !== excludeMovieId)
+//       .map((movie) => ({
+//         id: movie.id,
+//         title: movie.title ?? "Untitled",
+//         poster_path: movie.poster_path,
+//         release_date: movie.release_date || "",
+//         vote_average: movie.vote_average ?? 0,
+//         media_type: "movie"
+//       }))
+//       .slice(0, 10);
+//   } catch (error) {
+//     console.error("❌ Error fetching movies by director:", error);
+//     return [];
+//   }
+// }
+
+// export async function getTvShowsByCreator(creatorName: string, excludeTvId: number): Promise<ContentItem[]> {
+//   try {
+//     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+//     if (!apiKey || !creatorName) return [];
+
+//     // Step 1: Find the Creator's unique TMDB Person ID
+//     const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
+//       { params: { api_key: apiKey, query: creatorName } }
+//     );
+
+//     const personId = searchResponse.data.results?.[0]?.id;
+//     if (!personId) return [];
+
+//     // Step 2: Use discover/tv to find other shows involving this person ID as a creator
+//     const discoverResponse = await axios.get<{ results: any[] }>(
+//       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
+//       {
+//         params: {
+//           api_key: apiKey,
+//           with_people: personId,
+//           sort_by: "popularity.desc",
+//         },
+//       }
+//     );
+
+//     return discoverResponse.data.results
+//       .filter((show) => show.id !== excludeTvId)
+//       .map((show) => ({
+//         id: show.id,
+//         title: show.name ?? "Untitled",
+//         poster_path: show.poster_path,
+//         release_date: show.first_air_date || "",
+//         vote_average: show.vote_average ?? 0,
+//         media_type: "tv"
+//       }))
+//       .slice(0, 10);
+//   } catch (error) {
+//     console.error("❌ Error fetching TV shows by creator:", error);
+//     return [];
+//   }
+// }
+
+export async function getMoviesByDirector(directorName: string, excludeMovieId: number): Promise<ContentItem[]> {
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey || !directorName) return [];
+
+    // Step 1: Find the Director's unique TMDB Person ID
+    const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
+      { params: { api_key: apiKey, query: directorName } }
+    );
+
+    const personId = searchResponse.data.results?.[0]?.id;
+    if (!personId) return [];
+
+    // Step 2: Query their explicit person movie_credits profile to isolate pure filmographies
+    const creditsResponse = await axios.get<{ crew: any[] }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${personId}/movie_credits`),
+      { params: { api_key: apiKey } }
+    );
+
+    // 🚀 STRENGTHENED FILTER: Restrict matches strictly to the "Director" job title
+    const crewCredits = creditsResponse.data.crew || [];
+    const directedMovies = crewCredits
+      .filter((credit) => credit.job === "Director")
+      .filter((movie) => movie.id !== excludeMovieId);
+
+    // Remove any duplicate records caused by regional film re-entries
+    const uniqueMoviesMap = new Map<number, any>();
+    directedMovies.forEach((movie) => {
+      if (!uniqueMoviesMap.has(movie.id)) {
+        uniqueMoviesMap.set(movie.id, movie);
+      }
+    });
+
+    return Array.from(uniqueMoviesMap.values())
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .map((movie) => ({
+        id: movie.id,
+        title: movie.title ?? "Untitled",
+        poster_path: movie.poster_path,
+        release_date: movie.release_date || "",
+        vote_average: movie.vote_average ?? 0,
+        media_type: "movie"
+      }))
+      .slice(0, 10);
+  } catch (error) {
+    console.error("❌ Error fetching movies by director:", error);
+    return [];
+  }
+}
+
+
+export async function getTvShowsByCreator(creatorName: string, excludeTvId: number): Promise<ContentItem[]> {
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey || !creatorName) return [];
+
+    // Step 1: Find the Creator's unique TMDB Person ID
+    const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
+      { params: { api_key: apiKey, query: creatorName } }
+    );
+
+    const personId = searchResponse.data.results?.[0]?.id;
+    if (!personId) return [];
+
+    // Step 2: Query their explicit person tv_credits profile directly (Bypasses discover parameters)
+    const creditsResponse = await axios.get<{ crew: any[], cast: any[] }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${personId}/tv_credits`),
+      { params: { api_key: apiKey } }
+    );
+
+    // Filter for unique shows where they were a "Creator", "Executive Producer", or "Writer"
+    const crewCredits = creditsResponse.data.crew || [];
+    const createdShows = crewCredits
+      .filter((credit) => 
+        credit.job === "Creator" || 
+        credit.job === "Executive Producer" || 
+        credit.job === "Writer"
+      )
+      .filter((show) => show.id !== excludeTvId);
+
+    // Remove any duplicate entries from matching episodes
+    const uniqueShowsMap = new Map<number, any>();
+    createdShows.forEach((show) => {
+      if (!uniqueShowsMap.has(show.id)) {
+        uniqueShowsMap.set(show.id, show);
+      }
+    });
+
+    return Array.from(uniqueShowsMap.values())
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .map((show) => ({
+        id: show.id,
+        title: show.name ?? "Untitled",
+        poster_path: show.poster_path,
+        release_date: show.first_air_date || "",
+        vote_average: show.vote_average ?? 0,
+        media_type: "tv"
+      }))
+      .slice(0, 10);
+  } catch (error) {
+    console.error("❌ Error fetching TV shows by creator:", error);
+    return [];
+  }
+}
+
+
+
 export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   
-  // 🚀 Early return if API Key is missing during static site building phase
   if (!apiKey) {
     throw new Error("TMDB API Key is missing from the server environment config.");
   }
 
-  // Phase 1: Fetch lightweight core TMDB data...
   const coreTmdbUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}`);
   const coreTmdbResponse = await axios.get<any>(coreTmdbUrl, {
     params: { api_key: apiKey, append_to_response: "external_ids,videos" },
@@ -5855,34 +6533,26 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
   const movieData = coreTmdbResponse.data;
   const imdbId = movieData.external_ids?.imdb_id;
 
-  // 🚀 Phase 2: Kick off the OMDb Critic request and the heavy TMDB sub-requests concurrently!
   const omdbPromise = imdbId
     ? axios.get<OmdbMovie>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
         params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: imdbId },
-      }).catch(() => null) // Gracefully catch network dropouts
+      }).catch(() => null)
     : Promise.resolve(null);
 
   const creditsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/credits`), {
     params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
   }).catch(() => ({ data: { cast: [], crew: [] } }));
 
-  const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/similar`), {
-    params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
-  }).catch(() => ({ data: { results: [] } }));
-
   const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `movie/${movieId}/recommendations`), {
     params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
   }).catch(() => ({ data: { results: [] } }));
 
-  // Execute all secondary lookups concurrently on the server background
-  const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+  const [omdbResult, creditsResult, recommendationsResult] = await Promise.all([
     omdbPromise,
     creditsPromise,
-    similarPromise,
     recommendationsPromise,
   ]);
 
-  // 🚀 Phase 3: Parse and aggregate values cleanly into the layout contract
   const trailer = movieData.videos?.results.find(
     (video: any) => video.site === "YouTube" && video.type === "Trailer" && video.official
   ) ?? movieData.videos?.results.find((video: any) => video.site === "YouTube" && video.type === "Trailer") ?? null;
@@ -5904,6 +6574,22 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
   const crew = creditsResult.data.crew || [];
   const cast = creditsResult.data.cast || [];
 
+  const directors = crew
+    .filter((person: any) => person.job === "Director")
+    .map((person: any) => person.name)
+    .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index);
+
+  const writers = crew
+    .filter((person: any) => person.job === "Writer" || person.job === "Screenplay")
+    .map((person: any) => person.name)
+    .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index);
+
+  // 🚀 CRUCIAL REFACTOR ELEMENT: Query by primary director instead of TMDB 'similar' endpoints
+  const primaryDirector = directors[0] || "";
+  const directorMovies = primaryDirector 
+    ? await getMoviesByDirector(primaryDirector, movieData.id)
+    : [];
+
   return {
     id: movieData.id,
     title: movieData.title,
@@ -5916,14 +6602,8 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     audienceRating: movieData.vote_average,
     audienceVoteCount: movieData.vote_count,
     trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
-    directors: crew
-      .filter((person: any) => person.job === "Director")
-      .map((person: any) => person.name)
-      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
-    writers: crew
-      .filter((person: any) => person.job === "Writer" || person.job === "Screenplay")
-      .map((person: any) => person.name)
-      .filter((name: string, index: number, names: string[]) => names.indexOf(name) === index),
+    directors,
+    writers,
     cast: cast
       .sort((first: any, second: any) => first.order - second.order)
       .slice(0, 6)
@@ -5933,7 +6613,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
         character: person.character,
         profilePath: person.profile_path,
       })),
-    similar: similarResult.data.results?.slice(0, 10) || [],
+    similar: directorMovies, // Linked directly into the 'similar' layout slot to keep interface stability
     recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
     genres: movieData.genres || [],
     runtime: movieData.runtime,
@@ -5942,6 +6622,41 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
       rottenTomatoes,
       metascore,
     },
+  };
+}
+
+
+export interface MovieDetails {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  status: string;
+  tagline: string;
+  audienceRating: number;
+  audienceVoteCount: number;
+  trailer: {
+    key: string;
+    name: string;
+  } | null;
+  directors: string[];
+  writers: string[];
+  cast: Array<{
+    id: number;
+    name: string;
+    character: string;
+    profilePath: string | null;
+  }>;
+  similar: ContentItem[];
+  recommendations: ContentItem[];
+  genres: TmdbGenre[];
+  runtime: number | null;
+  ratings: {
+    imdb: number | null;
+    rottenTomatoes: number | null;
+    metascore: number | null;
   };
 }
 
@@ -5969,8 +6684,6 @@ export interface TvShowDetails {
   }>;
   similar: ContentItem[];
   recommendations: ContentItem[];
-  
-  // 🚀 UPGRADED: Unified multi-source tracking fields to support Metacritic parity
   ratings: {
     imdb: number | null;
     rottenTomatoes: number | null;
@@ -5982,19 +6695,15 @@ export interface TvShowDetails {
   } | null;
 }
 
-
-
 export async function getTvShowDetails(id: string): Promise<TvShowDetails | null> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     
-    // 🚀 Early return safety check for TV pipeline
     if (!apiKey) {
       console.warn("⚠️ TV Fetch aborted: TMDB API Key missing.");
       return null;
     }
 
-    // Phase 1: Rapid core fetch...
     const coreTvUrl = getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}`);
     const coreTvResponse = await axios.get<any>(coreTvUrl, {
       params: { api_key: apiKey, append_to_response: "external_ids,videos" },
@@ -6003,7 +6712,6 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     const showData = coreTvResponse.data;
     const tvImdbId = showData.external_ids?.imdb_id || (showData.external_ids as any)?.results?.imdb_id;
 
-    // 🚀 Phase 2: Parallelize external OMDb metrics along with TV sub-catalogs
     const omdbPromise = tvImdbId
       ? axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_OMDB_BASE_URL, ""), {
           params: { apikey: process.env.NEXT_PUBLIC_OMDB_API_KEY, i: tvImdbId },
@@ -6014,22 +6722,16 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
     }).catch(() => ({ data: { cast: [] } }));
 
-    const similarPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/similar`), {
-      params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
-    }).catch(() => ({ data: { results: [] } }));
-
     const recommendationsPromise = axios.get<any>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/recommendations`), {
       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
     }).catch(() => ({ data: { results: [] } }));
 
-    const [omdbResult, creditsResult, similarResult, recommendationsResult] = await Promise.all([
+    const [omdbResult, creditsResult, recommendationsResult] = await Promise.all([
       omdbPromise,
       creditsPromise,
-      similarPromise,
       recommendationsPromise,
     ]);
 
-    // 🚀 Phase 3: Parse elements into unified layout tokens
     const trailer = showData.videos?.results.find(
       (v: any) => v.site === "YouTube" && v.type === "Trailer" && v.official
     ) ?? showData.videos?.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer") ?? null;
@@ -6058,6 +6760,14 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       media_type: "tv",
     });
 
+    const creators = showData.created_by?.map((c: any) => c.name) || [];
+
+    // 🚀 CRUCIAL REFACTOR ELEMENT: Query by primary creator instead of generic TMDB recommendations
+    const primaryCreator = creators[0] || "";
+    const creatorTvShows = primaryCreator
+      ? await getTvShowsByCreator(primaryCreator, showData.id)
+      : [];
+
     return {
       id: showData.id,
       name: showData.name,
@@ -6071,7 +6781,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       vote_count: showData.vote_count,
       number_of_seasons: showData.number_of_seasons,
       number_of_episodes: showData.number_of_episodes,
-      creators: showData.created_by?.map((c: any) => c.name) || [],
+      creators,
       genres: showData.genres || [],
       cast: creditsResult.data.cast?.slice(0, 6).map((person: any) => ({
         id: person.id,
@@ -6079,7 +6789,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         character: person.character,
         profilePath: person.profile_path,
       })) || [],
-      similar: similarResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      similar: creatorTvShows, // Linked directly into the 'similar' carousel row layout slot
       recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
       ratings: {
         imdb: imdbRating,
@@ -6094,11 +6804,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
   }
 }
 
-
-// 🚀 Add this new function to fetch real trending TV shows from TMDB
-export async function getTrendingTvByPeriod(
-  period: "day" | "week"
-): Promise<ContentItem[]> {
+export async function getTrendingTvByPeriod(period: "day" | "week"): Promise<ContentItem[]> {
   const response = await axios.get<{ results: any[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/tv/${period}`),
     { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
@@ -6106,7 +6812,7 @@ export async function getTrendingTvByPeriod(
 
   return response.data.results.map((item) => ({
     id: item.id,
-    title: item.name ?? item.title ?? "Untitled", // TV uses .name instead of .title
+    title: item.name ?? item.title ?? "Untitled",
     poster_path: item.poster_path,
     release_date: item.first_air_date || "",
     vote_average: item.vote_average ?? 0,
@@ -6114,8 +6820,6 @@ export async function getTrendingTvByPeriod(
   }));
 }
 
-
-// 🚀 1. Fetch current live airing schedules (TV Parity for Now Playing)
 export async function getTvAiringToday(): Promise<ContentItem[]> {
   const response = await axios.get<{ results: any[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/airing_today"),
@@ -6131,7 +6835,6 @@ export async function getTvAiringToday(): Promise<ContentItem[]> {
   }));
 }
 
-// 🚀 2. Fetch all-time critical television masterpieces
 export async function getTopRatedTv(): Promise<ContentItem[]> {
   const response = await axios.get<{ results: any[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
@@ -6147,7 +6850,6 @@ export async function getTopRatedTv(): Promise<ContentItem[]> {
   }));
 }
 
-// 🚀 3. Fetch scheduled upcoming network additions (TV Parity for Upcoming)
 export async function getTvOnTheAir(): Promise<ContentItem[]> {
   const response = await axios.get<{ results: any[] }>(
     getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/on_the_air"),

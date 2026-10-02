@@ -301,6 +301,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
               <p className="mt-3 text-lg italic text-white/70">{movie.tagline}</p>
             )}
             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">
+              <span className="rounded bg-accent/10 border border-accent/20 px-2 py-0.5 text-accent uppercase font-bold text-[10px]">Movie</span>
               <span>{movie.status || "Status unavailable"}</span>
               <span aria-hidden="true">·</span>
               <span>{movie.release_date || "Release date unavailable"}</span>
