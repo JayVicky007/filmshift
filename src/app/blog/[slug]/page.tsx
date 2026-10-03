@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedPost } from "@/utils/blogService";
+import { sanitizePostHtml } from "@/utils/sanitizePostHtml";
 
 function formatDate(value: string | null) {
   if (!value) return "";
@@ -40,7 +41,7 @@ export default async function BlogPostPage({
         </div>
         <div 
           className="prose prose-invert max-w-none text-foreground/90 mt-8"
-          dangerouslySetInnerHTML={{ __html: post.body }} 
+          dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.body) }}
         />
 {post.tmdb_id && (
   <Link href={

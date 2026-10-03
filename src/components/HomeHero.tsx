@@ -33,17 +33,23 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
   const [query, setQuery] = useState("");
   const [activePoster, setActivePoster] = useState(0);
   const [activePlaceholder, setActivePlaceholder] = useState(0);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ query: string; results: SearchSuggestion[] }>({
+    query: "",
+    results: [],
+  });
+  const [suggestingQuery, setSuggestingQuery] = useState<string | null>(null);
   const posters = movies.filter((movie) => movie.poster_path);
   const currentMovie = posters[activePoster % posters.length];
+  const searchTerm = query.trim();
 
   useEffect(() => {
     if (posters.length < 2) {
       return;
     }
 
-    setActivePoster(Math.floor(Math.random() * posters.length));
+    const animationFrame = window.requestAnimationFrame(() => {
+      setActivePoster(Math.floor(Math.random() * posters.length));
+    });
 
     const interval = window.setInterval(() => {
       setActivePoster((currentIndex) => {
@@ -57,11 +63,16 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
       });
     }, 8000);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearInterval(interval);
+    };
   }, [posters.length]);
 
   useEffect(() => {
-    setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
+    const animationFrame = window.requestAnimationFrame(() => {
+      setActivePlaceholder(Math.floor(Math.random() * SEARCH_PLACEHOLDERS.length));
+    });
 
     const interval = window.setInterval(() => {
       setActivePlaceholder((currentIndex) => {
@@ -75,31 +86,33 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
       });
     }, 8000);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
-    const searchTerm = query.trim();
-
     if (searchTerm.length < 2) {
-      setSuggestions([]);
       return;
     }
 
     const controller = new AbortController();
     const timeout = window.setTimeout(() => {
-      setIsSuggesting(true);
+      setSuggestingQuery(searchTerm);
       fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
         .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .then((data: { results?: SearchSuggestion[] }) => {
+          setSuggestions({ query: searchTerm, results: data.results ?? [] });
+        })
         .catch(() => {
           if (!controller.signal.aborted) {
-            setSuggestions([]);
+            setSuggestions({ query: searchTerm, results: [] });
           }
         })
         .finally(() => {
           if (!controller.signal.aborted) {
-            setIsSuggesting(false);
+            setSuggestingQuery(null);
           }
         });
     }, 300);
@@ -108,7 +121,7 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [query]);
+  }, [searchTerm]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -173,18 +186,17 @@ export default function HomeHero({ movies }: { movies: ContentItem[] }) {
               placeholder=""
               className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
             />
-<SearchSuggestions
-  suggestions={suggestions}
-  isLoading={isSuggesting}
-  onSelect={(suggestion) => {
-    setSuggestions([]);
-    setQuery("");
-
-    // 🚀 Use the absolute truth field here too!
-    const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
-    router.push(`/${routeType}/${suggestion.id}`);
-  }}
-/>
+{searchTerm.length >= 2 && (
+  <SearchSuggestions
+    suggestions={suggestions.query === searchTerm ? suggestions.results : []}
+    isLoading={suggestingQuery === searchTerm}
+    onSelect={(suggestion) => {
+      setQuery("");
+      const routeType = suggestion.rawMediaType === "tv" ? "tv" : "movie";
+      router.push(`/${routeType}/${suggestion.id}`);
+    }}
+  />
+)}
           </div>
           <button
             type="submit"

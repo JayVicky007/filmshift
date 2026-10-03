@@ -117,21 +117,20 @@ export default function Navbar() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile tracking state
+  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionsQuery, setSuggestionsQuery] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  // 🚀 Place this near the top of your Navbar function along with username/avatarUrl
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   
   const isHomePage = pathname === "/";
-
-  // Automatically collapse the navigation sheet whenever the router switches views
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+  const isMobileMenuOpen = mobileMenuPath === pathname;
 
   useEffect(() => {
     let isCurrent = true;
@@ -146,13 +145,14 @@ export default function Navbar() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("username, avatar_url")
+        .select("username, display_name, avatar_url")
         .eq("id", userId)
         .maybeSingle();
 
       if (isCurrent) {
         setUserEmail(email);
         setUsername(profile?.username ?? null);
+        setDisplayName(profile?.display_name ?? null);
         setAvatarUrl(profile?.avatar_url ?? null);
       }
     }
@@ -174,8 +174,6 @@ export default function Navbar() {
   useEffect(() => {
     const searchTerm = query.trim();
     if (!searchOpen || searchTerm.length < 2) {
-      setSuggestions([]);
-      setIsSuggesting(false);
       return;
     }
 
@@ -184,9 +182,15 @@ export default function Navbar() {
       setIsSuggesting(true);
       fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { signal: controller.signal })
         .then((response) => response.json())
-        .then((data: { results?: SearchSuggestion[] }) => setSuggestions(data.results ?? []))
+        .then((data: { results?: SearchSuggestion[] }) => {
+          setSuggestions(data.results ?? []);
+          setSuggestionsQuery(searchTerm);
+        })
         .catch(() => {
-          if (!controller.signal.aborted) setSuggestions([]);
+          if (!controller.signal.aborted) {
+            setSuggestions([]);
+            setSuggestionsQuery(searchTerm);
+          }
         })
         .finally(() => {
           if (!controller.signal.aborted) setIsSuggesting(false);
@@ -212,7 +216,7 @@ export default function Navbar() {
     router.refresh();
   }
 
-  const accountLabel = username || userEmail?.split("@")[0] || "Account";
+  const accountLabel = displayName || username || userEmail?.split("@")[0] || "Account";
   const accountInitial = accountLabel.charAt(0).toUpperCase();
 
   return (
@@ -273,8 +277,8 @@ export default function Navbar() {
                   className="w-24 rounded-full border border-text-muted/20 bg-surface py-2 px-3 text-sm text-foreground shadow-inner focus:outline-none focus:ring-2 focus:ring-accent/80 sm:w-36"
                 />
                 <SearchSuggestions
-                  suggestions={suggestions}
-                  isLoading={isSuggesting}
+                  suggestions={suggestionsQuery === query.trim() && query.trim().length >= 2 ? suggestions : []}
+                  isLoading={isSuggesting && query.trim().length >= 2}
                   className="absolute right-0 top-full z-50 mt-2 w-64 sm:w-72"
                   onSelect={(suggestion) => {
                     setSuggestions([]);
@@ -329,7 +333,7 @@ export default function Navbar() {
           <button
             type="button"
             aria-label="Toggle mobile menu"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => setMobileMenuPath(isMobileMenuOpen ? null : pathname)}
             className={`inline-flex h-10 w-10 items-center justify-center rounded-full md:hidden transition-colors hover:text-accent cursor-pointer ${isHomePage ? "text-white" : "text-foreground"}`}
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

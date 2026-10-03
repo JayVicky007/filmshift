@@ -113,7 +113,7 @@ export default function ProfileForm({
         />
       </div>
       <div>
-        <label htmlFor="display-name" className="text-sm font-semibold">Display name</label>
+        <label htmlFor="display-name" className="text-sm font-semibold">Display Name</label>
         <input
           id="display-name"
           type="text"
@@ -124,18 +124,30 @@ export default function ProfileForm({
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
+
       <div>
         <label htmlFor="username" className="text-sm font-semibold">Username</label>
         <input
           id="username"
           type="text"
           value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          placeholder="Choose a username"
+          onChange={(event) => {
+            // 🚀 Automatically strips spaces and forces lowercase as they type!
+            const sanitized = event.target.value
+              .toLowerCase()
+              .replace(/[^a-z0-9_-]/g, "");
+            setUsername(sanitized);
+          }}
+          placeholder="choose_a_username"
+          minLength={3}
           maxLength={30}
+          required
+          pattern="^[a-z0-9_-]+$"
+          title="Usernames can only contain lowercase letters, numbers, underscores, and dashes."
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
+
       <div>
         <label htmlFor="bio" className="text-sm font-semibold">Bio</label>
         <textarea
@@ -149,7 +161,7 @@ export default function ProfileForm({
         />
       </div>
       <div>
-        <label htmlFor="avatar-file" className="text-sm font-semibold">Profile image</label>
+        <label htmlFor="avatar-file" className="text-sm font-semibold">Profile Image</label>
         <div className="mt-2 flex items-center gap-4">
           <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-text-muted/20 bg-background text-sm text-text-muted">
             {avatarPreview ? (

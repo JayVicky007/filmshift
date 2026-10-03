@@ -29,10 +29,14 @@ export default function ContentRail({
   );
   const [railMovies, setRailMovies] = useState(movies);
   const [isLoading, setIsLoading] = useState(false);
+  const isDefaultPeriod = periodCategory === "top-rated"
+    ? selectedPeriod === "all-time"
+    : selectedPeriod === "year";
+  const displayedMovies = isDefaultPeriod ? movies : railMovies;
   const pageSize = 5;
-  const pageCount = Math.max(1, Math.ceil(railMovies.length / pageSize));
+  const pageCount = Math.max(1, Math.ceil(displayedMovies.length / pageSize));
   const moviePages = Array.from({ length: pageCount }, (_, pageIndex) =>
-    railMovies.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+    displayedMovies.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
   );
 
   useEffect(() => {
@@ -40,17 +44,11 @@ export default function ContentRail({
       return;
     }
 
-    if (
-      (periodCategory === "trending" && selectedPeriod === "year") ||
-      (periodCategory === "top-rated" && selectedPeriod === "all-time")
-    ) {
-      setRailMovies(movies);
-      setPage(0);
+    if (isDefaultPeriod) {
       return;
     }
 
     let isCurrent = true;
-    setIsLoading(true);
     fetch(`/api/movies?category=${periodCategory}&period=${selectedPeriod}`)
       .then((response) => response.json())
       .then((data: { results?: ContentItem[] }) => {
@@ -70,7 +68,7 @@ export default function ContentRail({
     return () => {
       isCurrent = false;
     };
-  }, [movies, periodCategory, periodFilter, selectedPeriod]);
+  }, [isDefaultPeriod, periodCategory, periodFilter, selectedPeriod]);
 
   return (
     <section className="mx-auto max-w-7xl">
@@ -93,7 +91,13 @@ export default function ContentRail({
               <button
                 key={period}
                 type="button"
-                onClick={() => setSelectedPeriod(period)}
+                onClick={() => {
+                  setPage(0);
+                  setIsLoading(
+                    period !== (periodCategory === "top-rated" ? "all-time" : "year"),
+                  );
+                  setSelectedPeriod(period);
+                }}
                 className={`shrink-0 rounded-full px-3 py-1.5 capitalize transition-colors ${selectedPeriod === period ? "bg-accent text-slate-950" : "text-text-muted hover:text-accent"}`}
               >
                   {period === "all-time" ? "All Time" : period}
@@ -134,7 +138,7 @@ export default function ContentRail({
       <div className={`overflow-hidden transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
         
         {/* 🚀 Check if the rail has movies. If it's 0, display a beautiful placeholder banner! */}
-        {railMovies.length === 0 ? (
+        {displayedMovies.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-text-muted/20 bg-surface/50 p-10 text-center">
             <p className="text-sm font-semibold text-text-muted">
               🍿 No upcoming releases scheduled for this exact window. Check back soon!

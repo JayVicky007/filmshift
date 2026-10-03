@@ -244,7 +244,7 @@ export default function SandboxPage() {
         {/* Dummy Page body filler just to anchor the menu visuals inside the sandbox layout */}
         <div className="p-8 text-center text-zinc-600 text-xs font-mono">
           [ Curated Content Workspace Grid Background ]
-          {query && <p className="mt-2 text-zinc-400 text-xs">Simulated active keystroke input stream filter: "{query}"</p>}
+          {query && <p className="mt-2 text-zinc-400 text-xs">Simulated active keystroke input stream filter: &quot;{query}&quot;</p>}
         </div>
       </div>
     </main>

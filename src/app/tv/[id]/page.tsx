@@ -75,7 +75,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
             </h1>
             
             {show.tagline && (
-              <p className="mt-3 text-lg italic text-white/70">"{show.tagline}"</p>
+              <p className="mt-3 text-lg italic text-white/70">&quot;{show.tagline}&quot;</p>
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-2 text-sm leading-5 text-white/70">

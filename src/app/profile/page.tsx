@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import DeleteDraftButton from "@/components/DeleteDraftButton";
-// import ProfileForm from "@/components/ProfileForm"; // 🚀 Import the modification form tool!
 import ProfileSettingsDrawer from "@/components/ProfileSettingsDrawer";
+
+// 🚀 FORCE NEXT.JS TO RENDER THIS PROFILE WORKSPACE DYNAMICALLY ON EVERY VISIT
+export const dynamic = "force-dynamic";
 
 function formatDate(value: string | null) {
   if (!value) return "Not published";
@@ -69,22 +71,13 @@ export default async function ProfilePage() {
           </p>
           
           {/* Piping database states down into our input streams */}
-          {/* <ProfileForm 
-            userId={user.id}
-            email={user.email ?? ""}
-            initialUsername={profile?.username ?? ""}
-            initialDisplayName={profile?.display_name ?? ""}
-            initialAvatarUrl={profile?.avatar_url ?? ""}
-            initialBio={profile?.bio ?? ""}
-          /> */}
-
           {/* 🚀 NEW DROPDOWN DRAWER: This replaces the open edit form section cleanly */}
         <ProfileSettingsDrawer 
           userId={user.id}
           email={user.email ?? ""}
           profile={profile}
         />
-        
+
         </section>
 
         {/* Dynamic Drafts Workspace Section (Only visible to the owner) */}
@@ -108,7 +101,7 @@ export default async function ProfilePage() {
                     href={`/blog/edit/${draft.id}`}
                     className="absolute inset-0 rounded-2xl cursor-pointer"
                   >
-                    <span className="sr-only">Edit draft "{draft.title}"</span>
+                    <span className="sr-only">Edit draft &quot;{draft.title}&quot;</span>
                   </Link>
 
                   {/* Content Layout Layer stacked cleanly above the stretched anchor line */}
@@ -151,7 +144,7 @@ export default async function ProfilePage() {
           </h2>
           {published.length === 0 ? (
             <div className="rounded-2xl border border-text-muted/15 bg-surface p-6 text-sm text-text-muted text-center">
-              You haven't shared any public reviews yet.
+              You haven&apos;t shared any public reviews yet.
             </div>
           ) : (
             <div className="space-y-4">
