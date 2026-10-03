@@ -4,6 +4,35 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
+function getOwnedAvatarPath(avatarUrl: string, userId: string): string | null {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    return null;
+  }
+
+  try {
+    const avatarPublicUrl = new URL(avatarUrl);
+    const supabaseOrigin = new URL(supabaseUrl).origin;
+    const pathPrefix = `/storage/v1/object/public/avatars/${userId}/`;
+
+    if (
+      avatarPublicUrl.origin !== supabaseOrigin ||
+      !avatarPublicUrl.pathname.startsWith(pathPrefix)
+    ) {
+      return null;
+    }
+
+    const fileName = decodeURIComponent(
+      avatarPublicUrl.pathname.slice(pathPrefix.length),
+    );
+
+    return fileName && !fileName.includes("/") ? `${userId}/${fileName}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ProfileForm({
   userId,
   email,
@@ -57,7 +86,9 @@ export default function ProfileForm({
     setIsSaving(true);
     setMessage("");
 
-    let nextAvatarUrl = avatarUrl.trim() || null;
+    const previousAvatarUrl = avatarUrl.trim() || null;
+    let nextAvatarUrl = previousAvatarUrl;
+    let uploadedAvatarPath: string | null = null;
 
     if (avatarFile) {
       const fileExtension = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -76,6 +107,7 @@ export default function ProfileForm({
         return;
       }
 
+      uploadedAvatarPath = filePath;
       nextAvatarUrl = supabase.storage.from("avatars").getPublicUrl(filePath).data.publicUrl;
     }
 
@@ -90,11 +122,42 @@ export default function ProfileForm({
       .eq("id", userId);
 
     if (error) {
-      setMessage(error.message);
+      let message = error.message;
+
+      if (uploadedAvatarPath) {
+        const { error: cleanupError } = await supabase.storage
+          .from("avatars")
+          .remove([uploadedAvatarPath]);
+
+        if (cleanupError) {
+          message += ` The new avatar upload could not be cleaned up: ${cleanupError.message}`;
+        }
+      }
+
+      setMessage(message);
     } else {
+      const previousAvatarPath = previousAvatarUrl
+        ? getOwnedAvatarPath(previousAvatarUrl, userId)
+        : null;
+      const nextAvatarPath = nextAvatarUrl
+        ? getOwnedAvatarPath(nextAvatarUrl, userId)
+        : null;
+      let successMessage = "Profile saved.";
+
+      if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
+        const { error: cleanupError } = await supabase.storage
+          .from("avatars")
+          .remove([previousAvatarPath]);
+
+        if (cleanupError) {
+          successMessage += ` The previous avatar could not be deleted: ${cleanupError.message}`;
+        }
+      }
+
       setAvatarUrl(nextAvatarUrl ?? "");
       setAvatarFile(null);
-      setMessage("Profile saved.");
+      setAvatarPreview(nextAvatarUrl ?? "");
+      setMessage(successMessage);
       router.refresh();
     }
 

@@ -59,6 +59,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   const [status, setStatus] = useState<"draft" | "published">(initialPost?.status || "draft");
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
 
   // 🎯 Upgraded Editor Lifecycle—FIXED levels syntax, removed cropping dependencies entirely
@@ -136,6 +137,66 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       router.refresh();
     }
     setIsSaving(false);
+  }
+
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !editor) {
+      return;
+    }
+
+    const allowedImageTypes = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]);
+
+    if (!allowedImageTypes.has(file.type)) {
+      setMessage("Choose a JPEG, PNG, WebP, or GIF image.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("Choose an image smaller than 5 MB.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setMessage("");
+
+    const fileExtension = file.type.split("/")[1].replace("jpeg", "jpg");
+    const filePath = `${authorId}/${crypto.randomUUID()}.${fileExtension}`;
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(filePath, file, {
+          cacheControl: "31536000",
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        setMessage(`Unable to upload image: ${uploadError.message}`);
+        return;
+      }
+
+      const imageUrl = supabase.storage
+        .from("post-images")
+        .getPublicUrl(filePath)
+        .data.publicUrl;
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+    } catch (error) {
+      setMessage(
+        `Unable to upload image: ${
+          error instanceof Error ? error.message : "Unexpected upload error."
+        }`,
+      );
+    } finally {
+      setIsUploadingImage(false);
+    }
   }
 
   return (
@@ -319,36 +380,20 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 <input 
   type="file" 
   ref={fileInputRef} 
-  accept="image/*" 
+  accept="image/jpeg,image/png,image/webp,image/gif"
   className="hidden" 
-  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("❌ Upload blocked: Image file size exceeds the 5 MB platform limit.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageSrc = reader.result as string;
-      if (editor && imageSrc) {
-        editor.chain().focus().setImage({ src: imageSrc }).run();
-      }
-    };
-    reader.readAsDataURL(file);
-  }} 
+  onChange={handleImageUpload}
 />
 
 {/* Button to trigger the device file browser */}
 <button 
   type="button" 
-  title="Upload Image from Device (Max 5MB)" 
+  title={isUploadingImage ? "Uploading image..." : "Upload Image from Device (Max 5MB)"}
+  disabled={isUploadingImage}
   onClick={() => fileInputRef.current?.click()} 
-  className="p-2 rounded text-sm bg-background border border-text-muted/10 hover:border-accent/40 text-emerald-400 transition-colors cursor-pointer"
+  className="p-2 rounded text-sm bg-background border border-text-muted/10 hover:border-accent/40 text-emerald-400 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
 >
-  <ImageIcon className="h-4 w-4" />
+  {isUploadingImage ? <span className="text-xs">Uploading...</span> : <ImageIcon className="h-4 w-4" />}
 </button>
 
 {/* 🚀 RE-ADDED: ADD IMAGE BY URL BUTTON */}
@@ -401,8 +446,8 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       </div>
 
       {message && <p role="status" className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm">{message}</p>}
-      <button type="submit" disabled={isSaving} className="rounded-xl bg-accent px-5 py-3 font-bold text-slate-950 transition-colors hover:bg-yellow-300 disabled:cursor-wait disabled:opacity-60 cursor-pointer">
-        {isSaving ? "Saving..." : status === "published" ? "Publish post" : "Save draft"}
+      <button type="submit" disabled={isSaving || isUploadingImage} className="rounded-xl bg-accent px-5 py-3 font-bold text-slate-950 transition-colors hover:bg-yellow-300 disabled:cursor-wait disabled:opacity-60 cursor-pointer">
+        {isUploadingImage ? "Uploading image..." : isSaving ? "Saving..." : status === "published" ? "Publish post" : "Save draft"}
       </button>
     </form> 
   );
