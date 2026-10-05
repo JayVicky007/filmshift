@@ -25,7 +25,6 @@ import {
   Code2,
   Undo2,
   Redo2,
-  ChevronDown
 } from "lucide-react";
 import TextAlign from "@tiptap/extension-text-align";
 
@@ -60,7 +59,6 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
 
   // 🎯 Upgraded Editor Lifecycle—FIXED levels syntax, removed cropping dependencies entirely
   const editor = useEditor({
@@ -246,7 +244,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       <div>
         <label className="text-sm font-semibold">Body</label>
         {editor && (
-          <div className="mt-2 flex flex-wrap gap-1 border border-b-0 border-text-muted/20 bg-surface/50 p-2 rounded-t-xl items-center relative z-30">
+          <div className="sticky top-[4.5rem] z-40 mt-2 flex flex-wrap items-center gap-1 rounded-t-xl border border-b-0 border-text-muted/20 bg-surface/95 p-2 shadow-sm backdrop-blur-sm">
             {/* Inline Formatting */}
             <button type="button" title="Bold" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("bold") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
               <Bold className="h-4 w-4" />
@@ -260,50 +258,30 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
             
             <div className="h-6 w-px bg-text-muted/20 mx-1" />
 
-            {/* Heading Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setHeadingDropdownOpen(!headingDropdownOpen)}
-                className={`flex items-center gap-1 px-3 py-2 rounded text-xs font-bold transition-colors cursor-pointer border border-text-muted/10 bg-background text-foreground hover:border-accent/40 hover:text-accent ${
-                  editor.isActive("heading") ? "border-accent text-accent" : ""
-                }`}
-              >
-                <span>
-                  {editor.isActive("heading", { level: 1 }) ? "Heading 1" :
-                   editor.isActive("heading", { level: 2 }) ? "Heading 2" :
-                   editor.isActive("heading", { level: 3 }) ? "Heading 3" : "Heading"}
-                </span>
-                <ChevronDown className="h-3 w-3" />
-              </button>
-
-              {headingDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setHeadingDropdownOpen(false)} />
-                  <div className="absolute left-0 mt-1 w-36 rounded-xl border border-text-muted/15 bg-surface p-1 shadow-xl z-50 flex flex-col gap-0.5">
-                    {([1, 2, 3] as const).map((level) => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => {
-                          editor.chain().focus().toggleHeading({ level }).run();
-                          setHeadingDropdownOpen(false);
-                        }}
-                        className={`w-full text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                          editor.isActive("heading", { level }) ? "bg-accent text-slate-950" : "hover:bg-accent/10 text-foreground"
-                        }`}
-                      >
-                        Heading {level}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+            <div role="group" aria-label="Heading level" className="flex shrink-0 items-center gap-1">
+              {([1, 2, 3] as const).map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  title={`Heading ${level}`}
+                  aria-label={`Heading ${level}`}
+                  aria-pressed={editor.isActive("heading", { level })}
+                  onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+                  className={`min-w-9 rounded border px-2 py-2 text-xs font-bold transition-colors cursor-pointer ${
+                    editor.isActive("heading", { level })
+                      ? "border-accent bg-accent text-slate-950"
+                      : "border-text-muted/10 bg-background text-foreground hover:border-accent/40 hover:text-accent"
+                  }`}
+                >
+                  H{level}
+                </button>
+              ))}
             </div>
 
             <div className="h-6 w-px bg-text-muted/20 mx-1" />
 
             {/* 🚀 INTEGRATED NATIVE TEXT ALIGNMENT BUTTON CONTROLS */}
+            <div role="group" aria-label="Text alignment" className="flex shrink-0 items-center">
             <button
               type="button"
               title="Align Left"
@@ -349,6 +327,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M8 12h12M4 18h16" />
   </svg>
 </button>
+            </div>
 
             <div className="h-6 w-px bg-text-muted/20 mx-1" />
 
@@ -376,7 +355,33 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
             <div className="h-6 w-px bg-text-muted/20 mx-1" />
 
+            <div role="group" aria-label="Undo and redo" className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                title="Undo"
+                aria-label="Undo"
+                disabled={!editor.can().undo()}
+                onClick={() => editor.chain().focus().undo().run()}
+                className="rounded border border-text-muted/10 bg-background p-2 text-foreground transition-colors hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Undo2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                title="Redo"
+                aria-label="Redo"
+                disabled={!editor.can().redo()}
+                onClick={() => editor.chain().focus().redo().run()}
+                className="rounded border border-text-muted/10 bg-background p-2 text-foreground transition-colors hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Redo2 className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
 {/* 🚀 DEVICE IMAGE UPLOADING UTILITY WITH 5MB PLATFORM LIMIT FILTER */}
+<div role="group" aria-label="Insert image" className="flex shrink-0 items-center gap-1">
 <input 
   type="file" 
   ref={fileInputRef} 
@@ -413,6 +418,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
     <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
   </svg>
 </button>
+</div>
               </div>
         )}
 

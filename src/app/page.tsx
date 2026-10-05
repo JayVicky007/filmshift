@@ -9,10 +9,10 @@ import {
 } from "@/utils/movieService";
 
 const sections = [
-  { title: "Trending", category: "trending" as const, periodFilter: true, periodCategory: "trending" as const },
-  { title: "Now Playing in Theaters", category: "now-playing" as const, periodFilter: false, periodCategory: "trending" as const },
-  { title: "Top Rated Masterpieces", category: "top-rated" as const, periodFilter: false, periodCategory: "top-rated" as const },
-  { title: "Upcoming TV Seasons", category: "upcoming" as const, periodFilter: false, periodCategory: "trending" as const },
+  { title: "Trending", periodFilter: true, periodCategory: "trending" as const },
+  { title: "Now Playing in Theaters", periodFilter: false, periodCategory: "trending" as const },
+  { title: "Top Rated Masterpieces", periodFilter: false, periodCategory: "top-rated" as const },
+  { title: "Upcoming TV Seasons", periodFilter: false, periodCategory: "trending" as const },
 ];
 
 export default async function HomePage() {
@@ -50,7 +50,6 @@ export default async function HomePage() {
           <ContentRail
             key={section.title}
             title={section.title}
-            category={section.category}
             movies={moviesByCategory[index]}
             periodFilter={section.periodFilter}
             periodCategory={section.periodCategory}

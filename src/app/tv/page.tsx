@@ -35,26 +35,22 @@ export default async function TvSeriesIndexPage() {
       <div className="mx-auto space-y-16 max-w-7xl">
         <ContentRail
           title="Trending Series"
-          category="trending"
           movies={trending}
           periodFilter={false} // Clean single interval window fallback
         />
 
         <ContentRail
           title="Airing Today"
-          category="now-playing"
           movies={airingToday}
         />
 
         <ContentRail
           title="Top Rated Masterpieces"
-          category="top-rated"
           movies={topRated}
         />
 
         <ContentRail
           title="On The Air (New Seasons)"
-          category="upcoming"
           movies={upcomingDrops}
         />
       </div>

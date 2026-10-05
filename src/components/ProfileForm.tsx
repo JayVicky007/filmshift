@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -50,12 +50,15 @@ export default function ProfileForm({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const [username, setUsername] = useState(initialUsername);
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [savedAvatarUrl, setSavedAvatarUrl] = useState(initialAvatarUrl);
   const [bio, setBio] = useState(initialBio);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(initialAvatarUrl);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,7 +81,19 @@ export default function ProfileForm({
 
     setMessage("");
     setAvatarFile(file);
+    setRemoveAvatar(false);
     setAvatarPreview(URL.createObjectURL(file));
+  }
+
+  function handleRemoveAvatar() {
+    setAvatarUrl("");
+    setAvatarFile(null);
+    setAvatarPreview("");
+    setRemoveAvatar(true);
+    setMessage("Avatar removal is pending. Save your profile to apply it.");
+    if (avatarFileInputRef.current) {
+      avatarFileInputRef.current.value = "";
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -86,8 +101,8 @@ export default function ProfileForm({
     setIsSaving(true);
     setMessage("");
 
-    const previousAvatarUrl = avatarUrl.trim() || null;
-    let nextAvatarUrl = previousAvatarUrl;
+    const previousAvatarUrl = savedAvatarUrl.trim() || null;
+    let nextAvatarUrl = removeAvatar ? null : avatarUrl.trim() || null;
     let uploadedAvatarPath: string | null = null;
 
     if (avatarFile) {
@@ -155,8 +170,13 @@ export default function ProfileForm({
       }
 
       setAvatarUrl(nextAvatarUrl ?? "");
+      setSavedAvatarUrl(nextAvatarUrl ?? "");
       setAvatarFile(null);
       setAvatarPreview(nextAvatarUrl ?? "");
+      setRemoveAvatar(false);
+      if (avatarFileInputRef.current) {
+        avatarFileInputRef.current.value = "";
+      }
       setMessage(successMessage);
       router.refresh();
     }
@@ -236,11 +256,22 @@ export default function ProfileForm({
           <input
             id="avatar-file"
             type="file"
+            ref={avatarFileInputRef}
             accept="image/*"
             onChange={handleAvatarChange}
             className="min-w-0 flex-1 text-sm text-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent file:px-3 file:py-2 file:font-semibold file:text-slate-950 hover:file:bg-yellow-300"
           />
         </div>
+        {(avatarPreview || avatarUrl || savedAvatarUrl) && !removeAvatar && (
+          <button
+            type="button"
+            onClick={handleRemoveAvatar}
+            disabled={isSaving}
+            className="mt-3 rounded-lg border border-text-muted/20 px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-rose-400/50 hover:text-rose-500 disabled:cursor-wait disabled:opacity-60"
+          >
+            Remove avatar
+          </button>
+        )}
       </div>
       <div>
         <label htmlFor="avatar-url" className="text-sm font-semibold">Avatar URL</label>
@@ -248,7 +279,10 @@ export default function ProfileForm({
           id="avatar-url"
           type="url"
           value={avatarUrl}
-          onChange={(event) => setAvatarUrl(event.target.value)}
+          onChange={(event) => {
+            setAvatarUrl(event.target.value);
+            setRemoveAvatar(false);
+          }}
           placeholder="https://..."
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />

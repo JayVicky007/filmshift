@@ -34,7 +34,6 @@ export default async function MoviesIndexPage() {
       <div className="mx-auto space-y-16 max-w-7xl">
         <ContentRail
           title="Trending"
-          category="trending"
           movies={trending}
           periodFilter={true}
           periodCategory="trending"
@@ -42,13 +41,11 @@ export default async function MoviesIndexPage() {
 
         <ContentRail
           title="Now Playing"
-          category="now-playing"
           movies={nowPlaying}
         />
 
         <ContentRail
           title="Top Rated"
-          category="top-rated"
           movies={topRated}
           periodFilter={true}
           periodCategory="top-rated"
@@ -56,7 +53,6 @@ export default async function MoviesIndexPage() {
 
         <ContentRail
           title="Upcoming"
-          category="upcoming"
           movies={upcoming}
         />
       </div>

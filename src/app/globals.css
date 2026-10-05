@@ -107,36 +107,32 @@ body {
   display: list-item !important;
 }
 
-/* Headliner tracking rules overrides for explicit element heights */
-/* 🚀 TAILWIND v4 WORKSPACE HEADING ENGINE OVERRIDES */
-.prose-invert .edit-workspace-canvas h1,
-.prose .tiptap .heading-node[data-level="1"],
-.prose-invert h1.heading-node {
-  font-size: 2.6rem !important;
-  font-weight: 900 !important;
-  line-height: 1.25 !important;
+/* Keep headings consistent in the editor and rendered posts. */
+.prose-invert h1 {
+  margin-block: 1.25rem 0.75rem !important;
+  font-size: clamp(1.75rem, 6vw, 2.25rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
   display: block !important;
-  color: #FFFFFF !important;
+  color: var(--foreground) !important;
 }
 
-.prose-invert .edit-workspace-canvas h2,
-.prose .tiptap .heading-node[data-level="2"],
-.prose-invert h2.heading-node {
-  font-size: 1.85rem !important;
-  font-weight: 800 !important;
+.prose-invert h2 {
+  margin-block: 1.1rem 0.6rem !important;
+  font-size: clamp(1.4rem, 5vw, 1.75rem) !important;
+  font-weight: 750 !important;
+  line-height: 1.3 !important;
+  display: block !important;
+  color: var(--foreground) !important;
+}
+
+.prose-invert h3 {
+  margin-block: 0.9rem 0.5rem !important;
+  font-size: clamp(1.2rem, 4vw, 1.4rem) !important;
+  font-weight: 700 !important;
   line-height: 1.35 !important;
   display: block !important;
-  color: #E7ECF2 !important;
-}
-
-.prose-invert .edit-workspace-canvas h3,
-.prose .tiptap .heading-node[data-level="3"],
-.prose-invert h3.heading-node {
-  font-size: 1.35rem !important;
-  font-weight: 700 !important;
-  line-height: 1.4 !important;
-  display: block !important;
-  color: #FFC107 !important; /* Highlights H3 titles with FilmShift Gold */
+  color: var(--foreground) !important;
 }
 
 /* Blockquote & code element workbench structures */
@@ -222,4 +218,3 @@ body {
 .animate-fade-entry {
   animation: cinematic-fade-entry 400ms ease-out forwards;
 } */
-

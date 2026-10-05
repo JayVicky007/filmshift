@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { startTransition, useEffect, useState } from "react";
 import type {
   TopRatedPeriod,
@@ -12,18 +10,15 @@ import ContentCard from "./ContentCard";
 
 export default function ContentRail({
   title,
-  category,
   movies,
   periodFilter = false,
   periodCategory = "trending",
 }: {
   title: string;
-  category: string;
   movies: ContentItem[];
   periodFilter?: boolean;
   periodCategory?: "trending" | "top-rated";
 }) {
-  const [page, setPage] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod | TopRatedPeriod>(
     periodCategory === "top-rated" ? "all-time" : "year",
   );
@@ -33,11 +28,6 @@ export default function ContentRail({
     ? selectedPeriod === "all-time"
     : selectedPeriod === "year";
   const displayedMovies = isDefaultPeriod ? movies : railMovies;
-  const pageSize = 5;
-  const pageCount = Math.max(1, Math.ceil(displayedMovies.length / pageSize));
-  const moviePages = Array.from({ length: pageCount }, (_, pageIndex) =>
-    displayedMovies.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
-  );
 
   useEffect(() => {
     if (!periodFilter) {
@@ -55,7 +45,6 @@ export default function ContentRail({
         if (isCurrent && data.results) {
           startTransition(() => {
             setRailMovies(data.results ?? []);
-            setPage(0);
           });
         }
       })
@@ -72,18 +61,13 @@ export default function ContentRail({
 
   return (
     <section className="mx-auto max-w-7xl">
-      <div className="mb-6 grid items-end gap-4 md:grid-cols-[1fr_auto_1fr]">
-        <div>
-          <Link
-            href={`/movies/${category}`}
-            className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-lg font-bold text-trending-text transition-colors hover:border-accent hover:text-accent"
-          >
-            {title}
-          </Link>
-        </div>
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="border-l-4 border-accent pl-4 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+          {title}
+        </h2>
 
         {periodFilter ? (
-          <div className="flex max-w-full flex-wrap items-center justify-center rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
+          <div className="flex max-w-full flex-wrap items-center rounded-full border border-text-muted/15 bg-surface p-1 text-xs font-semibold">
             {(periodCategory === "trending"
               ? (["day", "week", "month", "year"] as TrendingPeriod[])
               : (["all-time", "year", "month"] as TopRatedPeriod[])
@@ -92,7 +76,6 @@ export default function ContentRail({
                 key={period}
                 type="button"
                 onClick={() => {
-                  setPage(0);
                   setIsLoading(
                     period !== (periodCategory === "top-rated" ? "all-time" : "year"),
                   );
@@ -104,40 +87,10 @@ export default function ContentRail({
               </button>
             ))}
           </div>
-        ) : <div />}
-
-        <div className="flex items-center justify-end gap-2">
-          <Link
-            href={`/movies/${category}`}
-            className="mr-2 hidden text-sm font-semibold text-text-muted transition-colors hover:text-accent sm:inline"
-          >
-            View all
-          </Link>
-          <button
-            type="button"
-            aria-label={`Show previous ${title.toLowerCase()} movies`}
-            onClick={() => setPage((currentPage) => Math.max(0, currentPage - 1))}
-            disabled={page === 0}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label={`Show more ${title.toLowerCase()} movies`}
-            onClick={() => setPage((currentPage) => Math.min(pageCount - 1, currentPage + 1))}
-            disabled={page >= pageCount - 1}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-muted/20 bg-surface text-foreground transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ChevronRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
+        ) : null}
       </div>
 
-      {/* Existing header controls are right above this row block */}
-      <div className={`overflow-hidden transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
-        
-        {/* 🚀 Check if the rail has movies. If it's 0, display a beautiful placeholder banner! */}
+      <div className={`transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
         {displayedMovies.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-text-muted/20 bg-surface/50 p-10 text-center">
             <p className="text-sm font-semibold text-text-muted">
@@ -146,18 +99,17 @@ export default function ContentRail({
           </div>
         ) : (
           <div
-            className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
-            style={{ transform: `translateX(-${page * 100}%)` }}
+            role="region"
+            aria-label={`${title} titles`}
+            tabIndex={0}
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:thin] [scrollbar-color:var(--text-muted)_transparent] motion-reduce:scroll-auto"
           >
-            {moviePages.map((moviePage, pageIndex) => (
+            {displayedMovies.map((movie, index) => (
               <div
-                key={pageIndex}
-                className="grid min-w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                key={`${movie.id}-rail-${index}`}
+                className="w-[42%] min-w-[140px] max-w-[190px] shrink-0 snap-start sm:w-[30%] md:w-[22%] lg:w-[18%]"
               >
-                {moviePage.map((movie, index) => (
-                  /* 🚀 COMBINE ID AND INDEX: This forces perfect key uniqueness even if title 118 shows up twice! */
-                  <ContentCard key={`${movie.id}-rail-${pageIndex}-${index}`} movie={movie} />
-                ))}
+                <ContentCard movie={movie} />
               </div>
             ))}
           </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatMovieRating, type ContentItem } from "@/utils/movieService";
+import type { ContentItem } from "@/utils/movieService";
 import RatingRing from "./RatingRing";
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -11,7 +11,11 @@ export default function ContentCard({ movie }: { movie: ContentItem & { media_ty
   const isTvFormat = movie.media_type === "tv" || 'first_air_date' in movie || !movie.release_date;
 
   const releaseYear = movie.release_date
-    ? new Date(movie.release_date).getFullYear()
+    ? new Date(movie.release_date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
     : "Unknown year";
 
   // 2. Automatically generate the perfect path route matching your backend datasets
@@ -29,7 +33,7 @@ export default function ContentCard({ movie }: { movie: ContentItem & { media_ty
             alt={`${movie.title} poster`}
             className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute bottom-3 left-3">
+          <div className="absolute right-3 top-3">
             <RatingRing rating={movie.vote_average} />
           </div>
         </div>
@@ -39,10 +43,8 @@ export default function ContentCard({ movie }: { movie: ContentItem & { media_ty
         </div>
       )}
       <div className="p-3">
-        <h3 className="line-clamp-2 font-bold text-foreground">{movie.title}</h3>
-        <p className="mt-1 text-sm text-text-muted">
-          {releaseYear} · {formatMovieRating(movie.vote_average)}
-        </p>
+        <h3 className="line-clamp-2 min-h-10 font-bold leading-5 text-foreground">{movie.title}</h3>
+        <p className="mt-1 text-sm text-text-muted">{releaseYear}</p>
       </div>
     </Link>
   );

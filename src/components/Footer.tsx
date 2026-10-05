@@ -4,34 +4,51 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto w-full border-t border-text-muted/10 bg-surface/40 backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8 md:flex md:items-center md:justify-between lg:px-12">
-        
-        {/* Brand Left Anchor */}
-        <div className="flex justify-center md:order-2 gap-6 text-sm font-semibold text-text-muted">
-          <Link href="/movies" className="hover:text-accent transition-colors">Movies</Link>
-          <Link href="/tv" className="hover:text-accent transition-colors">Series</Link>
-          <Link href="/blog" className="hover:text-accent transition-colors">Blog</Link>
-          <a 
-            href="https://themoviedb.org" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="hover:text-accent transition-colors text-xs opacity-75 font-normal"
-          >
-            TMDB API
-          </a>
+    <footer className="mt-auto w-full border-t border-text-muted/15 bg-surface/70">
+      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 sm:py-14 lg:px-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <Link href="/" className="text-2xl font-black tracking-tight text-foreground transition-colors hover:text-accent">
+              Film<span className="text-accent">Shift</span>
+            </Link>
+            <p className="mt-3 text-sm leading-6 text-text-muted">
+              Discover your next favorite. Explore films and series, then share what you think with the community.
+            </p>
+          </div>
+
+          <nav aria-label="Explore FilmShift">
+            <h2 className="text-sm font-bold text-foreground">Explore</h2>
+            <ul className="mt-4 space-y-3 text-sm text-text-muted">
+              <li><Link href="/movies" className="transition-colors hover:text-accent">Movies</Link></li>
+              <li><Link href="/tv" className="transition-colors hover:text-accent">TV series</Link></li>
+              <li><Link href="/search" className="transition-colors hover:text-accent">Search</Link></li>
+            </ul>
+          </nav>
+
+          <nav aria-label="FilmShift community">
+            <h2 className="text-sm font-bold text-foreground">Community</h2>
+            <ul className="mt-4 space-y-3 text-sm text-text-muted">
+              <li><Link href="/blog" className="transition-colors hover:text-accent">Reviews & articles</Link></li>
+              <li>
+                <a
+                  href="https://www.themoviedb.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="transition-colors hover:text-accent"
+                >
+                  The Movie Database
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
 
-        {/* Copyright Attribution Right Anchor */}
-        <div className="mt-4 md:order-1 md:mt-0 text-center md:text-left">
-          <p className="text-xs text-text-muted">
-            &copy; {currentYear} <span className="font-black tracking-tight text-foreground">Film<span className="text-accent">Shift</span></span>. Developed as a modern cinema curation layout.
-          </p>
-          <p className="mt-1 text-[10px] text-text-muted/60">
+        <div className="mt-10 border-t border-text-muted/15 pt-5 text-xs leading-5 text-text-muted">
+          <p>&copy; {currentYear} FilmShift. All rights reserved.</p>
+          <p className="mt-1 text-text-muted/75">
             This product uses the TMDB API but is not endorsed or certified by TMDB.
           </p>
         </div>
-
       </div>
     </footer>
   );
