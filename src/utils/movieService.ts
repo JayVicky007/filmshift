@@ -9,7 +9,15 @@ export interface ContentItem {
   release_date: string;
   vote_average: number;
   vote_count?: number;
+  popularity?: number;
   media_type?: string;
+}
+
+export interface LatestTrailer extends ContentItem {
+  media_type: "movie" | "tv";
+  trailerKey: string;
+  trailerName: string;
+  trailerPublishedAt: string;
 }
 
 /** @deprecated Use ContentItem for shared movie, series, and other content lists. */
@@ -36,10 +44,13 @@ export const movieCategories = [
 ] as const;
 
 export type MovieCategory = (typeof movieCategories)[number];
-export const trendingPeriods = ["day", "week", "month", "year"] as const;
+export const trendingPeriods = ["week", "month", "year"] as const;
 export type TrendingPeriod = (typeof trendingPeriods)[number];
 export const topRatedPeriods = ["all-time", "year", "month"] as const;
 export type TopRatedPeriod = (typeof topRatedPeriods)[number];
+export const upcomingPeriods = ["1-month", "3-months", "6-months"] as const;
+export type UpcomingPeriod = (typeof upcomingPeriods)[number];
+const MIN_TOP_RATED_SCORE = 7;
 
 interface OmdbRating {
   Source: string;
@@ -75,6 +86,7 @@ interface TmdbVideo {
   site: string;
   type: string;
   official?: boolean;
+  published_at?: string;
 }
 
 interface TmdbPersonCredit {
@@ -95,6 +107,57 @@ interface TmdbPersonCredit {
 interface TmdbCredits {
   cast: TmdbPersonCredit[];
   crew?: TmdbPersonCredit[];
+}
+
+interface TmdbCreator {
+  id: number;
+  name: string;
+}
+
+const CREATIVE_CREDIT_JOBS = [
+  "Director",
+  "Writer",
+  "Screenplay",
+  "Story",
+  "Original Story",
+  "Original Work",
+  "Original Concept",
+  "Series Composition",
+  "Series Director",
+  "Chief Director",
+  "Comic Book",
+  "Manga",
+  "Novel",
+  "Characters",
+  "Character Design",
+  "Animation Director",
+] as const;
+const CREATIVE_CREDIT_JOB_SET = new Set<string>(CREATIVE_CREDIT_JOBS);
+
+function mapCreativeCredits(crew: TmdbPersonCredit[] = []) {
+  const creditsByRole = new Map<string, string[]>();
+
+  for (const person of crew) {
+    if (!person.job || !CREATIVE_CREDIT_JOB_SET.has(person.job)) {
+      continue;
+    }
+
+    const names = creditsByRole.get(person.job) ?? [];
+    if (!names.includes(person.name)) names.push(person.name);
+    creditsByRole.set(person.job, names);
+  }
+
+  return Array.from(creditsByRole, ([role, names]) => ({ role, names }));
+}
+
+function getRelatedCreatorCredit(
+  crew: TmdbPersonCredit[],
+  preferredJobs: string[],
+): TmdbPersonCredit | undefined {
+  for (const job of preferredJobs) {
+    const person = crew.find((credit) => credit.job === job);
+    if (person) return person;
+  }
 }
 
 interface TmdbRecommendations<T = ContentItem> {
@@ -134,7 +197,7 @@ interface TmdbTvRecord {
   external_ids?: { imdb_id?: string; results?: { imdb_id?: string } };
   videos?: { results: TmdbVideo[] };
   genres: TmdbGenre[];
-  created_by?: Array<{ name: string }>;
+  created_by?: TmdbCreator[];
 }
 
 export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
@@ -158,6 +221,35 @@ export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
     })
     .sort((first, second) => second.score - first.score)
     .map(({ movie }) => movie);
+}
+
+export function rankPeriodContent(
+  items: ContentItem[],
+  priorWeight: number,
+): ContentItem[] {
+  const totalVotes = items.reduce((sum, item) => sum + (item.vote_count ?? 0), 0);
+  const priorMean = totalVotes
+    ? items.reduce(
+        (sum, item) => sum + item.vote_average * (item.vote_count ?? 0),
+        0,
+      ) / totalVotes
+    : 6.5;
+
+  return items
+    .map((item) => {
+      const votes = item.vote_count ?? 0;
+      const score =
+        (votes / (votes + priorWeight)) * item.vote_average +
+        (priorWeight / (votes + priorWeight)) * priorMean;
+      return { item, score };
+    })
+    .sort(
+      (first, second) =>
+        second.score - first.score ||
+        (second.item.popularity ?? 0) - (first.item.popularity ?? 0) ||
+        (second.item.vote_count ?? 0) - (first.item.vote_count ?? 0),
+    )
+    .map(({ item }) => item);
 }
 
 export function formatMovieRating(rating: number | null | undefined) {
@@ -216,7 +308,15 @@ export const getMoviesByCategory = unstable_cache(
 
     if (category === "upcoming") {
       const today = new Date().toISOString().slice(0, 10);
-      return movies.filter((movie) => movie.release_date >= today);
+      return movies
+        .filter((movie) =>
+          movie.release_date >= today &&
+          Boolean(movie.poster_path) &&
+          Boolean(movie.title?.trim()) &&
+          (movie.popularity ?? 0) >= 5,
+        )
+        .sort((first, second) => (second.popularity ?? 0) - (first.popularity ?? 0))
+        .slice(0, 20);
     }
 
     return movies;
@@ -225,10 +325,51 @@ export const getMoviesByCategory = unstable_cache(
   { revalidate: 3600 }          // Stale-While-Revalidate window: 1 Hour (3,600 seconds)
 );
 
+function getPeriodEndDate(period: UpcomingPeriod): string {
+  const today = new Date();
+  const months = Number.parseInt(period, 10);
+  const endDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + months, 1));
+  const lastDay = new Date(
+    Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  endDate.setUTCDate(Math.min(today.getUTCDate(), lastDay));
+  return endDate.toISOString().slice(0, 10);
+}
+
+export const getUpcomingMoviesByPeriod = unstable_cache(
+  async (period: UpcomingPeriod): Promise<ContentItem[]> => {
+    const today = new Date().toISOString().slice(0, 10);
+    const response = await axios.get<{ results: ContentItem[] }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+      {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+          language: "en-US",
+          sort_by: "popularity.desc",
+          include_adult: false,
+          "primary_release_date.gte": today,
+          "primary_release_date.lte": getPeriodEndDate(period),
+        },
+      },
+    );
+
+    return response.data.results
+      .filter((movie) =>
+        movie.poster_path &&
+        movie.title?.trim() &&
+        movie.title !== "Untitled" &&
+        (movie.popularity ?? 0) >= 5,
+      )
+      .map((movie) => ({ ...movie, media_type: "movie" }));
+  },
+  ["upcoming-movies-period-cache"],
+  { revalidate: 3600 },
+);
+
 
 export const getTrendingMoviesByPeriod = unstable_cache(
   async (period: TrendingPeriod): Promise<ContentItem[]> => {
-    if (period === "day" || period === "week") {
+    if (period === "week") {
       const response = await axios.get<{ results: ContentItem[] }>(
         getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/movie/${period}`),
         { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } },
@@ -282,6 +423,7 @@ export async function getTopRatedMoviesByPeriod(
     );
     const candidates = responses
       .flatMap((response) => response.data.results)
+      .filter((movie) => movie.vote_average >= MIN_TOP_RATED_SCORE)
       .filter((movie) => movie.release_date <= today.toISOString().slice(0, 10))
       .filter((movie) => {
         const releaseYear = Number.parseInt(movie.release_date.slice(0, 4), 10);
@@ -303,43 +445,61 @@ export async function getTopRatedMoviesByPeriod(
   const days = period === "year" ? 365 : 30;
   startDate.setDate(today.getDate() - days);
 
-  const response = await axios.get<{ results: ContentItem[] }>(
-    getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
-    {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        sort_by: "vote_average.desc",
-        "vote_count.gte": period === "year" ? 100 : 25,
-        "primary_release_date.gte": startDate.toISOString().slice(0, 10),
-        "primary_release_date.lte": today.toISOString().slice(0, 10),
-      },
-    },
+  const minimumVotes = period === "year" ? 250 : 30;
+  const responses = await Promise.all(
+    Array.from({ length: 3 }, (_, index) =>
+      axios.get<{ results: ContentItem[] }>(
+        getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
+        {
+          params: {
+            api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+            sort_by: "vote_count.desc",
+            "vote_count.gte": minimumVotes,
+            "primary_release_date.gte": startDate.toISOString().slice(0, 10),
+            "primary_release_date.lte": today.toISOString().slice(0, 10),
+            page: index + 1,
+          },
+        },
+      ),
+    ),
   );
 
-  return response.data.results;
+  return rankPeriodContent(
+    responses
+      .flatMap((response) => response.data.results)
+      .filter((movie) => movie.vote_average >= MIN_TOP_RATED_SCORE),
+    period === "year" ? 250 : 100,
+  );
 }
 
 
-export async function getUnifiedTrendingByPeriod(period: "day" | "week" | "month" | "year"): Promise<ContentItem[]> {
+export async function getUnifiedTrendingByPeriod(period: TrendingPeriod): Promise<ContentItem[]> {
   try {
     const [movies, tvShows] = await Promise.all([
       getTrendingMoviesByPeriod(period),
-      getTrendingTvByPeriod(period === "year" ? "week" : (period as "day" | "week")),
+      getTrendingTvByPeriod(period),
     ]);
 
-    const combined: ContentItem[] = [];
-    const maxLength = Math.max(movies.length, tvShows.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      if (movies[i]) combined.push({ ...movies[i], media_type: "movie" });
-      if (tvShows[i]) combined.push({ ...tvShows[i], media_type: "tv" });
-    }
-
-    return combined;
+    return combineContentItems(movies, tvShows);
   } catch (error) {
     console.error("❌ Failed to fetch unified trending content:", error);
     return getTrendingMoviesByPeriod(period);
   }
+}
+
+export function combineContentItems(
+  movies: ContentItem[],
+  tvShows: ContentItem[],
+): ContentItem[] {
+  const combined: ContentItem[] = [];
+  const maxLength = Math.max(movies.length, tvShows.length);
+
+  for (let index = 0; index < maxLength; index++) {
+    if (movies[index]) combined.push({ ...movies[index], media_type: "movie" });
+    if (tvShows[index]) combined.push({ ...tvShows[index], media_type: "tv" });
+  }
+
+  return combined;
 }
 
 export async function searchMovies(query: string): Promise<ContentItem[]> {
@@ -421,35 +581,27 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 
-export async function getMoviesByDirector(directorName: string, excludeMovieId: number): Promise<ContentItem[]> {
+export async function getMoviesByCreator(
+  personId: number,
+  jobs: string[],
+  excludeMovieId: number,
+): Promise<ContentItem[]> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    if (!apiKey || !directorName) return [];
+    if (!apiKey) return [];
 
-    // Step 1: Find the Director's unique TMDB Person ID
-    const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
-      { params: { api_key: apiKey, query: directorName } }
-    );
-
-    const personId = searchResponse.data.results?.[0]?.id;
-    if (!personId) return [];
-
-    // Step 2: Query their explicit person movie_credits profile to isolate pure filmographies
     const creditsResponse = await axios.get<{ crew: TmdbPersonCredit[] }>(
       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${personId}/movie_credits`),
       { params: { api_key: apiKey } }
     );
 
-    // 🚀 STRENGTHENED FILTER: Restrict matches strictly to the "Director" job title
     const crewCredits = creditsResponse.data.crew || [];
-    const directedMovies = crewCredits
-      .filter((credit) => credit.job === "Director")
+    const relatedMovies = crewCredits
+      .filter((credit) => credit.job && jobs.includes(credit.job))
       .filter((movie) => movie.id !== excludeMovieId);
 
-    // Remove any duplicate records caused by regional film re-entries
     const uniqueMoviesMap = new Map<number, TmdbPersonCredit>();
-    directedMovies.forEach((movie) => {
+    relatedMovies.forEach((movie) => {
       if (!uniqueMoviesMap.has(movie.id)) {
         uniqueMoviesMap.set(movie.id, movie);
       }
@@ -467,43 +619,31 @@ export async function getMoviesByDirector(directorName: string, excludeMovieId: 
       }))
       .slice(0, 10);
   } catch (error) {
-    console.error("❌ Error fetching movies by director:", error);
+    console.error("Unable to fetch related movies for creator:", error);
     return [];
   }
 }
 
 
-export async function getTvShowsByCreator(creatorName: string, excludeTvId: number): Promise<ContentItem[]> {
+export async function getTvShowsByCreator(
+  personId: number,
+  jobs: string[],
+  excludeTvId: number,
+): Promise<ContentItem[]> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    if (!apiKey || !creatorName) return [];
+    if (!apiKey) return [];
 
-    // Step 1: Find the Creator's unique TMDB Person ID
-    const searchResponse = await axios.get<{ results: Array<{ id: number }> }>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "search/person"),
-      { params: { api_key: apiKey, query: creatorName } }
-    );
-
-    const personId = searchResponse.data.results?.[0]?.id;
-    if (!personId) return [];
-
-    // Step 2: Query their explicit person tv_credits profile directly (Bypasses discover parameters)
     const creditsResponse = await axios.get<{ crew: TmdbPersonCredit[]; cast: TmdbPersonCredit[] }>(
       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${personId}/tv_credits`),
       { params: { api_key: apiKey } }
     );
 
-    // Filter for unique shows where they were a "Creator", "Executive Producer", or "Writer"
     const crewCredits = creditsResponse.data.crew || [];
     const createdShows = crewCredits
-      .filter((credit) => 
-        credit.job === "Creator" || 
-        credit.job === "Executive Producer" || 
-        credit.job === "Writer"
-      )
+      .filter((credit) => credit.job && jobs.includes(credit.job))
       .filter((show) => show.id !== excludeTvId);
 
-    // Remove any duplicate entries from matching episodes
     const uniqueShowsMap = new Map<number, TmdbPersonCredit>();
     createdShows.forEach((show) => {
       if (!uniqueShowsMap.has(show.id)) {
@@ -523,7 +663,7 @@ export async function getTvShowsByCreator(creatorName: string, excludeTvId: numb
       }))
       .slice(0, 10);
   } catch (error) {
-    console.error("❌ Error fetching TV shows by creator:", error);
+    console.error("Unable to fetch related TV shows for creator:", error);
     return [];
   }
 }
@@ -595,10 +735,24 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     .map((person) => person.name)
     .filter((name, index, names) => names.indexOf(name) === index);
 
-  // 🚀 CRUCIAL REFACTOR ELEMENT: Query by primary director instead of TMDB 'similar' endpoints
-  const primaryDirector = directors[0] || "";
-  const directorMovies = primaryDirector 
-    ? await getMoviesByDirector(primaryDirector, movieData.id)
+  const primaryCreator = getRelatedCreatorCredit(crew, [
+    "Director",
+    "Original Story",
+    "Story",
+    "Manga",
+    "Writer",
+    "Screenplay",
+    "Original Concept",
+    "Animation Director",
+  ]);
+  const relatedMovies = primaryCreator
+    ? await getMoviesByCreator(
+        primaryCreator.id,
+        primaryCreator.job === "Director"
+          ? ["Director"]
+          : ["Original Story", "Story", "Manga", "Writer", "Screenplay", "Original Concept", "Animation Director"],
+        movieData.id,
+      )
     : [];
 
   return {
@@ -615,6 +769,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     trailer: trailer ? { key: trailer.key, name: trailer.name } : null,
     directors,
     writers,
+    creativeCredits: mapCreativeCredits(crew),
     cast: cast
       .sort((first, second) => (first.order ?? 0) - (second.order ?? 0))
       .slice(0, 6)
@@ -624,7 +779,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
         character: person.character ?? "",
         profilePath: person.profile_path,
       })),
-    similar: directorMovies, // Linked directly into the 'similar' layout slot to keep interface stability
+    similar: relatedMovies,
     recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
     genres: movieData.genres || [],
     runtime: movieData.runtime,
@@ -654,6 +809,7 @@ export interface MovieDetails {
   } | null;
   directors: string[];
   writers: string[];
+  creativeCredits: Array<{ role: string; names: string[] }>;
   cast: Array<{
     id: number;
     name: string;
@@ -686,6 +842,7 @@ export interface TvShowDetails {
   number_of_seasons: number;
   number_of_episodes: number;
   creators: string[];
+  creativeCredits: Array<{ role: string; names: string[] }>;
   genres: TmdbGenre[];
   cast: Array<{
     id: number;
@@ -731,7 +888,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
 
     const creditsPromise = axios.get<TmdbCredits>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/credits`), {
       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
-    }).catch(() => ({ data: { cast: [] } }));
+    }).catch(() => ({ data: { cast: [], crew: [] } }));
 
     const recommendationsPromise = axios.get<TmdbRecommendations<TmdbListItem>>(getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `tv/${id}/recommendations`), {
       params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY },
@@ -771,12 +928,32 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       media_type: "tv",
     });
 
-    const creators = showData.created_by?.map((creator) => creator.name) || [];
-
-    // 🚀 CRUCIAL REFACTOR ELEMENT: Query by primary creator instead of generic TMDB recommendations
-    const primaryCreator = creators[0] || "";
-    const creatorTvShows = primaryCreator
-      ? await getTvShowsByCreator(primaryCreator, showData.id)
+    const nativeCreators = showData.created_by ?? [];
+    const relatedCreatorCredit = getRelatedCreatorCredit(creditsResult.data.crew ?? [], [
+      "Creator",
+      "Original Story",
+      "Story",
+      "Manga",
+      "Series Composition",
+      "Writer",
+      "Screenplay",
+      "Original Concept",
+      "Director",
+      "Executive Producer",
+    ]);
+    const creators = nativeCreators.length > 0
+      ? nativeCreators.map((creator) => creator.name)
+      : relatedCreatorCredit
+        ? [relatedCreatorCredit.name]
+        : [];
+    const creatorId = nativeCreators[0]?.id ?? relatedCreatorCredit?.id;
+    const creatorJobs = nativeCreators.length > 0
+      ? ["Creator", "Executive Producer", "Writer", "Screenplay"]
+      : relatedCreatorCredit?.job === "Director"
+        ? ["Director"]
+        : ["Creator", "Original Story", "Story", "Manga", "Series Composition", "Writer", "Screenplay", "Original Concept"];
+    const creatorTvShows = creatorId
+      ? await getTvShowsByCreator(creatorId, creatorJobs, showData.id)
       : [];
 
     return {
@@ -793,6 +970,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       number_of_seasons: showData.number_of_seasons,
       number_of_episodes: showData.number_of_episodes,
       creators,
+      creativeCredits: mapCreativeCredits(creditsResult.data.crew ?? []),
       genres: showData.genres || [],
       cast: creditsResult.data.cast?.slice(0, 6).map((person) => ({
         id: person.id,
@@ -820,10 +998,27 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
  * Caches seasonal television trends for 1 hour before revalidating.
  */
 export const getTrendingTvByPeriod = unstable_cache(
-  async (period: "day" | "week"): Promise<ContentItem[]> => {
+  async (period: TrendingPeriod): Promise<ContentItem[]> => {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - (period === "week" ? 7 : period === "month" ? 30 : 365));
     const response = await axios.get<{ results: TmdbListItem[] }>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/tv/${period}`),
-      { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+      getApiUrl(
+        process.env.NEXT_PUBLIC_TMDB_BASE_URL,
+        period === "week" ? `trending/tv/${period}` : "discover/tv",
+      ),
+      {
+        params: period === "week"
+          ? { api_key: apiKey }
+          : {
+              api_key: apiKey,
+              sort_by: "popularity.desc",
+              "first_air_date.gte": startDate.toISOString().slice(0, 10),
+              "first_air_date.lte": today.toISOString().slice(0, 10),
+              "vote_count.gte": 10,
+            },
+      },
     );
 
     return response.data.results.map((item) => ({
@@ -832,6 +1027,8 @@ export const getTrendingTvByPeriod = unstable_cache(
       poster_path: item.poster_path,
       release_date: item.first_air_date || "",
       vote_average: item.vote_average ?? 0,
+      vote_count: item.vote_count,
+      popularity: item.popularity,
       media_type: "tv",
     }));
   },
@@ -872,17 +1069,66 @@ export const getTopRatedTv = unstable_cache(
       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
       { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
     );
-    return response.data.results.map((item) => ({
-      id: item.id,
-      title: item.name ?? "Untitled",
-      poster_path: item.poster_path,
-      release_date: item.first_air_date || "",
-      vote_average: item.vote_average ?? 0,
-      media_type: "tv",
-    }));
+    return response.data.results
+      .map((item) => ({
+        id: item.id,
+        title: item.name ?? "Untitled",
+        poster_path: item.poster_path,
+        release_date: item.first_air_date || "",
+        vote_average: item.vote_average ?? 0,
+        media_type: "tv",
+      }))
+      .filter((item) => item.vote_average >= MIN_TOP_RATED_SCORE);
   },
   ["top-rated-tv-cache"],
   { revalidate: 3600 }
+);
+
+export const getTopRatedTvByPeriod = unstable_cache(
+  async (period: TopRatedPeriod): Promise<ContentItem[]> => {
+    if (period === "all-time") {
+      return getTopRatedTv();
+    }
+
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - (period === "year" ? 365 : 30));
+    const minimumVotes = period === "year" ? 100 : 25;
+    const responses = await Promise.all(
+      Array.from({ length: 3 }, (_, index) =>
+        axios.get<{ results: TmdbListItem[] }>(
+          getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
+          {
+            params: {
+              api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+              sort_by: "vote_count.desc",
+              "vote_count.gte": minimumVotes,
+              "first_air_date.gte": startDate.toISOString().slice(0, 10),
+              "first_air_date.lte": today.toISOString().slice(0, 10),
+              page: index + 1,
+            },
+          },
+        ),
+      ),
+    );
+
+    const candidates = responses
+      .flatMap((response) => response.data.results)
+      .map((item) => ({
+        id: item.id,
+        title: item.name ?? "Untitled",
+        poster_path: item.poster_path,
+        release_date: item.first_air_date || "",
+        vote_average: item.vote_average ?? 0,
+        vote_count: item.vote_count,
+        popularity: item.popularity,
+        media_type: "tv",
+      }))
+      .filter((item) => item.vote_average >= MIN_TOP_RATED_SCORE);
+    return rankPeriodContent(candidates, period === "year" ? 150 : 75);
+  },
+  ["top-rated-tv-period-cache"],
+  { revalidate: 3600 },
 );
 
 /**
@@ -906,4 +1152,110 @@ export const getTvOnTheAir = unstable_cache(
   },
   ["tv-on-the-air-cache"],
   { revalidate: 3600 }
+);
+
+export const getUpcomingTvShows = unstable_cache(
+  async (period: UpcomingPeriod): Promise<ContentItem[]> => {
+    const today = new Date();
+    const endDate = getPeriodEndDate(period);
+    const response = await axios.get<{ results: TmdbListItem[] }>(
+      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
+      {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+          language: "en-US",
+          sort_by: "popularity.desc",
+          "first_air_date.gte": today.toISOString().slice(0, 10),
+          "first_air_date.lte": endDate,
+          include_null_first_air_dates: false,
+        },
+      },
+    );
+
+    return response.data.results
+      .filter((item) =>
+        item.poster_path &&
+        (item.name ?? "").trim() &&
+        item.name !== "Untitled" &&
+        (item.popularity ?? 0) >= 5,
+      )
+      .map((item) => ({
+      id: item.id,
+      title: item.name ?? "Untitled",
+      poster_path: item.poster_path,
+      release_date: item.first_air_date || "",
+      vote_average: item.vote_average ?? 0,
+      vote_count: item.vote_count,
+      popularity: item.popularity,
+      media_type: "tv",
+    }))
+      .sort((first, second) => (second.popularity ?? 0) - (first.popularity ?? 0))
+      .slice(0, 20);
+  },
+  ["upcoming-tv-shows-cache"],
+  { revalidate: 3600 },
+);
+
+export const getLatestTrailers = unstable_cache(
+  async (): Promise<LatestTrailer[]> => {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey) {
+      throw new Error("TMDB API Key is missing from the server environment config.");
+    }
+
+    const [movies, shows] = await Promise.all([
+      getTrendingMoviesByPeriod("week"),
+      getTrendingTvByPeriod("week"),
+    ]);
+    const candidates: ContentItem[] = [
+      ...movies.slice(0, 8).map((movie) => ({ ...movie, media_type: "movie" })),
+      ...shows.slice(0, 8),
+    ].filter((item) => item.poster_path && (item.media_type === "movie" || item.media_type === "tv"));
+
+    const videoResults = await Promise.allSettled(
+      candidates.map(async (item) => {
+        const response = await axios.get<{ results: TmdbVideo[] }>(
+          getApiUrl(
+            process.env.NEXT_PUBLIC_TMDB_BASE_URL,
+            `${item.media_type}/${item.id}/videos`,
+          ),
+          { params: { api_key: apiKey, language: "en-US" } },
+        );
+        const trailers = response.data.results.filter(
+          (video) => video.site === "YouTube" && video.type === "Trailer",
+        );
+        const trailer = trailers.find((video) => video.official) ?? trailers[0];
+
+        if (!trailer) {
+          return null;
+        }
+
+        return {
+          ...item,
+          media_type: item.media_type as "movie" | "tv",
+          trailerKey: trailer.key,
+          trailerName: trailer.name,
+          trailerPublishedAt: trailer.published_at ?? "",
+        };
+      }),
+    );
+
+    const trailers: LatestTrailer[] = [];
+    for (const result of videoResults) {
+      if (result.status === "fulfilled") {
+        if (result.value) trailers.push(result.value);
+      } else {
+        console.warn("Unable to fetch a trending title's trailer:", result.reason);
+      }
+    }
+
+    return trailers
+      .sort((first, second) =>
+        (Date.parse(second.trailerPublishedAt) || 0) -
+        (Date.parse(first.trailerPublishedAt) || 0),
+      )
+      .slice(0, 10);
+  },
+  ["latest-trailers-cache"],
+  { revalidate: 3600 },
 );

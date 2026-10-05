@@ -4,15 +4,16 @@ import {
   getMoviesByCategory,
   getTopRatedMoviesByPeriod,
   getTrendingMoviesByPeriod,
+  getUpcomingMoviesByPeriod,
 } from "@/utils/movieService";
 
 export default async function MoviesIndexPage() {
   // 🚀 Fetch the exact same category arrays running on the main index route
   const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
-    getTrendingMoviesByPeriod("year"),
+    getTrendingMoviesByPeriod("month"),
     getMoviesByCategory("now-playing"),
-    getTopRatedMoviesByPeriod("all-time"),
-    getMoviesByCategory("upcoming"),
+    getTopRatedMoviesByPeriod("year"),
+    getUpcomingMoviesByPeriod("3-months"),
   ]);
 
   return (
@@ -45,15 +46,17 @@ export default async function MoviesIndexPage() {
         />
 
         <ContentRail
-          title="Top Rated"
+          title="Top Rated Movies"
           movies={topRated}
           periodFilter={true}
           periodCategory="top-rated"
         />
 
         <ContentRail
-          title="Upcoming"
+          title="Coming Soon"
           movies={upcoming}
+          periodFilter
+          periodCategory="upcoming-movies"
         />
       </div>
     </main>

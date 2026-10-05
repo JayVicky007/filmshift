@@ -3,17 +3,17 @@ import ContentRail from "@/components/ContentRail";
 import { 
   getTrendingTvByPeriod,
   getTvAiringToday,
-  getTopRatedTv,
-  getTvOnTheAir
+  getTopRatedTvByPeriod,
+  getUpcomingTvShows,
 } from "@/utils/movieService";
 
 export default async function TvSeriesIndexPage() {
   // Fetch the identical four-channel catalog stack concurrently 
   const [trending, airingToday, topRated, upcomingDrops] = await Promise.all([
-    getTrendingTvByPeriod("week"),
+    getTrendingTvByPeriod("month"),
     getTvAiringToday(),
-    getTopRatedTv(),
-    getTvOnTheAir(),
+    getTopRatedTvByPeriod("year"),
+    getUpcomingTvShows("3-months"),
   ]);
 
   return (
@@ -36,7 +36,8 @@ export default async function TvSeriesIndexPage() {
         <ContentRail
           title="Trending Series"
           movies={trending}
-          periodFilter={false} // Clean single interval window fallback
+          periodFilter
+          periodCategory="trending-tv"
         />
 
         <ContentRail
@@ -45,13 +46,17 @@ export default async function TvSeriesIndexPage() {
         />
 
         <ContentRail
-          title="Top Rated Masterpieces"
+          title="Top Rated TV Series"
           movies={topRated}
+          periodFilter
+          periodCategory="top-rated-tv"
         />
 
         <ContentRail
-          title="On The Air (New Seasons)"
+          title="Upcoming Series"
           movies={upcomingDrops}
+          periodFilter
+          periodCategory="upcoming-tv"
         />
       </div>
     </main>

@@ -148,22 +148,36 @@ export default async function TvShowDetailPage({ params }: PageProps) {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
-        {show.creators && show.creators.length > 0 && (
+        {(show.creators.length > 0 || show.creativeCredits.length > 0) && (
           <section className="md:px-4">
             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
-            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
-                <span className="font-semibold text-text-muted">Created By:</span>{" "}
-                {show.creators.map((creator: string, index: number) => (
-                  <span key={creator}>
-                    {index > 0 ? ", " : ""}
-                    <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
-                      {creator}
-                    </a>
-                  </span>
-                ))}
-              </p>
-              
+            <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {show.creators.length > 0 && (
+                <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">Created By</span>{" "}
+                  {show.creators.map((creator: string, index: number) => (
+                    <span key={creator}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(creator, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {creator}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
+              {show.creativeCredits.map(({ role, names }) => (
+                <p key={role} className="rounded-xl border border-text-muted/15 bg-surface p-4">
+                  <span className="font-semibold text-text-muted">{role}</span>{" "}
+                  {names.map((name, index) => (
+                    <span key={name}>
+                      {index > 0 ? ", " : ""}
+                      <a href={googleSearchUrl(name, show.name)} target="_blank" rel="noreferrer" className="no-underline transition-colors hover:text-accent">
+                        {name}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              ))}
               <p className="rounded-xl border border-text-muted/15 bg-surface p-4">
                 <span className="font-semibold text-text-muted">Production Status:</span>{" "}
                 <span className="text-emerald-400 font-medium">{show.status || "Ongoing"}</span>
@@ -195,7 +209,6 @@ export default async function TvShowDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* 🚀 CONNECTED DYNAMIC LABELS: Displays the updated text contract header */}
         {show.similar && show.similar.length > 0 && (
           <ContentCarousel title="More From This Creator" movies={show.similar} />
         )}

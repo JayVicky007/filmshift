@@ -5,7 +5,13 @@ import RatingRing from "./RatingRing";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
 // 💡 We tell TypeScript that the movie object might optionally carry our custom media_type string
-export default function ContentCard({ movie }: { movie: ContentItem & { media_type?: string } }) {
+export default function ContentCard({
+  movie,
+  showRating = true,
+}: {
+  movie: ContentItem & { media_type?: string };
+  showRating?: boolean;
+}) {
   
   // 🚀 1. Check our explicit flag first, then fallback to missing property checks!
   const isTvFormat = movie.media_type === "tv" || 'first_air_date' in movie || !movie.release_date;
@@ -33,9 +39,11 @@ export default function ContentCard({ movie }: { movie: ContentItem & { media_ty
             alt={`${movie.title} poster`}
             className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute right-3 top-3">
-            <RatingRing rating={movie.vote_average} />
-          </div>
+          {showRating && (
+            <div className="absolute right-3 top-3">
+              <RatingRing rating={movie.vote_average} />
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex aspect-[2/3] items-center justify-center bg-background px-4 text-center text-sm text-text-muted">

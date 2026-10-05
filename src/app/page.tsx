@@ -1,31 +1,35 @@
 import HomeHero from "@/components/HomeHero";
 import ContentRail from "@/components/ContentRail";
+import TrailerRail from "@/components/TrailerRail";
 import {
   getMoviesByCategory,
+  getLatestTrailers,
+  getUpcomingMoviesByPeriod,
   getTopRatedMoviesByPeriod,
-  getTopRatedTv,
+  getTopRatedTvByPeriod,
   getUnifiedTrendingByPeriod,
-  getTvOnTheAir,
+  getUpcomingTvShows,
 } from "@/utils/movieService";
 
-const sections = [
-  { title: "Trending", periodFilter: true, periodCategory: "trending" as const },
-  { title: "Now Playing in Theaters", periodFilter: false, periodCategory: "trending" as const },
-  { title: "Top Rated Masterpieces", periodFilter: false, periodCategory: "top-rated" as const },
-  { title: "Upcoming TV Seasons", periodFilter: false, periodCategory: "trending" as const },
-];
-
 export default async function HomePage() {
-  // 🚀 Concurrently fetch mixed entertainment arrays
-  const [trendingMixed, nowPlayingMovies, topRatedMovies, topRatedTv, upcomingTv] = await Promise.all([
-    getUnifiedTrendingByPeriod("year"),
+  const [
+    trendingMixed,
+    nowPlayingMovies,
+    topRatedMovies,
+    topRatedTv,
+    upcomingMovies,
+    upcomingTv,
+    latestTrailers,
+  ] = await Promise.all([
+    getUnifiedTrendingByPeriod("month"),
     getMoviesByCategory("now-playing"),
-    getTopRatedMoviesByPeriod("all-time"),
-    getTopRatedTv(),
-    getTvOnTheAir(),
+    getTopRatedMoviesByPeriod("year"),
+    getTopRatedTvByPeriod("year"),
+    getUpcomingMoviesByPeriod("3-months"),
+    getUpcomingTvShows("3-months"),
+    getLatestTrailers(),
   ]);
 
-  // 🚀 Combine Top Rated Movies and TV shows into an interleaved masterpiece row
   const topRatedMixed = [];
   const maxCuratedLength = Math.max(topRatedMovies.length, topRatedTv.length);
   for (let i = 0; i < maxCuratedLength; i++) {
@@ -33,28 +37,44 @@ export default async function HomePage() {
     if (topRatedTv[i]) topRatedMixed.push({ ...topRatedTv[i], media_type: "tv" });
   }
 
-  const moviesByCategory = [
-    trendingMixed,
-    nowPlayingMovies.map(m => ({ ...m, media_type: "movie" })),
-    topRatedMixed,
-    upcomingTv.map(t => ({ ...t, media_type: "tv" }))
-  ];
+  const comingSoon = [
+    ...upcomingMovies.map((movie) => ({ ...movie, media_type: "movie" })),
+    ...upcomingTv,
+  ]
+    .sort((first, second) =>
+      (second.popularity ?? 0) - (first.popularity ?? 0) ||
+      first.release_date.localeCompare(second.release_date),
+    )
+    .slice(0, 20);
 
   return (
     <main className="min-h-screen bg-background px-4 pb-4 text-foreground sm:px-8 sm:pb-8">
-      {/* Hero background cycles dynamically through the combined trending items! */}
       <HomeHero movies={trendingMixed} />
 
       <div className="mx-auto mt-16 max-w-7xl space-y-16">
-        {sections.map((section, index) => (
-          <ContentRail
-            key={section.title}
-            title={section.title}
-            movies={moviesByCategory[index]}
-            periodFilter={section.periodFilter}
-            periodCategory={section.periodCategory}
-          />
-        ))}
+        <ContentRail
+          title="Trending"
+          movies={trendingMixed}
+          periodFilter
+          periodCategory="trending"
+        />
+        <TrailerRail trailers={latestTrailers} />
+        <ContentRail
+          title="Now Playing in Theaters"
+          movies={nowPlayingMovies.map((movie) => ({ ...movie, media_type: "movie" }))}
+        />
+        <ContentRail
+          title="Top Rated Movies & TV"
+          movies={topRatedMixed}
+          periodFilter
+          periodCategory="top-rated-mixed"
+        />
+        <ContentRail
+          title="Coming Soon"
+          movies={comingSoon}
+          periodFilter
+          periodCategory="coming-soon"
+        />
       </div>
     </main>
   );
