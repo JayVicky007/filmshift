@@ -5,52 +5,30 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Search, User, PenSquare, LogOut, Menu, X } from "lucide-react";
 import type { SearchSuggestion } from "@/utils/movieService";
+import { contentCollections, type CollectionMediaType } from "@/utils/contentCollections";
 import { createClient } from "@/utils/supabase/client";
 import SearchSuggestions from "./SearchSuggestions";
 import ThemeToggle from "./ThemeToggle";
 
 
-const movieCategories = [
-  "Hollywood",
-  "British",
-  "European",
-  "Bollywood",
-  "Nollywood",
-  "East Asian",
-  "Animation",
-  "Anime",
-];
-
-const seriesCategories = [
-  "American",
-  "British",
-  "European",
-  "Indian",
-  "East Asian",
-  "African",
-];
-
-const animationCategories = [
-  "American",
-  "European",
-  "Japanese Anime",
-  "Chinese Donghua",
-  "Korean Animation",
-  "African Animation",
-];
-
-type OpenMenu = "movies" | "series" | "animation" | null;
+const getCollectionLinks = (mediaType: CollectionMediaType) =>
+  contentCollections
+    .filter((collection) => collection.mediaType === mediaType)
+    .map((collection) => ({
+      label: collection.label,
+      href: `/collections/${mediaType}/${collection.slug}`,
+    }));
 
 // {/* 🚀 CategoryMenu component header */}
 function CategoryMenu({
   label,
   menuId,
-  categories,
+  collections,
   className = "",
 }: {
   label: string;
   menuId: string;
-  categories: string[];
+  collections: Array<{ label: string; href: string }>;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,15 +73,15 @@ function CategoryMenu({
         transition-all duration-150 ease-out
         ${isOpen ? "visible opacity-100 translate-y-0" : "invisible opacity-0 translate-y-1 md:group-hover/menu:visible md:group-hover/menu:opacity-100 md:group-hover/menu:translate-y-0"}`}
       >
-        {categories.map((category) => (
+        {collections.map((collection) => (
           <Link
-            key={category}
-            href={`/search?q=${encodeURIComponent(category)}`}
+            key={collection.href}
+            href={collection.href}
             role="menuitem"
             onClick={() => setIsOpen(false)}
             className="rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/10 hover:text-accent"
           >
-            {category}
+            {collection.label}
           </Link>
         ))}
       </div>
@@ -240,12 +218,12 @@ export default function Navbar() {
           <nav className={`hidden md:flex items-center gap-6 text-sm font-semibold ${isHomePage ? "text-white/90" : "text-text-muted"}`}>
             <div className="flex items-center gap-1">
               <Link href="/movies" className="transition-colors hover:text-accent">Movies</Link>
-              <CategoryMenu label="" menuId="movie-categories" categories={movieCategories} className="!py-0" />
+              <CategoryMenu label="" menuId="movie-categories" collections={getCollectionLinks("movie")} className="!py-0" />
             </div>
 
             <div className="flex items-center gap-1">
               <Link href="/tv" className="transition-colors hover:text-accent">TV Series</Link>
-              <CategoryMenu label="" menuId="series-categories" categories={seriesCategories} className="!py-0" />
+              <CategoryMenu label="" menuId="series-categories" collections={getCollectionLinks("tv")} className="!py-0" />
             </div>
 
             <Link href="/blog" className="transition-colors hover:text-accent">Blog</Link>
@@ -350,7 +328,7 @@ export default function Navbar() {
             <div className="border-b border-text-muted/10 pb-2">
               <div className="flex items-center justify-between py-2">
                 <Link href="/movies" className="text-base text-accent">Movies Index →</Link>
-                <CategoryMenu label="Browse Genres" menuId="mobile-movie-cats" categories={movieCategories} />
+                <CategoryMenu label="Browse Collections" menuId="mobile-movie-cats" collections={getCollectionLinks("movie")} />
               </div>
             </div>
 
@@ -358,7 +336,7 @@ export default function Navbar() {
             <div className="border-b border-text-muted/10 pb-2">
               <div className="flex items-center justify-between py-2">
                 <Link href="/tv" className="text-base text-accent">TV Series Index →</Link>
-                <CategoryMenu label="Browse Genres" menuId="mobile-series-cats" categories={seriesCategories} />
+                <CategoryMenu label="Browse Collections" menuId="mobile-series-cats" collections={getCollectionLinks("tv")} />
               </div>
             </div>
 
@@ -371,7 +349,7 @@ export default function Navbar() {
             {userEmail ? (
               <div className="flex flex-col gap-2 pt-2">
                 <div className="text-xs text-text-muted uppercase tracking-wider px-1 font-bold">User Dashboard</div>
-                <Link href="/profile" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><User size={16} />My Profile</Link>
+                <Link href="/profile" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><User size={16} /><span>{accountLabel} - My Profile</span></Link>
                 <Link href="/write" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><PenSquare size={16} />Write Post</Link>
                 <button type="button" onClick={handleSignOut} className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-rose-500/10 text-rose-400 text-sm text-left w-full mt-1"><LogOut size={16} />Sign Out</button>
               </div>

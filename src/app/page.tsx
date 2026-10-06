@@ -1,33 +1,34 @@
 import HomeHero from "@/components/HomeHero";
 import ContentRail from "@/components/ContentRail";
 import TrailerRail from "@/components/TrailerRail";
+import PopularRail from "@/components/PopularRail";
 import {
-  getMoviesByCategory,
   getLatestTrailers,
   getUpcomingMoviesByPeriod,
   getTopRatedMoviesByPeriod,
   getTopRatedTvByPeriod,
   getUnifiedTrendingByPeriod,
   getUpcomingTvShows,
+  getPopularContent,
 } from "@/utils/movieService";
 
 export default async function HomePage() {
   const [
     trendingMixed,
-    nowPlayingMovies,
     topRatedMovies,
     topRatedTv,
     upcomingMovies,
     upcomingTv,
     latestTrailers,
+    popular,
   ] = await Promise.all([
-    getUnifiedTrendingByPeriod("month"),
-    getMoviesByCategory("now-playing"),
-    getTopRatedMoviesByPeriod("year"),
-    getTopRatedTvByPeriod("year"),
-    getUpcomingMoviesByPeriod("3-months"),
-    getUpcomingTvShows("3-months"),
+    getUnifiedTrendingByPeriod("day"),
+    getTopRatedMoviesByPeriod("month"),
+    getTopRatedTvByPeriod("month"),
+    getUpcomingMoviesByPeriod("1-month"),
+    getUpcomingTvShows("1-month"),
     getLatestTrailers(),
+    getPopularContent("streaming"),
   ]);
 
   const topRatedMixed = [];
@@ -58,11 +59,8 @@ export default async function HomePage() {
           periodFilter
           periodCategory="trending"
         />
+        <PopularRail movies={popular} />
         <TrailerRail trailers={latestTrailers} />
-        <ContentRail
-          title="Now Playing in Theaters"
-          movies={nowPlayingMovies.map((movie) => ({ ...movie, media_type: "movie" }))}
-        />
         <ContentRail
           title="Top Rated Movies & TV"
           movies={topRatedMixed}

@@ -10,10 +10,10 @@ import {
 export default async function TvSeriesIndexPage() {
   // Fetch the identical four-channel catalog stack concurrently 
   const [trending, airingToday, topRated, upcomingDrops] = await Promise.all([
-    getTrendingTvByPeriod("month"),
+    getTrendingTvByPeriod("day"),
     getTvAiringToday(),
-    getTopRatedTvByPeriod("year"),
-    getUpcomingTvShows("3-months"),
+    getTopRatedTvByPeriod("month"),
+    getUpcomingTvShows("1-month"),
   ]);
 
   return (

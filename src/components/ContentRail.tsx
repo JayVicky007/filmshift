@@ -14,10 +14,12 @@ export default function ContentRail({
   movies,
   periodFilter = false,
   periodCategory = "trending",
+  collection,
 }: {
   title: string;
   movies: ContentItem[];
   periodFilter?: boolean;
+  collection?: { mediaType: "movie" | "tv"; slug: string };
   periodCategory?:
     | "trending"
     | "trending-tv"
@@ -30,29 +32,31 @@ export default function ContentRail({
 }) {
   const isUpcoming = periodCategory.startsWith("upcoming") || periodCategory === "coming-soon";
   const isTopRated = periodCategory.startsWith("top-rated");
+  const collectionMediaType = collection?.mediaType;
+  const collectionSlug = collection?.slug;
   const [selectedPeriod, setSelectedPeriod] = useState<
     TrendingPeriod | TopRatedPeriod | UpcomingPeriod
   >(
-    isUpcoming ? "3-months" : isTopRated ? "year" : "month",
+    isUpcoming ? "1-month" : isTopRated ? "month" : "day",
   );
   const [railMovies, setRailMovies] = useState(movies);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const isDefaultPeriod = isUpcoming
-    ? selectedPeriod === "3-months"
+    ? selectedPeriod === "1-month"
     : isTopRated
-      ? selectedPeriod === "year"
-      : selectedPeriod === "month";
+      ? selectedPeriod === "month"
+      : selectedPeriod === "day";
   const displayedMovies = isDefaultPeriod ? movies : railMovies;
   const periods: Array<TrendingPeriod | TopRatedPeriod | UpcomingPeriod> = isUpcoming
     ? ["1-month", "3-months", "6-months"]
     : isTopRated
       ? ["month", "year", "all-time"]
-      : ["week", "month", "year"];
+      : ["day", "week", "month"];
   const selectPeriod = (period: TrendingPeriod | TopRatedPeriod | UpcomingPeriod) => {
     setLoadError("");
     setIsLoading(
-      period !== (isUpcoming ? "3-months" : isTopRated ? "year" : "month"),
+      period !== (isUpcoming ? "1-month" : isTopRated ? "month" : "day"),
     );
     setSelectedPeriod(period);
   };
@@ -74,7 +78,10 @@ export default function ContentRail({
     }
 
     let isCurrent = true;
-    fetch(`/api/movies?category=${periodCategory}&period=${selectedPeriod}`)
+    const endpoint = collectionMediaType && collectionSlug
+      ? `/api/collections/${collectionMediaType}/${collectionSlug}?category=${periodCategory}&period=${selectedPeriod}`
+      : `/api/movies?category=${periodCategory}&period=${selectedPeriod}`;
+    fetch(endpoint)
       .then(async (response) => {
         if (!response.ok) {
           throw new Error("Unable to load this time period.");
@@ -102,7 +109,7 @@ export default function ContentRail({
     return () => {
       isCurrent = false;
     };
-  }, [isDefaultPeriod, periodCategory, periodFilter, selectedPeriod]);
+  }, [collectionMediaType, collectionSlug, isDefaultPeriod, periodCategory, periodFilter, selectedPeriod]);
 
   return (
     <section className="mx-auto max-w-7xl">
@@ -158,7 +165,7 @@ export default function ContentRail({
         {displayedMovies.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-text-muted/20 bg-surface/50 p-10 text-center">
             <p className="text-sm font-semibold text-text-muted">
-              🍿 No upcoming releases scheduled for this exact window. Check back soon!
+              🍿 No titles found for this selection. Check back soon!
             </p>
           </div>
         ) : (

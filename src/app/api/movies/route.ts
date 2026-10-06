@@ -8,7 +8,9 @@ import {
   getUpcomingMoviesByPeriod,
   getUpcomingTvShows,
   combineContentItems,
+  getPopularContent,
   movieCategories,
+  popularModes,
   topRatedPeriods,
   trendingPeriods,
   upcomingPeriods,
@@ -16,16 +18,20 @@ import {
   type TopRatedPeriod,
   type TrendingPeriod,
   type UpcomingPeriod,
+  type PopularMode,
 } from "@/utils/movieService";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const period = searchParams.get("period");
+  const mode = searchParams.get("mode");
 
   try {
-    let movies = null;
-    if (category === "trending" && trendingPeriods.includes(period as TrendingPeriod)) {
+  let movies = null;
+  if (category === "popular" && popularModes.includes(mode as PopularMode)) {
+    movies = await getPopularContent(mode as PopularMode);
+  } else if (category === "trending" && trendingPeriods.includes(period as TrendingPeriod)) {
       movies = await getTrendingMoviesByPeriod(period as TrendingPeriod);
     } else if (category === "trending-tv" && trendingPeriods.includes(period as TrendingPeriod)) {
       movies = await getTrendingTvByPeriod(period as TrendingPeriod);

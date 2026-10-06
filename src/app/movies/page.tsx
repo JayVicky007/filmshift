@@ -10,10 +10,10 @@ import {
 export default async function MoviesIndexPage() {
   // 🚀 Fetch the exact same category arrays running on the main index route
   const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
-    getTrendingMoviesByPeriod("month"),
+    getTrendingMoviesByPeriod("day"),
     getMoviesByCategory("now-playing"),
-    getTopRatedMoviesByPeriod("year"),
-    getUpcomingMoviesByPeriod("3-months"),
+    getTopRatedMoviesByPeriod("month"),
+    getUpcomingMoviesByPeriod("1-month"),
   ]);
 
   return (

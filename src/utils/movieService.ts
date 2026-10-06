@@ -1,5 +1,10 @@
 import axios from "axios";
 import { unstable_cache } from "next/cache"; // ⚡️ Import Next.js Core Cache functionality
+import {
+  contentCollections,
+  type ContentCollection,
+  type CollectionMediaType,
+} from "@/utils/contentCollections";
 
 
 export interface ContentItem {
@@ -44,12 +49,14 @@ export const movieCategories = [
 ] as const;
 
 export type MovieCategory = (typeof movieCategories)[number];
-export const trendingPeriods = ["week", "month", "year"] as const;
+export const trendingPeriods = ["day", "week", "month"] as const;
 export type TrendingPeriod = (typeof trendingPeriods)[number];
 export const topRatedPeriods = ["all-time", "year", "month"] as const;
 export type TopRatedPeriod = (typeof topRatedPeriods)[number];
 export const upcomingPeriods = ["1-month", "3-months", "6-months"] as const;
 export type UpcomingPeriod = (typeof upcomingPeriods)[number];
+export const popularModes = ["streaming", "on-tv", "in-theaters"] as const;
+export type PopularMode = (typeof popularModes)[number];
 const MIN_TOP_RATED_SCORE = 7;
 
 interface OmdbRating {
@@ -272,6 +279,336 @@ const getApiUrl = (baseUrl: string | undefined, path: string) => {
   return `${cleanBaseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 };
 
+export function findContentCollection(mediaType: string, slug: string) {
+  return contentCollections.find(
+    (collection) => collection.mediaType === mediaType && collection.slug === slug,
+  ) ?? null;
+}
+
+export const getContentCollection = unstable_cache(
+  async (mediaType: CollectionMediaType, slug: string): Promise<ContentItem[]> => {
+    const collection = findContentCollection(mediaType, slug);
+    if (!collection) {
+      throw new Error(`Unknown ${mediaType} content collection: ${slug}`);
+    }
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey) {
+      throw new Error("TMDB API Key is missing from the server environment config.");
+    }
+
+    const baseParams: Record<string, string | number | boolean> = {
+      api_key: apiKey,
+      language: "en-US",
+      sort_by: "popularity.desc",
+      include_adult: false,
+    };
+
+    if (collection.originCountries?.length) {
+      baseParams.with_origin_country = collection.originCountries.join("|");
+    }
+    if (collection.genreId) {
+      baseParams.with_genres = collection.genreId;
+    }
+
+    const endpoint = `discover/${mediaType}`;
+    const pages = await Promise.all(
+      [1, 2, 3].map((page) =>
+        axios.get<{ results: TmdbListItem[] }>(
+          getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, endpoint),
+          { params: { ...baseParams, page } },
+        ),
+      ),
+    );
+
+    const uniqueItems = new Map<number, TmdbListItem>();
+    pages
+      .flatMap(({ data }) => data.results)
+      .filter((item) => item.poster_path && (item.title ?? item.name)?.trim())
+      .forEach((item) => {
+        if (!uniqueItems.has(item.id)) uniqueItems.set(item.id, item);
+      });
+
+    return Array.from(uniqueItems.values()).map((item) => ({
+      id: item.id,
+      title: item.title ?? item.name ?? "Untitled",
+      poster_path: item.poster_path,
+      release_date: item.release_date ?? item.first_air_date ?? "",
+      vote_average: item.vote_average ?? 0,
+      vote_count: item.vote_count,
+      popularity: item.popularity,
+      media_type: mediaType,
+    }));
+  },
+  ["content-collection-cache"],
+  { revalidate: 3600 },
+);
+
+type CollectionRailKind = "trending" | "top-rated" | "coming-soon";
+
+async function fetchCollectionDiscoverItems(
+  mediaType: CollectionMediaType,
+  collectionSlug: string,
+  params: Record<string, string | number | boolean>,
+): Promise<ContentItem[]> {
+  const collection = findContentCollection(mediaType, collectionSlug);
+  if (!collection) {
+    throw new Error(`Unknown ${mediaType} content collection: ${collectionSlug}`);
+  }
+
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  if (!apiKey) {
+    throw new Error("TMDB API Key is missing from the server environment config.");
+  }
+
+  const collectionParams: Record<string, string | number> = {};
+  if (collection.originCountries?.length) {
+    collectionParams.with_origin_country = collection.originCountries.join("|");
+  }
+  if (collection.genreId) collectionParams.with_genres = collection.genreId;
+
+  const endpoint = `discover/${mediaType}`;
+  const pages = await Promise.all(
+    [1, 2, 3].map((page) =>
+      axios.get<{ results: TmdbListItem[] }>(
+        getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, endpoint),
+        {
+          params: {
+            api_key: apiKey,
+            language: "en-US",
+            include_adult: false,
+            ...collectionParams,
+            ...params,
+            page,
+          },
+        },
+      ),
+    ),
+  );
+
+  const uniqueItems = new Map<number, TmdbListItem>();
+  pages
+    .flatMap(({ data }) => data.results)
+    .filter((item) => item.poster_path && (item.title ?? item.name)?.trim())
+    .forEach((item) => {
+      if (!uniqueItems.has(item.id)) uniqueItems.set(item.id, item);
+    });
+
+  return Array.from(uniqueItems.values()).map((item) => ({
+    id: item.id,
+    title: item.title ?? item.name ?? "Untitled",
+    poster_path: item.poster_path,
+    release_date: item.release_date ?? item.first_air_date ?? "",
+    vote_average: item.vote_average ?? 0,
+    vote_count: item.vote_count,
+    popularity: item.popularity,
+    media_type: mediaType,
+  }));
+}
+
+export const getCollectionRailItems = unstable_cache(
+  async (
+    mediaType: CollectionMediaType,
+    collectionSlug: string,
+    kind: CollectionRailKind,
+    period: TrendingPeriod | TopRatedPeriod | UpcomingPeriod,
+  ): Promise<ContentItem[]> => {
+    const today = new Date();
+    const todayString = today.toISOString().slice(0, 10);
+    const base = { sort_by: "popularity.desc" };
+
+    if (kind === "trending") {
+      const days = period === "day" ? 1 : period === "week" ? 7 : 30;
+      const start = new Date(today);
+      start.setDate(start.getDate() - days);
+      const dateKey = mediaType === "movie" ? "primary_release_date" : "first_air_date";
+      return fetchCollectionDiscoverItems(mediaType, collectionSlug, {
+        ...base,
+        [`${dateKey}.gte`]: start.toISOString().slice(0, 10),
+        [`${dateKey}.lte`]: todayString,
+      });
+    }
+
+    if (kind === "top-rated") {
+      const dateParams: Record<string, string> = {};
+      if (period !== "all-time") {
+        const start = new Date(today);
+        start.setDate(start.getDate() - (period === "year" ? 365 : 30));
+        const dateKey = mediaType === "movie" ? "primary_release_date" : "first_air_date";
+        dateParams[`${dateKey}.gte`] = start.toISOString().slice(0, 10);
+        dateParams[`${dateKey}.lte`] = todayString;
+      }
+
+      const minimumVotes = period === "all-time" ? 1000 : period === "year" ? 250 : 30;
+      const items = await fetchCollectionDiscoverItems(mediaType, collectionSlug, {
+        sort_by: "vote_count.desc",
+        "vote_average.gte": MIN_TOP_RATED_SCORE,
+        "vote_count.gte": minimumVotes,
+        ...dateParams,
+      });
+      return items.slice(0, 20);
+    }
+
+    if (!upcomingPeriods.includes(period as UpcomingPeriod)) {
+      throw new Error(`Invalid coming-soon period: ${period}`);
+    }
+    const startKey = mediaType === "movie" ? "primary_release_date.gte" : "first_air_date.gte";
+    const endKey = mediaType === "movie" ? "primary_release_date.lte" : "first_air_date.lte";
+    return fetchCollectionDiscoverItems(mediaType, collectionSlug, {
+      ...base,
+      [startKey]: todayString,
+      [endKey]: getPeriodEndDate(period as UpcomingPeriod),
+    });
+  },
+  ["collection-rail-items-cache"],
+  { revalidate: 3600 },
+);
+
+export const getPopularContent = unstable_cache(
+  async (
+    mode: PopularMode,
+    collectionMediaType?: CollectionMediaType,
+    collectionSlug?: string,
+  ): Promise<ContentItem[]> => {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey) {
+      throw new Error("TMDB API Key is missing from the server environment config.");
+    }
+
+    let collection: ContentCollection | null = null;
+    if (collectionMediaType && collectionSlug) {
+      collection = findContentCollection(collectionMediaType, collectionSlug);
+      if (!collection) {
+        throw new Error(`Unknown ${collectionMediaType} content collection: ${collectionSlug}`);
+      }
+    }
+
+    const today = new Date();
+    const todayString = today.toISOString().slice(0, 10);
+    const datesAgo = (days: number) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - days);
+      return date.toISOString().slice(0, 10);
+    };
+    const datesAhead = (days: number) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + days);
+      return date.toISOString().slice(0, 10);
+    };
+
+    const mediaTypes: CollectionMediaType[] = mode === "streaming"
+      ? ["movie", "tv"]
+      : mode === "on-tv"
+        ? ["tv"]
+        : ["movie"];
+    const responses = await Promise.all(mediaTypes.map(async (mediaType) => {
+      const params: Record<string, string | number | boolean> = {
+        api_key: apiKey,
+        language: "en-US",
+        include_adult: false,
+        sort_by: "popularity.desc",
+        watch_region: "US",
+      };
+      if (collection?.originCountries?.length) {
+        params.with_origin_country = collection.originCountries.join("|");
+      }
+      if (collection?.genreId) params.with_genres = collection.genreId;
+
+      if (mode === "streaming") {
+        params.with_watch_monetization_types = "flatrate";
+      } else if (mode === "on-tv") {
+        params["air_date.gte"] = todayString;
+        params["air_date.lte"] = datesAhead(7);
+      } else {
+        params["primary_release_date.gte"] = datesAgo(45);
+        params["primary_release_date.lte"] = todayString;
+        params.with_release_type = "2|3";
+      }
+
+      const pages = await Promise.all(
+        [1, 2].map((page) =>
+          axios.get<{ results: TmdbListItem[] }>(
+            getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `discover/${mediaType}`),
+            { params: { ...params, page } },
+          ),
+        ),
+      );
+      return pages.flatMap(({ data }) => data.results).map((item) => ({
+        id: item.id,
+        title: item.title ?? item.name ?? "Untitled",
+        poster_path: item.poster_path,
+        release_date: item.release_date ?? item.first_air_date ?? "",
+        vote_average: item.vote_average ?? 0,
+        vote_count: item.vote_count,
+        popularity: item.popularity,
+        media_type: mediaType,
+      }));
+    }));
+
+    const uniqueItems = new Map<string, ContentItem>();
+    responses
+      .flat()
+      .filter((item) => item.poster_path && item.title.trim())
+      .forEach((item) => uniqueItems.set(`${item.media_type}-${item.id}`, item));
+    return Array.from(uniqueItems.values())
+      .sort((first, second) => (second.popularity ?? 0) - (first.popularity ?? 0))
+      .slice(0, 20);
+  },
+  ["popular-content-cache"],
+  { revalidate: 3600 },
+);
+
+export const getCollectionTrailers = unstable_cache(
+  async (mediaType: CollectionMediaType, collectionSlug: string): Promise<LatestTrailer[]> => {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey) {
+      throw new Error("TMDB API Key is missing from the server environment config.");
+    }
+    const candidates = await fetchCollectionDiscoverItems(
+      mediaType,
+      collectionSlug,
+      { sort_by: "popularity.desc" },
+    );
+    const videoResults = await Promise.allSettled(
+      candidates.slice(0, 8).map(async (item) => {
+        const response = await axios.get<{ results: TmdbVideo[] }>(
+          getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `${mediaType}/${item.id}/videos`),
+          { params: { api_key: apiKey, language: "en-US" } },
+        );
+        const trailer = response.data.results.find(
+          (video) => video.site === "YouTube" && video.type === "Trailer" && video.official,
+        ) ?? response.data.results.find(
+          (video) => video.site === "YouTube" && video.type === "Trailer",
+        );
+        return trailer
+          ? {
+              ...item,
+              media_type: mediaType,
+              trailerKey: trailer.key,
+              trailerName: trailer.name,
+              trailerPublishedAt: trailer.published_at ?? "",
+            } satisfies LatestTrailer
+          : null;
+      }),
+    );
+
+    return videoResults
+      .flatMap((result) => {
+        if (result.status === "rejected") {
+          console.warn("Unable to fetch a collection title's trailer:", result.reason);
+          return [];
+        }
+        return result.value ? [result.value] : [];
+      })
+      .sort((first, second) =>
+        (Date.parse(second.trailerPublishedAt) || 0) -
+        (Date.parse(first.trailerPublishedAt) || 0),
+      )
+      .slice(0, 10);
+  },
+  ["collection-trailers-cache"],
+  { revalidate: 3600 },
+);
+
 const parseScore = (score: string | undefined, suffix = "") => {
   if (!score) {
     return null;
@@ -369,7 +706,7 @@ export const getUpcomingMoviesByPeriod = unstable_cache(
 
 export const getTrendingMoviesByPeriod = unstable_cache(
   async (period: TrendingPeriod): Promise<ContentItem[]> => {
-    if (period === "week") {
+    if (period === "day" || period === "week") {
       const response = await axios.get<{ results: ContentItem[] }>(
         getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `trending/movie/${period}`),
         { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } },
@@ -380,7 +717,7 @@ export const getTrendingMoviesByPeriod = unstable_cache(
 
     const today = new Date();
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - (period === "month" ? 30 : 365));
+    startDate.setDate(today.getDate() - 30);
     
     const response = await axios.get<{ results: ContentItem[] }>(
       getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/movie"),
@@ -1002,14 +1339,14 @@ export const getTrendingTvByPeriod = unstable_cache(
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const today = new Date();
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - (period === "week" ? 7 : period === "month" ? 30 : 365));
+    startDate.setDate(today.getDate() - 30);
     const response = await axios.get<{ results: TmdbListItem[] }>(
       getApiUrl(
         process.env.NEXT_PUBLIC_TMDB_BASE_URL,
-        period === "week" ? `trending/tv/${period}` : "discover/tv",
+        period === "day" || period === "week" ? `trending/tv/${period}` : "discover/tv",
       ),
       {
-        params: period === "week"
+        params: period === "day" || period === "week"
           ? { api_key: apiKey }
           : {
               api_key: apiKey,
