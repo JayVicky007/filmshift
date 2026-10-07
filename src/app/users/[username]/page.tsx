@@ -1,0 +1,76 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getPublicProfile, getPublishedPostsByAuthor } from "@/utils/blogService";
+
+function formatDate(value: string | null) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(value));
+}
+
+export default async function PublicUserProfilePage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+  const profile = await getPublicProfile(username);
+
+  if (!profile) notFound();
+
+  const posts = await getPublishedPostsByAuthor(profile.id);
+  const displayName = profile.display_name || profile.username;
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
+      <div className="mx-auto max-w-4xl">
+        <Link href="/blog" className="text-sm font-semibold text-text-muted transition-colors hover:text-accent">
+          Back to The Journal
+        </Link>
+
+        <header className="mt-8 flex items-center gap-5 rounded-3xl border border-text-muted/15 bg-surface p-6 sm:p-8">
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/20 text-xl font-bold text-accent">
+              {displayName.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-black tracking-tight">{displayName}</h1>
+            <p className="text-sm text-text-muted">@{profile.username}</p>
+            {profile.bio && <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">{profile.bio}</p>}
+          </div>
+        </header>
+
+        <section className="mt-12">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">
+            Published contributions ({posts.length})
+          </h2>
+          {posts.length === 0 ? (
+            <p className="mt-4 rounded-2xl border border-dashed border-text-muted/20 p-6 text-center text-sm text-text-muted">
+              No published posts yet.
+            </p>
+          ) : (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {posts.map((post) => (
+                <article key={post.id} className="rounded-2xl border border-text-muted/15 bg-surface p-5 transition-colors hover:border-accent/50">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">{post.content_type}</p>
+                  <h3 className="mt-2 text-lg font-bold tracking-tight">
+                    <Link href={`/blog/${post.slug}`} className="hover:text-accent">{post.title}</Link>
+                  </h3>
+                  {post.excerpt && <p className="mt-2 line-clamp-3 text-sm text-text-muted">{post.excerpt}</p>}
+                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-text-muted/10 pt-3 text-xs text-text-muted">
+                    <span>{formatDate(post.published_at)}</span>
+                    <Link href={`/blog/${post.slug}#comments-heading`} className="whitespace-nowrap hover:text-accent">
+                      {post.comment_count ?? 0} {post.comment_count === 1 ? "comment" : "comments"}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

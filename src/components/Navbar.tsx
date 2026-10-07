@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, PenSquare, LogOut, Menu, X } from "lucide-react";
+import { Bell, ChevronDown, Search, User, PenSquare, LogOut, Menu, X } from "lucide-react";
 import type { SearchSuggestion } from "@/utils/movieService";
 import { contentCollections, type CollectionMediaType } from "@/utils/contentCollections";
 import { createClient } from "@/utils/supabase/client";
@@ -100,6 +100,8 @@ export default function Navbar() {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionsQuery, setSuggestionsQuery] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [activeUserId, setActiveUserId] = useState<string | null>(null);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [username, setUsername] = useState<string | null>(null);
   // 🚀 Place this near the top of your Navbar function along with username/avatarUrl
   const [displayName, setDisplayName] = useState<string | null>(null);
@@ -116,11 +118,15 @@ export default function Navbar() {
 
     async function loadUserProfile(userId: string | null, email: string | null) {
       if (!userId) {
+        setActiveUserId(null);
+        setUnreadNotificationCount(0);
         setUserEmail(null);
         setUsername(null);
+        setDisplayName(null);
         setAvatarUrl(null);
         return;
       }
+      setActiveUserId(userId);
       const { data: profile } = await supabase
         .from("profiles")
         .select("username, display_name, avatar_url")
@@ -148,6 +154,40 @@ export default function Navbar() {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeUserId) return;
+
+    let isCurrent = true;
+    const supabase = createClient();
+
+    async function refreshUnreadCount() {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", activeUserId)
+        .is("read_at", null);
+
+      if (error) {
+        console.error("Unable to load unread notifications:", error.message);
+        return;
+      }
+      if (isCurrent) setUnreadNotificationCount(count ?? 0);
+    }
+
+    const refresh = () => void refreshUnreadCount();
+    refresh();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("filmshift-notifications-updated", refresh);
+    const intervalId = window.setInterval(refresh, 60_000);
+
+    return () => {
+      isCurrent = false;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("filmshift-notifications-updated", refresh);
+      window.clearInterval(intervalId);
+    };
+  }, [activeUserId]);
 
   useEffect(() => {
     const searchTerm = query.trim();
@@ -281,6 +321,21 @@ export default function Navbar() {
             </button>
           </div>
 
+          {userEmail && (
+            <Link
+              href="/notifications"
+              aria-label={`Notifications, ${unreadNotificationCount} unread`}
+              className={`relative hidden h-10 w-10 items-center justify-center rounded-full transition-colors hover:text-accent md:inline-flex ${isHomePage ? "text-white/90" : "text-text-muted"}`}
+            >
+              <Bell className="h-5 w-5" aria-hidden="true" />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-black text-slate-950">
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
+              )}
+            </Link>
+          )}
+
           {/* User Desktop Menu Hook */}
           <div className="hidden md:flex items-center gap-3">
             {userEmail ? (
@@ -350,6 +405,14 @@ export default function Navbar() {
               <div className="flex flex-col gap-2 pt-2">
                 <div className="text-xs text-text-muted uppercase tracking-wider px-1 font-bold">User Dashboard</div>
                 <Link href="/profile" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><User size={16} /><span>{accountLabel} - My Profile</span></Link>
+                <Link href="/notifications" className="flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 bg-background text-sm">
+                  <span className="flex items-center gap-2"><Bell size={16} />Notifications</span>
+                  {unreadNotificationCount > 0 && (
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-slate-950">
+                      {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                    </span>
+                  )}
+                </Link>
                 <Link href="/write" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><PenSquare size={16} />Write Post</Link>
                 <button type="button" onClick={handleSignOut} className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-rose-500/10 text-rose-400 text-sm text-left w-full mt-1"><LogOut size={16} />Sign Out</button>
               </div>

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { getOpenCommentReports } from "@/utils/blogService";
+import CommentReportsQueue from "@/components/CommentReportsQueue";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -24,6 +26,8 @@ export default async function AdminPage() {
     redirect("/unauthorized"); // Or back to home page "/"
   }
 
+  const commentReports = await getOpenCommentReports();
+
   // 4. If they passed the check, render the secure Admin Dashboard
   return (
     <main className="min-h-screen bg-background px-6 py-12 text-foreground">
@@ -35,6 +39,9 @@ export default async function AdminPage() {
         <p className="mt-2 text-text-muted">
           This text is completely hidden from normal users. If you can see this, your database role check works!
         </p>
+      </div>
+      <div className="mx-auto max-w-2xl">
+        <CommentReportsQueue initialReports={commentReports} adminId={user.id} />
       </div>
     </main>
   );

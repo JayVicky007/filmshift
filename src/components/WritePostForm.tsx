@@ -3,7 +3,7 @@
 // ==========================================================================
 "use client";
 
-import { FormEvent, useState, useRef, ChangeEvent } from "react";
+import { FormEvent, useState, useRef, ChangeEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -37,6 +37,7 @@ interface PostData {
   id: string;
   title: string;
   excerpt: string | null;
+  cover_image_url: string | null;
   body: string;
   content_type: "review" | "article";
   media_type: string;
@@ -49,16 +50,89 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverImageInputRef = useRef<HTMLInputElement>(null);
+  const savedPostIdRef = useRef(initialPost?.id ?? null);
+  const savedSlugRef = useRef(initialPost?.slug ?? null);
+  const savedTitleRef = useRef(initialPost?.title.trim() ?? "");
+  const pendingSlugRef = useRef<{ title: string; slug: string } | null>(null);
+  const saveInFlightRef = useRef(false);
+  const draftRevisionRef = useRef(0);
+  const blockedAutosaveRevisionRef = useRef<number | null>(null);
+  const editorSectionRef = useRef<HTMLDivElement>(null);
+  const toolbarSlotRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   
   const [title, setTitle] = useState(initialPost?.title || "");
   const [excerpt, setExcerpt] = useState(initialPost?.excerpt || "");
+  const [coverImageUrl, setCoverImageUrl] = useState(initialPost?.cover_image_url || "");
+  const [coverImageUrlInput, setCoverImageUrlInput] = useState(initialPost?.cover_image_url || "");
   const [contentType, setContentType] = useState<"review" | "article">(initialPost?.content_type || "review");
   const [mediaType, setMediaType] = useState(initialPost?.media_type || "movie");
   const [tmdbId, setTmdbId] = useState(initialPost?.tmdb_id?.toString() || "");
   const [status, setStatus] = useState<"draft" | "published">(initialPost?.status || "draft");
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
+  const [editorRevision, setEditorRevision] = useState(0);
+  const [toolbarPosition, setToolbarPosition] = useState<{ left: number; width: number } | null>(null);
+  const [toolbarHeight, setToolbarHeight] = useState(0);
+
+  function markDraftDirty() {
+    draftRevisionRef.current += 1;
+    blockedAutosaveRevisionRef.current = null;
+    setIsDirty(true);
+    setSaveStatus("");
+  }
+
+  useEffect(() => {
+    const topOffset = 72;
+    let animationFrame = 0;
+
+    function updateToolbarPosition() {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(() => {
+        const section = editorSectionRef.current;
+        const slot = toolbarSlotRef.current;
+        const toolbar = toolbarRef.current;
+        if (!section || !slot || !toolbar) return;
+
+        const sectionRect = section.getBoundingClientRect();
+        const slotRect = slot.getBoundingClientRect();
+        const toolbarRect = toolbar.getBoundingClientRect();
+        const height = toolbarRect.height;
+        const shouldPin = slotRect.top < topOffset && sectionRect.bottom > topOffset + height;
+
+        setToolbarHeight((current) => Math.abs(current - height) > 1 ? height : current);
+        setToolbarPosition((current) => {
+          if (!shouldPin) return null;
+          if (
+            current &&
+            Math.abs(current.left - slotRect.left) < 1 &&
+            Math.abs(current.width - slotRect.width) < 1
+          ) {
+            return current;
+          }
+          return { left: slotRect.left, width: slotRect.width };
+        });
+      });
+    }
+
+    updateToolbarPosition();
+    const resizeObserver = new ResizeObserver(updateToolbarPosition);
+    if (editorSectionRef.current) resizeObserver.observe(editorSectionRef.current);
+    if (toolbarSlotRef.current) resizeObserver.observe(toolbarSlotRef.current);
+    if (toolbarRef.current) resizeObserver.observe(toolbarRef.current);
+    window.addEventListener("scroll", updateToolbarPosition, true);
+    window.addEventListener("resize", updateToolbarPosition);
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", updateToolbarPosition, true);
+      window.removeEventListener("resize", updateToolbarPosition);
+    };
+  }, []);
 
   // 🎯 Upgraded Editor Lifecycle—FIXED levels syntax, removed cropping dependencies entirely
   const editor = useEditor({
@@ -91,6 +165,10 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   ],
     content: initialPost?.body || "",
     immediatelyRender: false,
+    onUpdate: () => {
+      markDraftDirty();
+      setEditorRevision((revision) => revision + 1);
+    },
     editorProps: {
       attributes: {
         class: "mt-0 min-h-[350px] w-full rounded-b-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 prose prose-invert max-w-none overflow-y-auto",
@@ -105,37 +183,165 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 // ==========================================================================
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editor) return;
+    if (!editor || isSaving || isUploadingImage || saveInFlightRef.current) return;
     
+    const submittedRevision = draftRevisionRef.current;
+    saveInFlightRef.current = true;
     setIsSaving(true);
     setMessage("");
 
-    const richBodyContent = editor.getHTML();
-    const postPayload = {
-      author_id: authorId,
-      title: title.trim(),
-      slug: initialPost ? initialPost.title.trim() === title.trim() ? initialPost.slug : createSlug(title) : createSlug(title),
-      excerpt: excerpt.trim() || null,
-      body: richBodyContent,
-      content_type: contentType,
-      media_type: mediaType,
-      tmdb_id: tmdbId.trim() ? Number.parseInt(tmdbId, 10) : null,
-      status,
-      published_at: status === "published" ? (initialPost?.status === "published" ? undefined : new Date().toISOString()) : null,
-    };
+    try {
+      const postPayload = buildPostPayload(status);
+      const result = savedPostIdRef.current
+        ? await supabase
+          .from("posts")
+          .update(postPayload)
+          .eq("id", savedPostIdRef.current)
+          .select("id, slug")
+          .single()
+        : await supabase
+          .from("posts")
+          .insert(postPayload)
+          .select("id, slug")
+          .single();
 
-    const { error: queryError } = initialPost
-      ? await supabase.from("posts").update(postPayload).eq("id", initialPost.id)
-      : await supabase.from("posts").insert(postPayload);
+      if (result.error) {
+        setMessage(result.error.message);
+        setSaveStatus("");
+        return;
+      }
 
-    if (queryError) {
-      setMessage(queryError.message);
-    } else {
+      rememberSavedPost(result.data, postPayload.title);
+      const changesRemain = draftRevisionRef.current !== submittedRevision;
+      setIsDirty(changesRemain);
+      if (changesRemain) {
+        setSaveStatus(status === "published"
+          ? "Some changes were made during publishing. Save or publish again to include them."
+          : "Newer changes will be saved automatically.");
+        return;
+      } else {
+        setSaveStatus(status === "published" ? "Published successfully." : "Draft saved.");
+      }
       router.push("/profile");
       router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to save this post.");
+      setSaveStatus("");
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }
+
+  const buildPostPayload = useCallback((nextStatus: "draft" | "published") => {
+    if (!editor) throw new Error("The post editor is not ready.");
+    const currentTitle = title.trim();
+    let slug = savedSlugRef.current;
+    if (currentTitle !== savedTitleRef.current) {
+      if (pendingSlugRef.current?.title === currentTitle) {
+        slug = pendingSlugRef.current.slug;
+      } else {
+        slug = createSlug(currentTitle);
+        pendingSlugRef.current = { title: currentTitle, slug };
+      }
+    }
+    return {
+      author_id: authorId,
+      title: currentTitle,
+      slug: slug ?? createSlug(currentTitle),
+      excerpt: excerpt.trim() || null,
+      cover_image_url: coverImageUrl || null,
+      body: editor.getHTML(),
+      content_type: contentType,
+      media_type: mediaType,
+      tmdb_id: mediaType === "general" || !tmdbId.trim()
+        ? null
+        : Number.parseInt(tmdbId, 10),
+      status: nextStatus,
+      published_at: nextStatus === "published"
+        ? (initialPost?.status === "published" ? undefined : new Date().toISOString())
+        : null,
+    };
+  }, [authorId, contentType, coverImageUrl, editor, excerpt, initialPost?.status, mediaType, title, tmdbId]);
+
+  const rememberSavedPost = useCallback((post: { id: string; slug: string }, savedTitle: string) => {
+    savedPostIdRef.current = post.id;
+    savedSlugRef.current = post.slug;
+    savedTitleRef.current = savedTitle;
+    pendingSlugRef.current = null;
+  }, []);
+
+  const autosaveDraft = useCallback(async () => {
+    if (
+      !editor ||
+      !title.trim() ||
+      status !== "draft" ||
+      isUploadingImage ||
+      saveInFlightRef.current
+    ) return;
+
+    const savingRevision = draftRevisionRef.current;
+    saveInFlightRef.current = true;
+    setIsSaving(true);
+    setSaveStatus("Saving draft...");
+    setMessage("");
+
+    try {
+      const payload = buildPostPayload("draft");
+      const result = savedPostIdRef.current
+        ? await supabase
+          .from("posts")
+          .update(payload)
+          .eq("id", savedPostIdRef.current)
+          .select("id, slug")
+          .single()
+        : await supabase
+          .from("posts")
+          .insert(payload)
+          .select("id, slug")
+          .single();
+
+      if (result.error) {
+        blockedAutosaveRevisionRef.current = savingRevision;
+        setSaveStatus("Could not auto-save. Your changes are still here; edit again or save manually.");
+        setMessage(result.error.message);
+        return;
+      }
+
+      rememberSavedPost(result.data, payload.title);
+      const changesRemain = draftRevisionRef.current !== savingRevision;
+      setIsDirty(changesRemain);
+      if (!changesRemain) {
+        setSaveStatus("Draft saved automatically.");
+      } else {
+        setSaveStatus(status === "draft"
+          ? "Saving your latest changes..."
+          : "Draft saved. Click Publish to publish these changes.");
+      }
+    } catch (error) {
+      blockedAutosaveRevisionRef.current = savingRevision;
+      setSaveStatus("Could not auto-save. Your changes are still here; edit again or save manually.");
+      setMessage(error instanceof Error ? error.message : "Unexpected autosave error.");
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSaving(false);
+    }
+  }, [buildPostPayload, editor, isUploadingImage, rememberSavedPost, status, supabase, title]);
+
+  useEffect(() => {
+    if (
+      !isDirty ||
+      !editor ||
+      !title.trim() ||
+      status !== "draft" ||
+      isUploadingImage ||
+      isSaving ||
+      blockedAutosaveRevisionRef.current === draftRevisionRef.current
+    ) return;
+
+      const timeoutId = window.setTimeout(() => void autosaveDraft(), 1200);
+      return () => window.clearTimeout(timeoutId);
+    }, [autosaveDraft, editor, editorRevision, isDirty, isSaving, isUploadingImage, status, title]);
 
   async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -197,6 +403,78 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
     }
   }
 
+  async function handleCoverImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+    if (!allowedImageTypes.has(file.type)) {
+      setMessage("Choose a JPEG, PNG, WebP, or GIF cover image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("Choose a cover image smaller than 5 MB.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setMessage("");
+    const fileExtension = file.type.split("/")[1].replace("jpeg", "jpg");
+    const filePath = `${authorId}/${crypto.randomUUID()}.${fileExtension}`;
+
+    try {
+      const { error } = await supabase.storage
+        .from("post-images")
+        .upload(filePath, file, {
+          cacheControl: "31536000",
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (error) {
+        setMessage(`Unable to upload cover image: ${error.message}`);
+        return;
+      }
+
+      const imageUrl = supabase.storage.from("post-images").getPublicUrl(filePath).data.publicUrl;
+      setCoverImageUrl(imageUrl);
+      setCoverImageUrlInput(imageUrl);
+      markDraftDirty();
+    } catch (error) {
+      setMessage(`Unable to upload cover image: ${error instanceof Error ? error.message : "Unexpected upload error."}`);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  function applyCoverImageUrl() {
+    const value = coverImageUrlInput.trim();
+    let parsedUrl: URL;
+
+    try {
+      parsedUrl = new URL(value);
+    } catch {
+      setMessage("Enter a valid image URL beginning with https:// or http://.");
+      return;
+    }
+
+    if (
+      !["https:", "http:"].includes(parsedUrl.protocol) ||
+      !parsedUrl.hostname ||
+      parsedUrl.username ||
+      parsedUrl.password
+    ) {
+      setMessage("Enter a valid image URL beginning with https:// or http://.");
+      return;
+    }
+
+    setCoverImageUrl(parsedUrl.href);
+    setCoverImageUrlInput(parsedUrl.href);
+    setMessage("");
+    markDraftDirty();
+  }
+
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       <div>
@@ -205,7 +483,10 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           id="post-title"
           required
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => {
+            setTitle(event.target.value);
+            markDraftDirty();
+          }}
           placeholder="Your headline"
           maxLength={140}
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
@@ -219,7 +500,11 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           <select 
             id="media-type" 
             value={mediaType} 
-            onChange={(event) => setMediaType(event.target.value)} 
+            onChange={(event) => {
+              setMediaType(event.target.value);
+              if (event.target.value === "general") setTmdbId("");
+              markDraftDirty();
+            }}
             className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           >
             <option value="movie">Movie</option>
@@ -227,24 +512,122 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
             <option value="anime">Anime</option>
             <option value="animation">Animation</option>
             <option value="documentary">Documentary</option>
+            <option value="general">General / Other</option>
           </select>
         </div>
       </div>
 
-      <div>
-        <label htmlFor="tmdb-id" className="text-sm font-semibold">TMDB ID <span className="font-normal text-text-muted">(optional)</span></label>
-        <input id="tmdb-id" type="number" min="1" value={tmdbId} onChange={(event) => setTmdbId(event.target.value)} placeholder="Link this post to a title" className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" />
-      </div>
+      {mediaType !== "general" && (
+        <div>
+          <label htmlFor="tmdb-id" className="text-sm font-semibold">TMDB ID <span className="font-normal text-text-muted">(optional)</span></label>
+          <input id="tmdb-id" type="number" min="1" value={tmdbId} onChange={(event) => {
+            setTmdbId(event.target.value);
+            markDraftDirty();
+          }} placeholder="Link this post to a title" className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" />
+        </div>
+      )}
 
       <div>
         <label htmlFor="post-excerpt" className="text-sm font-semibold">Excerpt <span className="font-normal text-text-muted">(optional)</span></label>
-        <textarea id="post-excerpt" value={excerpt} onChange={(event) => setExcerpt(event.target.value)} placeholder="A short introduction" maxLength={280} rows={3} className="mt-2 w-full resize-y rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" />
+        <textarea id="post-excerpt" value={excerpt} onChange={(event) => {
+          setExcerpt(event.target.value);
+          markDraftDirty();
+        }} placeholder="A short introduction" maxLength={280} rows={3} className="mt-2 w-full resize-y rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30" />
       </div>
 
       <div>
+        <label className="text-sm font-semibold" htmlFor="cover-image">Headline image <span className="font-normal text-text-muted">(optional)</span></label>
+        <p className="mt-1 text-xs text-text-muted">Shown on the blog card. Upload an image up to 5 MB, or use an image URL.</p>
+        <input
+          ref={coverImageInputRef}
+          id="cover-image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleCoverImageUpload}
+          className="sr-only"
+        />
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => coverImageInputRef.current?.click()}
+            disabled={isUploadingImage}
+            className="rounded-xl border border-text-muted/20 bg-background px-4 py-2.5 text-sm font-semibold transition-colors hover:border-accent/50 hover:text-accent disabled:opacity-50"
+          >
+            {isUploadingImage ? "Uploading image..." : coverImageUrl ? "Replace headline image" : "Choose headline image"}
+          </button>
+          {coverImageUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                setCoverImageUrl("");
+                setCoverImageUrlInput("");
+                markDraftDirty();
+              }}
+              className="text-sm font-semibold text-rose-500 hover:underline"
+            >
+              Remove image
+            </button>
+          )}
+        </div>
+        <div className="mt-4 max-w-xl">
+          <label htmlFor="cover-image-url" className="text-sm font-medium">Or use an image URL</label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <input
+              id="cover-image-url"
+              type="text"
+              inputMode="url"
+              autoComplete="url"
+              value={coverImageUrlInput}
+              onChange={(event) => setCoverImageUrlInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  applyCoverImageUrl();
+                }
+              }}
+              placeholder="https://example.com/image.jpg"
+              className="min-w-0 flex-1 rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+            />
+            <button
+              type="button"
+              onClick={applyCoverImageUrl}
+              disabled={!coverImageUrlInput.trim()}
+              className="rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-sm font-semibold transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Use URL
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-text-muted">
+            Use a direct image link. External images may stop working if their host removes or blocks them.
+          </p>
+        </div>
+        {coverImageUrl && (
+          <img
+            src={coverImageUrl}
+            alt="Headline image preview"
+            className="mt-4 aspect-video w-full max-w-xl rounded-xl border border-text-muted/15 object-cover"
+          />
+        )}
+      </div>
+
+      <div ref={editorSectionRef}>
         <label className="text-sm font-semibold">Body</label>
         {editor && (
-          <div className="sticky top-[4.5rem] z-40 mt-2 flex flex-wrap items-center gap-1 rounded-t-xl border border-b-0 border-text-muted/20 bg-surface/95 p-2 shadow-sm backdrop-blur-sm">
+          <>
+          <div
+            ref={toolbarSlotRef}
+            className="mt-2"
+            style={toolbarPosition ? { height: toolbarHeight } : undefined}
+          >
+          <div
+            ref={toolbarRef}
+            className={`flex flex-wrap items-center gap-1 rounded-t-xl border border-b-0 border-text-muted/20 bg-surface/95 p-2 shadow-sm backdrop-blur-sm ${
+              toolbarPosition ? "fixed z-[60]" : "relative"
+            }`}
+            style={toolbarPosition
+              ? { top: 72, left: toolbarPosition.left, width: toolbarPosition.width }
+              : undefined}
+          >
             {/* Inline Formatting */}
             <button type="button" title="Bold" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("bold") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
               <Bold className="h-4 w-4" />
@@ -420,7 +803,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 </button>
 </div>
               </div>
-        )}
+          </div>
 
         <div className="relative w-full">
           {/* 🎯 DRAG HANDLE ANCHORED GRACEFULLY TO THE RIGHT SIDE MARGIN */}
@@ -441,17 +824,27 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           )}
           <EditorContent editor={editor} />
         </div>
+          </>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-text-muted/15 bg-background/50 p-4">
         <label htmlFor="post-status" className="text-sm font-semibold">Save as</label>
-        <select id="post-status" value={status} onChange={(event) => setStatus(event.target.value as "draft" | "published")} className="rounded-lg border border-text-muted/20 bg-surface px-3 py-2 text-sm text-foreground">
+        <select id="post-status" value={status} onChange={(event) => {
+          const nextStatus = event.target.value as "draft" | "published";
+          setStatus(nextStatus);
+          markDraftDirty();
+          if (nextStatus === "published") {
+            setSaveStatus("Publishing requires clicking the Publish post button.");
+          }
+        }} className="rounded-lg border border-text-muted/20 bg-surface px-3 py-2 text-sm text-foreground">
           <option value="draft">Draft</option>
           <option value="published">Published</option>
         </select>
       </div>
 
-      {message && <p role="status" className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm">{message}</p>}
+      {saveStatus && <p role="status" className="text-sm text-text-muted">{saveStatus}</p>}
+      {message && <p role="alert" className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm">{message}</p>}
       <button type="submit" disabled={isSaving || isUploadingImage} className="rounded-xl bg-accent px-5 py-3 font-bold text-slate-950 transition-colors hover:bg-yellow-300 disabled:cursor-wait disabled:opacity-60 cursor-pointer">
         {isUploadingImage ? "Uploading image..." : isSaving ? "Saving..." : status === "published" ? "Publish post" : "Save draft"}
       </button>

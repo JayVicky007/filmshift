@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPublishedPosts, type BlogPost } from "@/utils/blogService";
+import { formatBlogMediaType, getPublishedPosts, type BlogPost } from "@/utils/blogService";
 
 function formatDate(value: string | null) {
   if (!value) return "";
@@ -38,9 +38,16 @@ export default async function BlogPage() {
                   key={post.id} 
                   className="group relative rounded-2xl border border-text-muted/15 bg-surface p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_10px_35px_rgba(234,179,8,0.08)] cursor-pointer"
                 >
+                  {post.cover_image_url && (
+                    <img
+                      src={post.cover_image_url}
+                      alt=""
+                      className="-mx-6 -mt-6 mb-5 aspect-video w-[calc(100%+3rem)] rounded-t-2xl object-cover"
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
                     <span>{post.content_type}</span>
-                    <span>{post.media_type}</span>
+                    <span>{formatBlogMediaType(post.media_type)}</span>
                   </div>
                   
                   <h2 className="mt-5 text-2xl font-black tracking-tight">
@@ -50,9 +57,9 @@ export default async function BlogPage() {
                     </Link>
                   </h2>
                   
-                  {post.excerpt && <p className="mt-3 line-clamp-3 text-text-muted relative z-10">{post.excerpt}</p>}
+                  {post.excerpt && <p className="mt-3 line-clamp-3 text-text-muted">{post.excerpt}</p>}
                   
-                  <div className="mt-6 flex items-center gap-3 border-t border-text-muted/10 pt-4 text-sm text-text-muted relative z-10">
+                  <div className="mt-6 flex items-center gap-3 border-t border-text-muted/10 pt-4 text-sm text-text-muted">
                     {post.author?.avatar_url ? (
                       <img src={post.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                     ) : (
@@ -60,9 +67,27 @@ export default async function BlogPage() {
                         {authorName[0]}
                       </span>
                     )}
-                    <span>{authorName}</span>
+                    {post.author?.username ? (
+                      <Link
+                        href={`/users/${post.author.username}`}
+                        className="relative z-20 min-w-0 hover:text-accent"
+                        aria-label={`View ${authorName}'s profile`}
+                      >
+                        <span className="block truncate">{authorName}</span>
+                        <span className="block text-xs font-normal normal-case tracking-normal">@{post.author.username}</span>
+                      </Link>
+                    ) : (
+                      <span>{authorName}</span>
+                    )}
                     <span aria-hidden="true">·</span>
                     <span>{formatDate(post.published_at)}</span>
+                    <Link
+                      href={`/blog/${post.slug}#comments-heading`}
+                      className="relative z-20 ml-auto whitespace-nowrap hover:text-accent"
+                      aria-label={`${post.comment_count ?? 0} comments on ${post.title}`}
+                    >
+                      {post.comment_count ?? 0} {post.comment_count === 1 ? "comment" : "comments"}
+                    </Link>
                   </div>
                 </article>
               );

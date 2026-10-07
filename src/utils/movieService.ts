@@ -58,6 +58,10 @@ export type UpcomingPeriod = (typeof upcomingPeriods)[number];
 export const popularModes = ["streaming", "on-tv", "in-theaters"] as const;
 export type PopularMode = (typeof popularModes)[number];
 const MIN_TOP_RATED_SCORE = 7;
+const MIN_ALL_TIME_RATING = 8;
+const MIN_ALL_TIME_MOVIE_VOTES = 5000;
+const MIN_RECENT_ALL_TIME_MOVIE_VOTES = 10000;
+const MIN_ALL_TIME_TV_VOTES = 1000;
 
 interface OmdbRating {
   Source: string;
@@ -207,12 +211,13 @@ interface TmdbTvRecord {
   created_by?: TmdbCreator[];
 }
 
-export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
+export function rankAllTimeContent(
+  movies: ContentItem[],
+  minimumVotes = MIN_ALL_TIME_MOVIE_VOTES,
+): ContentItem[] {
   const globalMean = movies.length > 0
     ? movies.reduce((sum, movie) => sum + movie.vote_average, 0) / movies.length
-    : 7;
-  const minimumVotes = 1000;
-
+    : MIN_ALL_TIME_RATING;
   return movies
     .map((movie) => {
       const voteCount = movie.vote_count ?? 0;
@@ -228,6 +233,18 @@ export function rankAllTimeMovies(movies: ContentItem[]): ContentItem[] {
     })
     .sort((first, second) => second.score - first.score)
     .map(({ movie }) => movie);
+}
+
+export const rankAllTimeMovies = rankAllTimeContent;
+
+function meetsAllTimeMovieVoteThreshold(movie: ContentItem, currentYear: number): boolean {
+  const releaseYear = Number.parseInt(movie.release_date.slice(0, 4), 10);
+  const ageInYears = currentYear - releaseYear;
+  const minimumVotes = Number.isFinite(ageInYears) && ageInYears < 2
+    ? MIN_RECENT_ALL_TIME_MOVIE_VOTES
+    : MIN_ALL_TIME_MOVIE_VOTES;
+
+  return (movie.vote_count ?? 0) >= minimumVotes;
 }
 
 export function rankPeriodContent(
@@ -438,14 +455,27 @@ export const getCollectionRailItems = unstable_cache(
         dateParams[`${dateKey}.lte`] = todayString;
       }
 
-      const minimumVotes = period === "all-time" ? 1000 : period === "year" ? 250 : 30;
+      const minimumVotes = period === "all-time"
+        ? mediaType === "movie"
+          ? MIN_ALL_TIME_MOVIE_VOTES
+          : MIN_ALL_TIME_TV_VOTES
+        : period === "year"
+          ? 250
+          : 30;
       const items = await fetchCollectionDiscoverItems(mediaType, collectionSlug, {
         sort_by: "vote_count.desc",
-        "vote_average.gte": MIN_TOP_RATED_SCORE,
+        "vote_average.gte": period === "all-time" ? MIN_ALL_TIME_RATING : MIN_TOP_RATED_SCORE,
         "vote_count.gte": minimumVotes,
         ...dateParams,
       });
-      return items.slice(0, 20);
+      const qualifiedItems = period === "all-time"
+        ? items.filter((item) => item.vote_average >= MIN_ALL_TIME_RATING)
+          .filter((item) => mediaType === "tv" || meetsAllTimeMovieVoteThreshold(item, today.getFullYear()))
+        : items;
+      const votePrior = mediaType === "movie"
+        ? MIN_ALL_TIME_MOVIE_VOTES
+        : MIN_ALL_TIME_TV_VOTES;
+      return (period === "all-time" ? rankAllTimeContent(qualifiedItems, votePrior) : qualifiedItems).slice(0, 20);
     }
 
     if (!upcomingPeriods.includes(period as UpcomingPeriod)) {
@@ -751,7 +781,7 @@ export async function getTopRatedMoviesByPeriod(
             params: {
               api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
               sort_by: "vote_count.desc",
-              "vote_count.gte": 1000,
+              "vote_count.gte": MIN_ALL_TIME_MOVIE_VOTES,
               page,
             },
           },
@@ -760,21 +790,11 @@ export async function getTopRatedMoviesByPeriod(
     );
     const candidates = responses
       .flatMap((response) => response.data.results)
-      .filter((movie) => movie.vote_average >= MIN_TOP_RATED_SCORE)
+      .filter((movie) => movie.vote_average >= MIN_ALL_TIME_RATING)
       .filter((movie) => movie.release_date <= today.toISOString().slice(0, 10))
-      .filter((movie) => {
-        const releaseYear = Number.parseInt(movie.release_date.slice(0, 4), 10);
-        const ageInYears = today.getFullYear() - releaseYear;
-        const minimumVotes = ageInYears < 2
-          ? 10000
-          : ageInYears < 5
-            ? 5000
-            : 1000;
+      .filter((movie) => meetsAllTimeMovieVoteThreshold(movie, today.getFullYear()));
 
-        return (movie.vote_count ?? 0) >= minimumVotes;
-      });
-
-    return rankAllTimeMovies(candidates);
+    return rankAllTimeContent(candidates);
   }
 
   const today = new Date();
@@ -1402,20 +1422,39 @@ export const getTvAiringToday = unstable_cache(
  */
 export const getTopRatedTv = unstable_cache(
   async (): Promise<ContentItem[]> => {
-    const response = await axios.get<{ results: TmdbListItem[] }>(
-      getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "tv/top_rated"),
-      { params: { api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY } }
+    const responses = await Promise.all(
+      Array.from({ length: 25 }, (_, index) =>
+        axios.get<{ results: TmdbListItem[] }>(
+          getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, "discover/tv"),
+          {
+            params: {
+              api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+              sort_by: "vote_count.desc",
+              "vote_average.gte": MIN_ALL_TIME_RATING,
+              "vote_count.gte": MIN_ALL_TIME_TV_VOTES,
+              page: index + 1,
+            },
+          },
+        ),
+      ),
     );
-    return response.data.results
+    const qualifiedShows = responses
+      .flatMap((response) => response.data.results)
       .map((item) => ({
         id: item.id,
         title: item.name ?? "Untitled",
         poster_path: item.poster_path,
         release_date: item.first_air_date || "",
         vote_average: item.vote_average ?? 0,
+        vote_count: item.vote_count,
+        popularity: item.popularity,
         media_type: "tv",
       }))
-      .filter((item) => item.vote_average >= MIN_TOP_RATED_SCORE);
+      .filter((item) =>
+        item.vote_average >= MIN_ALL_TIME_RATING &&
+        (item.vote_count ?? 0) >= MIN_ALL_TIME_TV_VOTES,
+      );
+    return rankAllTimeContent(qualifiedShows, MIN_ALL_TIME_TV_VOTES);
   },
   ["top-rated-tv-cache"],
   { revalidate: 3600 }
