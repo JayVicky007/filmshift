@@ -62,12 +62,13 @@ export type PublicProfile = {
 export function formatBlogMediaType(mediaType: string | null) {
   const labels: Record<string, string> = {
     movie: "Movie",
-    tv: "Series (TV)",
+    tv: "TV Show",
+    series: "TV Show",
     anime: "Anime",
     animation: "Animation",
     documentary: "Documentary",
     docuseries: "Docuseries",
-    show: "Series (TV)",
+    show: "TV Show",
     general: "General / Other",
   };
 

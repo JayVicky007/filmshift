@@ -135,6 +135,14 @@ body {
   color: var(--foreground) !important;
 }
 
+/* Keep inserted horizontal separators visible in both the editor and published posts. */
+.prose hr,
+.prose-invert hr {
+  border: 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--text-muted) 55%, transparent) !important;
+  margin-block: 1.5rem !important;
+}
+
 /* Blockquote & code element workbench structures */
 .prose .tiptap blockquote,
 .prose-invert .tiptap blockquote {

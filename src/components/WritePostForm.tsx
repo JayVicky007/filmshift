@@ -7,7 +7,9 @@ import { FormEvent, useState, useRef, ChangeEvent, useEffect, useCallback } from
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useEditor, EditorContent } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
 import { NodeSelection } from "@tiptap/pm/state";
+import type { Mark, Node as ProseMirrorNode } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
@@ -26,12 +28,96 @@ import {
   Code2,
   Undo2,
   Redo2,
+  SeparatorHorizontal,
 } from "lucide-react";
 import TextAlign from "@tiptap/extension-text-align";
 
 
 function createSlug(title: string) {
   return `${title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${crypto.randomUUID().slice(0, 8)}`;
+}
+
+type TextCase = "uppercase" | "capitalize" | "lowercase";
+
+const legacyMediaTypeLabels: Record<string, string> = {
+  series: "Series",
+  show: "Series",
+  anime: "Anime",
+  animation: "Animation",
+  documentary: "Documentary",
+  docuseries: "Docuseries",
+};
+
+function transformEditorSelection(editor: Editor, textCase: TextCase) {
+  const { state } = editor;
+  const { from, to, empty, $from } = state.selection;
+  if (empty) return;
+
+  const textNodes: Array<{
+    from: number;
+    to: number;
+    text: string;
+    marks: readonly Mark[];
+    parent: ProseMirrorNode;
+  }> = [];
+
+  state.doc.nodesBetween(from, to, (node, position, parent) => {
+    if (!node.isText || !node.text || !parent) return;
+    const start = Math.max(from, position);
+    const end = Math.min(to, position + node.nodeSize);
+    textNodes.push({
+      from: start,
+      to: end,
+      text: node.text.slice(start - position, end - position),
+      marks: node.marks,
+      parent,
+    });
+  });
+
+  if (!textNodes.length) return;
+
+  const wordCharacter = /^[\p{L}\p{N}]$/u;
+  let previousWasWord = false;
+  let currentParent = textNodes[0].parent;
+  const firstTextOffset = textNodes[0].from - from;
+  if (textCase === "capitalize" && firstTextOffset === 0 && $from.parentOffset > 0) {
+    const precedingText = $from.parent.textBetween(0, $from.parentOffset);
+    const precedingCharacter = Array.from(precedingText).at(-1);
+    previousWasWord = precedingCharacter ? wordCharacter.test(precedingCharacter) : false;
+  }
+
+  const transformedNodes = textNodes.map((textNode) => {
+    if (textNode.parent !== currentParent) {
+      currentParent = textNode.parent;
+      previousWasWord = false;
+    }
+    const transformedText = Array.from(textNode.text).map((character) => {
+      let transformedCharacter = character;
+      if (textCase === "uppercase") transformedCharacter = character.toUpperCase();
+      if (textCase === "lowercase") transformedCharacter = character.toLowerCase();
+      if (textCase === "capitalize" && /^\p{L}$/u.test(character)) {
+        transformedCharacter = previousWasWord
+          ? character.toLowerCase()
+          : character.toUpperCase();
+      }
+      previousWasWord = wordCharacter.test(character);
+      return transformedCharacter;
+    }).join("");
+    return { ...textNode, transformedText };
+  });
+
+  let transaction = state.tr;
+  for (const textNode of transformedNodes.reverse()) {
+    transaction = transaction.replaceWith(
+      textNode.from,
+      textNode.to,
+      state.schema.text(textNode.transformedText, textNode.marks),
+    );
+  }
+
+  transaction.setSelection(state.selection.map(transaction.doc, transaction.mapping));
+  editor.view.dispatch(transaction);
+  editor.view.focus();
 }
 
 interface PostData {
@@ -45,6 +131,7 @@ interface PostData {
   tmdb_id: number | null;
   status: "draft" | "published";
   slug: string | null; 
+  updated_at?: string;
 }
 
 type SelectedImage = {
@@ -90,9 +177,15 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   const [isDirty, setIsDirty] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [savedAt, setSavedAt] = useState<Date | null>(() => {
+    if (!initialPost?.updated_at) return null;
+    const savedDate = new Date(initialPost.updated_at);
+    return Number.isNaN(savedDate.getTime()) ? null : savedDate;
+  });
   const [editorRevision, setEditorRevision] = useState(0);
   const [toolbarPosition, setToolbarPosition] = useState<{ left: number; width: number } | null>(null);
   const [toolbarHeight, setToolbarHeight] = useState(0);
+  const [hasTextSelection, setHasTextSelection] = useState(false);
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
 
   function markDraftDirty() {
@@ -224,6 +317,14 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
     function updateSelectedImage(currentEditor: NonNullable<typeof editor>) {
       const selection = currentEditor.state.selection;
+      let containsText = false;
+      if (!selection.empty) {
+        currentEditor.state.doc.nodesBetween(selection.from, selection.to, (node) => {
+          if (node.isText) containsText = true;
+        });
+      }
+      setHasTextSelection(containsText);
+
       if (!(selection instanceof NodeSelection) || selection.node.type.name !== "image") {
         setSelectedImage((current) => current === null ? current : null);
         return;
@@ -309,6 +410,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       }
 
       rememberSavedPost(result.data, postPayload.title);
+      setSavedAt(new Date());
       const changesRemain = draftRevisionRef.current !== submittedRevision;
       setIsDirty(changesRemain);
       if (changesRemain) {
@@ -317,10 +419,12 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           : "Newer changes will be saved automatically.");
         return;
       } else {
-        setSaveStatus(status === "published" ? "Published successfully." : "Draft saved.");
+        setSaveStatus(status === "published" ? "Published successfully." : "");
       }
-      router.push("/profile");
-      router.refresh();
+      if (status === "published") {
+        router.push("/profile");
+        router.refresh();
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to save this post.");
       setSaveStatus("");
@@ -406,10 +510,11 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       }
 
       rememberSavedPost(result.data, payload.title);
+      setSavedAt(new Date());
       const changesRemain = draftRevisionRef.current !== savingRevision;
       setIsDirty(changesRemain);
       if (!changesRemain) {
-        setSaveStatus("Draft saved automatically.");
+        setSaveStatus("");
       } else {
         setSaveStatus(status === "draft"
           ? "Saving your latest changes..."
@@ -605,11 +710,14 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
             className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           >
             <option value="movie">Movie</option>
-            <option value="tv">Series (TV)</option>
-            <option value="anime">Anime</option>
-            <option value="animation">Animation</option>
-            <option value="documentary">Documentary</option>
+            <option value="tv">TV Show</option>
             <option value="general">General / Other</option>
+            {initialPost?.media_type &&
+              !["movie", "tv", "general"].includes(initialPost.media_type) && (
+                <option value={initialPost.media_type}>
+                  {legacyMediaTypeLabels[initialPost.media_type] ?? initialPost.media_type} (existing post)
+                </option>
+              )}
           </select>
         </div>
       </div>
@@ -832,6 +940,38 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
             <button type="button" title="Inline Code" onClick={() => editor.chain().focus().toggleCode().run()} className={`p-2 rounded text-sm transition-colors cursor-pointer ${editor.isActive("code") ? "bg-accent text-slate-950" : "bg-background text-foreground border border-text-muted/10 hover:border-accent/40 hover:text-accent"}`}>
               <Code2 className="h-4 w-4" />
             </button>
+            <button
+              type="button"
+              title="Insert horizontal separator"
+              aria-label="Insert horizontal separator"
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              className="rounded border border-text-muted/10 bg-background p-2 text-foreground transition-colors hover:border-accent/40 hover:text-accent"
+            >
+              <SeparatorHorizontal className="h-4 w-4" />
+            </button>
+
+            <div className="h-6 w-px bg-text-muted/20 mx-1" />
+
+            <div role="group" aria-label="Text case" className="flex shrink-0 items-center gap-1">
+              {([
+                ["uppercase", "AA", "Uppercase"],
+                ["capitalize", "Aa", "Capitalize"],
+                ["lowercase", "aa", "Lowercase"],
+              ] as const).map(([textCase, label, title]) => (
+                <button
+                  key={textCase}
+                  type="button"
+                  title={`${title} selected text`}
+                  aria-label={`${title} selected text`}
+                  disabled={!hasTextSelection}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => transformEditorSelection(editor, textCase)}
+                  className="rounded border border-text-muted/10 bg-background px-2 py-2 text-xs font-bold text-foreground transition-colors hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
             <div className="h-6 w-px bg-text-muted/20 mx-1" />
 
@@ -899,6 +1039,40 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   </svg>
 </button>
 </div>
+            {status === "draft" && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={`ml-auto flex shrink-0 items-center gap-2 px-2 text-xs font-medium ${
+                  isSaving
+                    ? "text-accent"
+                    : isDirty
+                      ? "text-text-muted"
+                      : "text-emerald-500"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isSaving
+                      ? "animate-pulse bg-accent"
+                      : isDirty
+                        ? "bg-text-muted"
+                        : "bg-emerald-500"
+                  }`}
+                />
+                {isSaving
+                  ? "Saving…"
+                  : isDirty
+                    ? "Unsaved changes"
+                    : savedAt
+                      ? `Saved at ${new Intl.DateTimeFormat(undefined, {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }).format(savedAt)}`
+                      : "Draft not saved yet"}
+              </div>
+            )}
               </div>
           </div>
 

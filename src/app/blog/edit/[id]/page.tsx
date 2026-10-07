@@ -21,7 +21,7 @@ export default async function EditPostPage({
   // 2. Fetch the specific post to edit
   const { data: post } = await supabase
     .from("posts")
-    .select("id, author_id, title, excerpt, cover_image_url, body, content_type, media_type, tmdb_id, status, slug")
+    .select("id, author_id, title, excerpt, cover_image_url, body, content_type, media_type, tmdb_id, status, slug, updated_at")
     .eq("id", id)
     .single();
 

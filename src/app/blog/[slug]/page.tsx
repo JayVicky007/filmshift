@@ -95,6 +95,7 @@ export default async function BlogPostPage({
 {post.tmdb_id && post.media_type !== "general" && (
   <Link href={
       post.media_type === "tv" || 
+      post.media_type === "series" ||
       post.media_type === "show" || 
       post.media_type === "anime" || 
       post.media_type === "docuseries"
