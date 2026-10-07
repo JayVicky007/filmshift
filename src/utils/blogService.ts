@@ -7,6 +7,8 @@ export type BlogPost = {
   slug: string;
   excerpt: string | null;
   cover_image_url: string | null;
+  is_pinned: boolean;
+  pinned_at: string | null;
   body: string;
   status: "draft" | "published";
   content_type: "review" | "article";
@@ -78,6 +80,8 @@ const postFields = `
   slug,
   excerpt,
   cover_image_url,
+  is_pinned,
+  pinned_at,
   body,
   status,
   content_type,
@@ -95,6 +99,7 @@ export async function getPublishedPosts() {
     .select(`${postFields}, comments(count)`)
     .eq("status", "published")
     .eq("comments.is_removed", false)
+    .order("is_pinned", { ascending: false })
     .order("published_at", { ascending: false });
 
   if (error) {
@@ -115,6 +120,7 @@ export async function getPublishedPostsByAuthor(authorId: string): Promise<BlogP
     .eq("author_id", authorId)
     .eq("status", "published")
     .eq("comments.is_removed", false)
+    .order("is_pinned", { ascending: false })
     .order("published_at", { ascending: false });
 
   if (error) throw new Error(error.message);

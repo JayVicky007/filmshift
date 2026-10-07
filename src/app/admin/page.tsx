@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { getOpenCommentReports } from "@/utils/blogService";
 import CommentReportsQueue from "@/components/CommentReportsQueue";
+import AdminPostPins from "@/components/AdminPostPins";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -27,6 +28,13 @@ export default async function AdminPage() {
   }
 
   const commentReports = await getOpenCommentReports();
+  const { data: publishedPosts, error: postsError } = await supabase
+    .from("posts")
+    .select("id, title, published_at, is_pinned")
+    .eq("status", "published")
+    .order("is_pinned", { ascending: false })
+    .order("published_at", { ascending: false });
+  if (postsError) throw new Error(postsError.message);
 
   // 4. If they passed the check, render the secure Admin Dashboard
   return (
@@ -41,6 +49,7 @@ export default async function AdminPage() {
         </p>
       </div>
       <div className="mx-auto max-w-2xl">
+        <AdminPostPins initialPosts={publishedPosts ?? []} />
         <CommentReportsQueue initialReports={commentReports} adminId={user.id} />
       </div>
     </main>

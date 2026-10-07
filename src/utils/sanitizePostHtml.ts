@@ -33,12 +33,20 @@ export function sanitizePostHtml(html: string): string {
       h1: ["style"],
       h2: ["style"],
       h3: ["style"],
-      img: ["src", "alt", "title", "style"],
+      img: ["src", "alt", "title", "width", "height", "style"],
       p: ["style"],
     },
     allowedStyles: {
       "*": {
         "text-align": [/^(?:left|center|right|justify)$/],
+      },
+      img: {
+        width: [/^\d+(?:\.\d+)?(?:px|%)$/],
+        height: [/^\d+(?:\.\d+)?(?:px|%)$/],
+        "object-fit": [/^(?:contain|cover)$/],
+        "object-position": [
+          /^(?:left|center|right)(?:\s+(?:top|center|bottom))?$/,
+        ],
       },
     },
     allowedSchemes: ["http", "https", "mailto"],

@@ -7,6 +7,7 @@ import { FormEvent, useState, useRef, ChangeEvent, useEffect, useCallback } from
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
@@ -46,6 +47,20 @@ interface PostData {
   slug: string | null; 
 }
 
+type SelectedImage = {
+  src: string;
+  width: number | null;
+  height: number | null;
+  objectFit: "contain" | "cover";
+  objectPosition: string;
+};
+
+const cropPositions = [
+  ["left top", "center top", "right top"],
+  ["left center", "center", "right center"],
+  ["left bottom", "center bottom", "right bottom"],
+];
+
 export default function WritePostForm({ authorId, initialPost }: { authorId: string; initialPost?: PostData }) {
   const router = useRouter();
   const supabase = createClient();
@@ -78,6 +93,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
   const [editorRevision, setEditorRevision] = useState(0);
   const [toolbarPosition, setToolbarPosition] = useState<{ left: number; width: number } | null>(null);
   const [toolbarHeight, setToolbarHeight] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
 
   function markDraftDirty() {
     draftRevisionRef.current += 1;
@@ -155,9 +171,35 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       types: ['heading', 'paragraph', 'blockquote', 'image'],
     }),
     
-    Image.configure({
+    Image.extend({
+      addAttributes() {
+        return {
+          ...this.parent?.(),
+          objectFit: {
+            default: "contain",
+            parseHTML: (element) => element.style.objectFit || "contain",
+            renderHTML: ({ objectFit }) => ({
+              style: `object-fit: ${objectFit === "cover" ? "cover" : "contain"}`,
+            }),
+          },
+          objectPosition: {
+            default: "center",
+            parseHTML: (element) => element.style.objectPosition || "center",
+            renderHTML: ({ objectPosition }) => ({
+              style: `object-position: ${cropPositions.flat().includes(objectPosition) ? objectPosition : "center"}`,
+            }),
+          },
+        };
+      },
+    }).configure({
+      resize: {
+        enabled: true,
+        minWidth: 100,
+        minHeight: 60,
+        alwaysPreserveAspectRatio: true,
+      },
       HTMLAttributes: {
-        class: "rounded-xl border border-text-muted/15 my-6 max-w-full max-h-[500px] object-contain mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
+        class: "rounded-xl border border-text-muted/15 my-6 max-w-full mx-auto shadow-md block transition-transform pointer-events-auto cursor-grab active:cursor-grabbing",
       },
     }),
     
@@ -175,6 +217,61 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
       },
     },
   });
+
+  useEffect(() => {
+    const activeEditor = editor;
+    if (!activeEditor) return;
+
+    function updateSelectedImage(currentEditor: NonNullable<typeof editor>) {
+      const selection = currentEditor.state.selection;
+      if (!(selection instanceof NodeSelection) || selection.node.type.name !== "image") {
+        setSelectedImage((current) => current === null ? current : null);
+        return;
+      }
+
+      const attributes = selection.node.attrs;
+      const nextImage = {
+        src: attributes.src,
+        width: attributes.width ? Number(attributes.width) : null,
+        height: attributes.height ? Number(attributes.height) : null,
+        objectFit: attributes.objectFit === "cover" ? "cover" : "contain",
+        objectPosition: cropPositions.flat().includes(attributes.objectPosition)
+          ? attributes.objectPosition
+          : "center",
+      } satisfies SelectedImage;
+      setSelectedImage((current) =>
+        current &&
+        current.src === nextImage.src &&
+        current.width === nextImage.width &&
+        current.height === nextImage.height &&
+        current.objectFit === nextImage.objectFit &&
+        current.objectPosition === nextImage.objectPosition
+          ? current
+          : nextImage,
+      );
+    }
+
+    const handleSelectionUpdate = () => updateSelectedImage(activeEditor);
+    activeEditor.on("selectionUpdate", handleSelectionUpdate);
+    activeEditor.on("transaction", handleSelectionUpdate);
+    handleSelectionUpdate();
+    return () => {
+      activeEditor.off("selectionUpdate", handleSelectionUpdate);
+      activeEditor.off("transaction", handleSelectionUpdate);
+    };
+  }, [editor]);
+
+  function updateSelectedImageLayout(changes: Partial<SelectedImage>) {
+    if (!editor || !selectedImage) return;
+    const nextImage = { ...selectedImage, ...changes };
+    setSelectedImage(nextImage);
+    editor.chain().focus().updateAttributes("image", {
+      width: nextImage.width,
+      height: nextImage.height,
+      objectFit: nextImage.objectFit,
+      objectPosition: nextImage.objectPosition,
+    }).run();
+  }
 
   // Phase 1 cuts cleanly here
 
@@ -824,6 +921,96 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           )}
           <EditorContent editor={editor} />
         </div>
+        {selectedImage && (
+          <section aria-label="Selected image layout" className="mt-4 grid gap-5 rounded-2xl border border-text-muted/15 bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:p-5">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-bold">Image size and crop</h3>
+                <p className="mt-1 text-xs text-text-muted">Drag the image handles to resize it, or adjust its layout here.</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-xs font-semibold">
+                  Display width ({selectedImage.width ?? 640}px)
+                  <input
+                    type="range"
+                    min="100"
+                    max="1200"
+                    step="10"
+                    value={selectedImage.width ?? 640}
+                    onChange={(event) => {
+                      const width = Number(event.target.value);
+                      const oldWidth = selectedImage.width ?? 640;
+                      const oldHeight = selectedImage.height ?? 360;
+                      updateSelectedImageLayout({
+                        width,
+                        ...(selectedImage.objectFit === "cover"
+                          ? { height: Math.round(oldHeight * width / oldWidth) }
+                          : {}),
+                      });
+                    }}
+                    className="mt-2 block w-full accent-accent"
+                  />
+                </label>
+                <label className="text-xs font-semibold">
+                  Image fit
+                  <select
+                    value={selectedImage.objectFit}
+                    onChange={(event) => {
+                      const objectFit = event.target.value === "cover" ? "cover" : "contain";
+                      updateSelectedImageLayout({
+                        objectFit,
+                        width: selectedImage.width ?? 640,
+                        height: selectedImage.height ?? 360,
+                      });
+                    }}
+                    className="mt-2 block w-full rounded-lg border border-text-muted/20 bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="contain">Fit whole image</option>
+                    <option value="cover">Crop to frame</option>
+                  </select>
+                </label>
+              </div>
+              {selectedImage.objectFit === "cover" && (
+                <div>
+                  <p className="text-xs font-semibold">Crop focus</p>
+                  <div className="mt-2 grid w-fit grid-cols-3 gap-1" role="group" aria-label="Crop focus">
+                    {cropPositions.flat().map((position) => (
+                      <button
+                        key={position}
+                        type="button"
+                        aria-label={`Focus ${position}`}
+                        aria-pressed={selectedImage.objectPosition === position}
+                        onClick={() => updateSelectedImageLayout({ objectPosition: position })}
+                        className={`h-8 w-8 rounded border text-xs ${
+                          selectedImage.objectPosition === position
+                            ? "border-accent bg-accent text-slate-950"
+                            : "border-text-muted/20 bg-background hover:border-accent/50"
+                        }`}
+                      >
+                        {position === "center" ? "•" : "·"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-semibold text-text-muted">Preview</p>
+              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-text-muted/15 bg-background">
+                <img
+                  src={selectedImage.src}
+                  alt="Selected image crop preview"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: selectedImage.objectFit,
+                    objectPosition: selectedImage.objectPosition,
+                  }}
+                />
+              </div>
+            </div>
+          </section>
+        )}
           </>
         )}
       </div>

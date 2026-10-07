@@ -46,7 +46,14 @@ export default async function BlogPage() {
                     />
                   )}
                   <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
-                    <span>{post.content_type}</span>
+                    <span className="flex items-center gap-2">
+                      {post.content_type}
+                      {post.is_pinned && (
+                        <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] text-accent">
+                          Pinned
+                        </span>
+                      )}
+                    </span>
                     <span>{formatBlogMediaType(post.media_type)}</span>
                   </div>
                   
