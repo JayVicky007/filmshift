@@ -3,6 +3,8 @@ import { createClient } from "@/utils/supabase/server";
 export type BlogPost = {
   id: string;
   comment_count?: number;
+  like_count?: number;
+  liked_by_me?: boolean;
   title: string;
   slug: string;
   excerpt: string | null;
@@ -27,6 +29,7 @@ export type BlogComment = {
   id: string;
   post_id: string;
   author_id: string;
+  parent_id: string | null;
   body: string;
   created_at: string;
   updated_at: string;
@@ -36,6 +39,8 @@ export type BlogComment = {
     avatar_url: string | null;
   } | null;
   mention_usernames?: string[];
+  like_count: number;
+  liked_by_me: boolean;
 };
 
 export type CommentReport = {
@@ -96,6 +101,10 @@ const postFields = `
 
 export async function getPublishedPostsPage(page: number, pageSize: number) {
   const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError && authError.name !== "AuthSessionMissingError") {
+    throw new Error(authError.message);
+  }
   const { count, error: countError } = await supabase
     .from("posts")
     .select("id", { count: "exact", head: true })
@@ -120,14 +129,46 @@ export async function getPublishedPostsPage(page: number, pageSize: number) {
     throw new Error(error.message);
   }
 
+  const { data: likeSummaries, error: likesError } = await supabase.rpc("get_post_like_summary", {
+    p_post_ids: (data ?? []).map((post) => post.id),
+  });
+  if (likesError) throw new Error(likesError.message);
+  const likeRows = (likeSummaries ?? []) as Array<{
+    post_id: string;
+    like_count: number | string;
+    liked_by_me: boolean;
+  }>;
+  const likesByPostId = new Map(likeRows.map((like) => [like.post_id, like] as const));
+
   return {
     posts: (data ?? []).map((post) => ({
       ...post,
       comment_count: post.comments?.[0]?.count ?? 0,
+      like_count: Number(likesByPostId.get(post.id)?.like_count ?? 0),
+      liked_by_me: Boolean(likesByPostId.get(post.id)?.liked_by_me),
     })) as unknown as BlogPost[],
     currentPage,
     totalPages,
     total,
+    currentUserId: user?.id ?? null,
+  };
+}
+
+export async function getPostLikeSummary(postId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_post_like_summary", {
+    p_post_ids: [postId],
+  });
+
+  if (error) throw new Error(error.message);
+
+  const like = (data ?? [])[0] as {
+    like_count: number | string;
+    liked_by_me: boolean;
+  } | undefined;
+  return {
+    likeCount: Number(like?.like_count ?? 0),
+    likedByMe: Boolean(like?.liked_by_me),
   };
 }
 
@@ -178,17 +219,33 @@ export async function getPublishedPost(slug: string) {
   return data as unknown as BlogPost | null;
 }
 
-export async function getPublishedPostComments(postId: string): Promise<BlogComment[]> {
+export async function getPublishedPostComments(
+  postId: string,
+  currentUserId: string | null,
+): Promise<BlogComment[]> {
   const supabase = await createClient();
   const { data: comments, error } = await supabase
     .from("comments")
-    .select("id, post_id, author_id, body, created_at, updated_at")
+    .select("id, post_id, author_id, parent_id, body, created_at, updated_at")
     .eq("post_id", postId)
     .eq("is_removed", false)
     .order("created_at", { ascending: true });
 
   if (error) throw new Error(error.message);
   if (!comments?.length) return [];
+
+  const { data: likes, error: likesError } = await supabase.rpc("get_comment_like_summary", {
+    p_comment_ids: comments.map((comment) => comment.id),
+  });
+  if (likesError) throw new Error(likesError.message);
+  const likeRows = (likes ?? []) as Array<{
+    comment_id: string;
+    like_count: number | string;
+    liked_by_me: boolean;
+  }>;
+  const likesByCommentId = new Map(
+    likeRows.map((like) => [like.comment_id, like] as const),
+  );
 
   const authorIds = [...new Set(comments.map((comment) => comment.author_id))];
   const mentionedUsernames = [...new Set(comments.flatMap((comment) =>
@@ -223,6 +280,10 @@ export async function getPublishedPostComments(postId: string): Promise<BlogComm
   return comments.map((comment) => ({
     ...comment,
     author: profilesById.get(comment.author_id) ?? null,
+    like_count: Number(likesByCommentId.get(comment.id)?.like_count ?? 0),
+    liked_by_me: currentUserId
+      ? Boolean(likesByCommentId.get(comment.id)?.liked_by_me)
+      : false,
     mention_usernames: [...new Set(
       [...comment.body.matchAll(/(^|[^a-zA-Z0-9_-])@([a-z0-9_-]{3,30})(?=$|[^a-z0-9_-])/gi)]
         .map((match) => match[2].toLowerCase())

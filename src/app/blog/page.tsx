@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import PostLikeButton from "@/components/PostLikeButton";
 import { formatBlogMediaType, getPublishedPostsPage, type BlogPost } from "@/utils/blogService";
 
 const POSTS_PER_PAGE = 9;
@@ -37,6 +38,7 @@ export default async function BlogPage({
   let currentPage = 1;
   let totalPages = 0;
   let totalPosts = 0;
+  let currentUserId: string | null = null;
 
   try {
     const result = await getPublishedPostsPage(page, POSTS_PER_PAGE);
@@ -44,6 +46,7 @@ export default async function BlogPage({
     currentPage = result.currentPage;
     totalPages = result.totalPages;
     totalPosts = result.total;
+    currentUserId = result.currentUserId;
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Unable to load posts.";
   }
@@ -125,11 +128,18 @@ export default async function BlogPage({
                     <span>{formatDate(post.published_at)}</span>
                     <Link
                       href={`/blog/${post.slug}#comments-heading`}
-                      className="relative z-20 ml-auto whitespace-nowrap hover:text-accent"
+                      className="relative z-20 whitespace-nowrap hover:text-accent"
                       aria-label={`${post.comment_count ?? 0} comments on ${post.title}`}
                     >
                       {post.comment_count ?? 0} {post.comment_count === 1 ? "comment" : "comments"}
                     </Link>
+                    <PostLikeButton
+                      postId={post.id}
+                      initialCount={post.like_count ?? 0}
+                      initialLiked={post.liked_by_me ?? false}
+                      currentUserId={currentUserId}
+                      compact
+                    />
                   </div>
                 </article>
               );

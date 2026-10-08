@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatBlogMediaType, getPublishedPost, getPublishedPostComments } from "@/utils/blogService";
+import { formatBlogMediaType, getPostLikeSummary, getPublishedPost, getPublishedPostComments } from "@/utils/blogService";
 import { sanitizePostHtml } from "@/utils/sanitizePostHtml";
 import { createClient } from "@/utils/supabase/server";
 import BlogComments from "@/components/BlogComments";
+import PostLikeButton from "@/components/PostLikeButton";
 
 function formatDate(value: string | null) {
   if (!value) return "";
@@ -26,14 +27,15 @@ export default async function BlogPostPage({
 
   if (!post) notFound();
 
-  const [comments, supabase] = await Promise.all([
-    getPublishedPostComments(post.id),
-    createClient(),
-  ]);
+  const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError && authError.name !== "AuthSessionMissingError") {
     throw new Error(authError.message);
   }
+  const [comments, likeSummary] = await Promise.all([
+    getPublishedPostComments(post.id, user?.id ?? null),
+    getPostLikeSummary(post.id),
+  ]);
 
   let profile: {
     username: string | null;
@@ -87,6 +89,14 @@ export default async function BlogPostPage({
             </>
           )}
           <span aria-hidden="true">·</span><span>{formatDate(post.published_at)}</span>
+        </div>
+        <div className="mt-5">
+          <PostLikeButton
+            postId={post.id}
+            initialCount={likeSummary.likeCount}
+            initialLiked={likeSummary.likedByMe}
+            currentUserId={user?.id ?? null}
+          />
         </div>
         <div 
           className="prose prose-invert max-w-none text-foreground/90 mt-8"

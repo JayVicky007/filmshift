@@ -9,7 +9,7 @@ import type { BlogComment } from "@/utils/blogService";
 export type MentionNotification = {
   id: string;
   comment_id: string | null;
-  type: "comment_mention" | "admin_post_correction";
+  type: "comment_mention" | "comment_reply" | "admin_post_correction";
   message: string | null;
   created_at: string;
   read_at: string | null;
@@ -139,7 +139,7 @@ export default function MentionNotifications({
                   ) : (
                     <span className="font-bold">{actorName}</span>
                   )}{" "}
-                  mentioned you in a comment on{" "}
+                  {notification.type === "comment_reply" ? "replied to your comment on " : "mentioned you in a comment on "}
                   {notification.post ? (
                     <Link
                       href={`/blog/${notification.post.slug}#comment-${notification.comment_id ?? ""}`}
