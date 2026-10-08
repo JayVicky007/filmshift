@@ -103,6 +103,7 @@ export default function Navbar() {
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [username, setUsername] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   // 🚀 Place this near the top of your Navbar function along with username/avatarUrl
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -124,20 +125,27 @@ export default function Navbar() {
         setUsername(null);
         setDisplayName(null);
         setAvatarUrl(null);
+        setIsAdmin(false);
         return;
       }
       setActiveUserId(userId);
-      const { data: profile } = await supabase
+      setIsAdmin(false);
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .select("username, display_name, avatar_url")
+        .select("username, display_name, avatar_url, role")
         .eq("id", userId)
         .maybeSingle();
+
+      if (error) {
+        console.error("Unable to load navbar profile:", error.message);
+      }
 
       if (isCurrent) {
         setUserEmail(email);
         setUsername(profile?.username ?? null);
         setDisplayName(profile?.display_name ?? null);
         setAvatarUrl(profile?.avatar_url ?? null);
+        setIsAdmin(profile?.role === "admin");
       }
     }
 
@@ -267,6 +275,9 @@ export default function Navbar() {
             </div>
 
             <Link href="/blog" className="transition-colors hover:text-accent">Blog</Link>
+            {isAdmin && (
+              <Link href="/admin" className="transition-colors hover:text-accent">Admin</Link>
+            )}
           </nav>
         </div>
 
@@ -347,8 +358,15 @@ export default function Navbar() {
                   <span className="truncate">{accountLabel}</span>
                   <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover/menu:rotate-180" aria-hidden="true" />
                 </button>
-                <div role="menu" className="absolute right-0 top-full z-50 mt-1 flex w-44 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-xl invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out">
-                  <Link href="/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-accent/10 hover:text-accent"><User className="h-4 w-4 opacity-70" /><span>My Profile</span></Link>
+                <div role="menu" className="absolute right-0 top-full z-50 mt-1 flex w-56 flex-col gap-1 rounded-2xl border border-text-muted/15 bg-surface p-2 text-sm font-medium text-foreground shadow-xl invisible opacity-0 translate-y-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-y-0 transition-all duration-150 ease-out">
+                  <Link
+                    href="/profile"
+                    title={username ?? undefined}
+                    className="flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-accent/10 hover:text-accent"
+                  >
+                    <User className="h-4 w-4 shrink-0 opacity-70" />
+                    <span className="truncate">{username || "My Profile"}</span>
+                  </Link>
                   <Link href="/write" className="flex items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-accent/10 hover:text-accent"><PenSquare className="h-4 w-4 opacity-70" /><span>Write Post</span></Link>
                   <hr className="my-1 border-text-muted/10" />
                   <button type="button" onClick={handleSignOut} className="flex items-center gap-2.5 w-full text-left rounded-xl px-3 py-2 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"><LogOut className="h-4 w-4 opacity-70" /><span>Sign Out</span></button>
@@ -399,12 +417,24 @@ export default function Navbar() {
             <Link href="/blog" className="py-3 border-b border-text-muted/10 text-base hover:text-accent transition-colors">
               The Journal (Blog)
             </Link>
+            {isAdmin && (
+              <Link href="/admin" className="py-3 border-b border-text-muted/10 text-base text-accent transition-colors hover:text-yellow-300">
+                Admin dashboard
+              </Link>
+            )}
 
             {/* Authenticated Account Profile Links Row */}
             {userEmail ? (
               <div className="flex flex-col gap-2 pt-2">
                 <div className="text-xs text-text-muted uppercase tracking-wider px-1 font-bold">User Dashboard</div>
-                <Link href="/profile" className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-background text-sm"><User size={16} /><span>{accountLabel} - My Profile</span></Link>
+                <Link
+                  href="/profile"
+                  title={username ?? undefined}
+                  className="flex min-w-0 items-center gap-2 rounded-xl bg-background px-3 py-2.5 text-sm"
+                >
+                  <User size={16} className="shrink-0" />
+                  <span className="truncate">{username || "My Profile"}</span>
+                </Link>
                 <Link href="/notifications" className="flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 bg-background text-sm">
                   <span className="flex items-center gap-2"><Bell size={16} />Notifications</span>
                   {unreadNotificationCount > 0 && (

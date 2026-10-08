@@ -13,14 +13,14 @@ export default async function NotificationsPage() {
   const [{ data: rows, error }, { count: unreadCount, error: unreadCountError }] = await Promise.all([
     supabase
       .from("notifications")
-      .select("id, actor_id, comment_id, post_id, created_at, read_at")
-      .eq("type", "comment_mention")
+      .select("id, actor_id, comment_id, post_id, type, message, created_at, read_at")
+      .eq("recipient_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50),
     supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
-      .eq("type", "comment_mention")
+      .eq("recipient_id", user.id)
       .is("read_at", null),
   ]);
 
@@ -34,7 +34,7 @@ export default async function NotificationsPage() {
       ? supabase.from("profiles").select("id, username, display_name").in("id", actorIds)
       : Promise.resolve({ data: [], error: null }),
     postIds.length
-      ? supabase.from("posts").select("id, title, slug").in("id", postIds)
+      ? supabase.from("posts").select("id, title, slug, status").in("id", postIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -46,6 +46,8 @@ export default async function NotificationsPage() {
   const notifications: MentionNotification[] = (rows ?? []).map((row) => ({
     id: row.id,
     comment_id: row.comment_id,
+    type: row.type,
+    message: row.message,
     created_at: row.created_at,
     read_at: row.read_at,
     actor: row.actor_id ? profilesById.get(row.actor_id) ?? null : null,

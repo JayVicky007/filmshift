@@ -2,6 +2,7 @@ import React from "react";
 import { getMovieDetails } from "@/utils/movieService";
 import ContentCarousel from "@/components/ContentCarousel";
 import RatingRing from "@/components/RatingRing";
+import OfficialVideos from "@/components/OfficialVideos";
 import { MovieTrailerModalButton } from "@/app/movie/[id]/MovieTrailerModalButton";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -145,6 +146,8 @@ export default async function MovieDetailsPage({ params }: PageProps) {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        <OfficialVideos videos={movie.officialVideos} />
+
         {movie.creativeCredits.length > 0 && (
           <section className="md:px-4">
             <h2 className="pl-1 text-2xl font-bold">Credits</h2>
@@ -199,4 +202,3 @@ export default async function MovieDetailsPage({ params }: PageProps) {
     </main>
   );
 }
-

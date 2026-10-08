@@ -2,6 +2,7 @@ import React from "react";
 import { getTvShowDetails } from "@/utils/movieService";
 import ContentCarousel from "@/components/ContentCarousel";
 import RatingRing from "@/components/RatingRing";
+import OfficialVideos from "@/components/OfficialVideos";
 import Link from "next/link";
 import { TvTrailerModalButton } from "./TvTrailerModalButton";
 
@@ -148,6 +149,8 @@ export default async function TvShowDetailPage({ params }: PageProps) {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-14 px-5 py-14 sm:px-8 lg:px-12">
+        <OfficialVideos videos={show.officialVideos} />
+
         {(show.creators.length > 0 || show.creativeCredits.length > 0) && (
           <section className="md:px-4">
             <h2 className="pl-1 text-2xl font-bold">Credits</h2>

@@ -8,11 +8,13 @@ import type { BlogComment } from "@/utils/blogService";
 
 export type MentionNotification = {
   id: string;
-  comment_id: string;
+  comment_id: string | null;
+  type: "comment_mention" | "admin_post_correction";
+  message: string | null;
   created_at: string;
   read_at: string | null;
   actor: Pick<NonNullable<BlogComment["author"]>, "username" | "display_name"> | null;
-  post: { title: string; slug: string } | null;
+  post: { id: string; title: string; slug: string; status: "draft" | "published" } | null;
 };
 
 function formatDate(value: string) {
@@ -64,7 +66,11 @@ export default function MentionNotifications({
   async function openNotification(notification: MentionNotification) {
     if (notification.read_at || await markAsRead(notification.id)) {
       if (notification.post) {
-        router.push(`/blog/${notification.post.slug}#comment-${notification.comment_id}`);
+        router.push(notification.type === "admin_post_correction" && notification.post.status === "draft"
+          ? `/blog/edit/${notification.post.id}`
+          : notification.type === "admin_post_correction"
+            ? `/blog/${notification.post.slug}`
+            : `/blog/${notification.post.slug}#comment-${notification.comment_id}`);
       }
     }
   }
@@ -93,6 +99,33 @@ export default function MentionNotifications({
           >
             <div className="flex items-start justify-between gap-4">
               <div>
+                {notification.type === "admin_post_correction" ? (
+                  <p className="text-sm">
+                    An administrator corrected the metadata on{" "}
+                    {notification.post ? (
+                      <Link
+                        href={notification.post.status === "draft"
+                          ? `/blog/edit/${notification.post.id}`
+                          : `/blog/${notification.post.slug}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          void openNotification(notification);
+                        }}
+                        className="font-semibold text-accent hover:underline"
+                      >
+                        {notification.post.title}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold">your post</span>
+                    )}
+                    .
+                    {notification.message && (
+                      <span className="mt-1 block text-text-muted">
+                        Reason: {notification.message}
+                      </span>
+                    )}
+                  </p>
+                ) : (
                 <p className="text-sm">
                   {notification.actor?.username ? (
                     <>
@@ -109,7 +142,7 @@ export default function MentionNotifications({
                   mentioned you in a comment on{" "}
                   {notification.post ? (
                     <Link
-                      href={`/blog/${notification.post.slug}#comment-${notification.comment_id}`}
+                      href={`/blog/${notification.post.slug}#comment-${notification.comment_id ?? ""}`}
                       onClick={(event) => {
                         event.preventDefault();
                         void openNotification(notification);
@@ -122,6 +155,7 @@ export default function MentionNotifications({
                     <span className="font-semibold">a blog post</span>
                   )}
                 </p>
+                )}
                 <p className="mt-1 text-xs text-text-muted">{formatDate(notification.created_at)}</p>
               </div>
               {!notification.read_at && (

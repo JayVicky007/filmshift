@@ -100,6 +100,42 @@ interface TmdbVideo {
   published_at?: string;
 }
 
+export interface OfficialVideo {
+  key: string;
+  name: string;
+  type: string;
+  published_at: string | null;
+}
+
+function getOfficialVideos(videos: TmdbVideo[] | undefined): OfficialVideo[] {
+  const typeOrder = ["Trailer", "Teaser", "Featurette", "Clip", "Behind the Scenes"];
+  const seenKeys = new Set<string>();
+
+  return (videos ?? [])
+    .filter((video) => {
+      if (video.site !== "YouTube" || video.official !== true || !video.key || seenKeys.has(video.key)) {
+        return false;
+      }
+      seenKeys.add(video.key);
+      return true;
+    })
+    .sort((first, second) => {
+      const firstTypeOrder = typeOrder.indexOf(first.type);
+      const secondTypeOrder = typeOrder.indexOf(second.type);
+      const firstRank = firstTypeOrder === -1 ? typeOrder.length : firstTypeOrder;
+      const secondRank = secondTypeOrder === -1 ? typeOrder.length : secondTypeOrder;
+      return firstRank - secondRank ||
+        (Date.parse(second.published_at ?? "") || 0) - (Date.parse(first.published_at ?? "") || 0);
+    })
+    .slice(0, 8)
+    .map(({ key, name, type, published_at }) => ({
+      key,
+      name,
+      type,
+      published_at: published_at ?? null,
+    }));
+}
+
 interface TmdbPersonCredit {
   id: number;
   name: string;
@@ -1139,6 +1175,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     similar: relatedMovies,
     recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
     genres: movieData.genres || [],
+    officialVideos: getOfficialVideos(movieData.videos?.results),
     runtime: movieData.runtime,
     ratings: {
       imdb: imdbRating,
@@ -1176,6 +1213,7 @@ export interface MovieDetails {
   similar: ContentItem[];
   recommendations: ContentItem[];
   genres: TmdbGenre[];
+  officialVideos: OfficialVideo[];
   runtime: number | null;
   ratings: {
     imdb: number | null;
@@ -1214,6 +1252,7 @@ export interface TvShowDetails {
     rottenTomatoes: number | null;
     metascore: number | null;
   };
+  officialVideos: OfficialVideo[];
   trailer: {
     key: string;
     name: string;
@@ -1337,6 +1376,7 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
       })) || [],
       similar: creatorTvShows, // Linked directly into the 'similar' carousel row layout slot
       recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
+      officialVideos: getOfficialVideos(showData.videos?.results),
       ratings: {
         imdb: imdbRating,
         rottenTomatoes,

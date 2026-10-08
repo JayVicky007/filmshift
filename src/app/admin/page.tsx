@@ -1,57 +1,46 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
-import { getOpenCommentReports } from "@/utils/blogService";
-import CommentReportsQueue from "@/components/CommentReportsQueue";
-import AdminPostPins from "@/components/AdminPostPins";
+import Link from "next/link";
 
-export default async function AdminPage() {
-  const supabase = await createClient();
-  
-  // 1. Get the authenticated user session from Supabase Auth
-  const { data: { user } } = await supabase.auth.getUser();
+const adminSections = [
+  {
+    href: "/admin/corrections",
+    title: "Post metadata corrections",
+    description: "Correct a post’s media type or linked TMDB title, with an audit trail and author notification.",
+    action: "Open corrections",
+  },
+  {
+    href: "/admin/pins",
+    title: "Pinned blog posts",
+    description: "Choose which published posts appear first on The Journal.",
+    action: "Manage pinned posts",
+  },
+  {
+    href: "/admin/reports",
+    title: "Comment reports",
+    description: "Review member reports and dismiss them or remove comments that violate community rules.",
+    action: "Review reports",
+  },
+];
 
-  // If not logged in at all, kick them to the login page
-  if (!user) {
-    redirect("/login");
-  }
-
-  // 2. Query your public.profiles table to look up this specific user's role
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single(); // .single() ensures we get one object back, not an array
-
-  // 3. The underlying factor: If the database value isn't 'admin', block access!
-  if (error || !profile || profile.role !== "admin") {
-    redirect("/unauthorized"); // Or back to home page "/"
-  }
-
-  const commentReports = await getOpenCommentReports();
-  const { data: publishedPosts, error: postsError } = await supabase
-    .from("posts")
-    .select("id, title, published_at, is_pinned")
-    .eq("status", "published")
-    .order("is_pinned", { ascending: false })
-    .order("published_at", { ascending: false });
-  if (postsError) throw new Error(postsError.message);
-
-  // 4. If they passed the check, render the secure Admin Dashboard
+export default function AdminPage() {
   return (
-    <main className="min-h-screen bg-background px-6 py-12 text-foreground">
-      <div className="mx-auto max-w-2xl rounded-3xl border border-yellow-400/30 bg-surface p-8">
-        <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
-          Secure Portal
-        </span>
-        <h1 className="mt-4 text-3xl font-black">Welcome to the Admin Dashboard</h1>
-        <p className="mt-2 text-text-muted">
-          This text is completely hidden from normal users. If you can see this, your database role check works!
-        </p>
+    <section aria-label="Admin workspaces">
+      <div className="grid gap-4 md:grid-cols-3">
+        {adminSections.map((section) => (
+          <article
+            key={section.href}
+            className="flex flex-col rounded-2xl border border-text-muted/15 bg-surface p-5 sm:p-6"
+          >
+            <h2 className="text-lg font-bold">{section.title}</h2>
+            <p className="mt-2 flex-1 text-sm leading-6 text-text-muted">{section.description}</p>
+            <Link
+              href={section.href}
+              className="mt-5 inline-flex w-fit items-center rounded-lg bg-accent px-3 py-2 text-xs font-bold text-slate-950 transition-colors hover:bg-yellow-300"
+            >
+              {section.action}
+            </Link>
+          </article>
+        ))}
       </div>
-      <div className="mx-auto max-w-2xl">
-        <AdminPostPins initialPosts={publishedPosts ?? []} />
-        <CommentReportsQueue initialReports={commentReports} adminId={user.id} />
-      </div>
-    </main>
+    </section>
   );
 }
