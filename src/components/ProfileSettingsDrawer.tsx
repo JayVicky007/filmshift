@@ -10,7 +10,6 @@ interface ProfileSettingsDrawerProps {
   profile: {
     username: string | null;
     display_name: string | null;
-    avatar_url: string | null;
     bio: string | null;
   } | null;
 }
@@ -33,7 +32,7 @@ export default function ProfileSettingsDrawer({ userId, email, profile }: Profil
               Account Preferences
             </span>
             <span className="text-xs font-normal text-text-muted">
-              {isOpen ? "Close profile management canvas" : "Modify username, public biography, or avatar picture"}
+              {isOpen ? "Close profile management canvas" : "Update your name, username, or bio"}
             </span>
           </div>
         </div>
@@ -50,7 +49,6 @@ export default function ProfileSettingsDrawer({ userId, email, profile }: Profil
             email={email}
             initialUsername={profile?.username ?? ""}
             initialDisplayName={profile?.display_name ?? ""}
-            initialAvatarUrl={profile?.avatar_url ?? ""}
             initialBio={profile?.bio ?? ""}
           />
         </div>

@@ -56,6 +56,7 @@ export type PublicProfile = {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  cover_image_url: string | null;
   bio: string | null;
 };
 
@@ -136,7 +137,7 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, bio")
+    .select("id, username, display_name, avatar_url, cover_image_url, bio")
     .eq("username", username.toLowerCase())
     .maybeSingle();
 

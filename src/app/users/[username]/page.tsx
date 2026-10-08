@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ProfileIdentity from "@/components/ProfileIdentity";
 import { getPublicProfile, getPublishedPostsByAuthor } from "@/utils/blogService";
 
 function formatDate(value: string | null) {
@@ -27,22 +28,17 @@ export default async function PublicUserProfilePage({
           Back to The Journal
         </Link>
 
-        <header className="mt-8 flex items-center gap-5 rounded-3xl border border-text-muted/15 bg-surface p-6 sm:p-8">
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover" />
-          ) : (
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/20 text-xl font-bold text-accent">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
-          )}
-          <div className="min-w-0">
-            <h1 className="truncate text-2xl font-black tracking-tight">{displayName}</h1>
-            <p className="text-sm text-text-muted">@{profile.username}</p>
-            {profile.bio && <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">{profile.bio}</p>}
-          </div>
-        </header>
+        <div className="mt-8">
+          <ProfileIdentity
+            displayName={displayName}
+            username={profile.username}
+            bio={profile.bio}
+            avatarUrl={profile.avatar_url}
+            coverImageUrl={profile.cover_image_url}
+          />
+        </div>
 
-        <section className="mt-12">
+        <section className="mt-10">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">
             Published contributions ({posts.length})
           </h2>

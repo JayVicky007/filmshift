@@ -1,186 +1,50 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-
-function getOwnedAvatarPath(avatarUrl: string, userId: string): string | null {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  if (!supabaseUrl) {
-    return null;
-  }
-
-  try {
-    const avatarPublicUrl = new URL(avatarUrl);
-    const supabaseOrigin = new URL(supabaseUrl).origin;
-    const pathPrefix = `/storage/v1/object/public/avatars/${userId}/`;
-
-    if (
-      avatarPublicUrl.origin !== supabaseOrigin ||
-      !avatarPublicUrl.pathname.startsWith(pathPrefix)
-    ) {
-      return null;
-    }
-
-    const fileName = decodeURIComponent(
-      avatarPublicUrl.pathname.slice(pathPrefix.length),
-    );
-
-    return fileName && !fileName.includes("/") ? `${userId}/${fileName}` : null;
-  } catch {
-    return null;
-  }
-}
 
 export default function ProfileForm({
   userId,
   email,
   initialUsername,
   initialDisplayName,
-  initialAvatarUrl,
   initialBio,
 }: {
   userId: string;
   email: string;
   initialUsername: string;
   initialDisplayName: string;
-  initialAvatarUrl: string;
   initialBio: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
-  const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const [username, setUsername] = useState(initialUsername);
   const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
-  const [savedAvatarUrl, setSavedAvatarUrl] = useState(initialAvatarUrl);
   const [bio, setBio] = useState(initialBio);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState(initialAvatarUrl);
-  const [removeAvatar, setRemoveAvatar] = useState(false);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setMessage("Please choose an image file.");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage("Please choose an image smaller than 5 MB.");
-      return;
-    }
-
-    setMessage("");
-    setAvatarFile(file);
-    setRemoveAvatar(false);
-    setAvatarPreview(URL.createObjectURL(file));
-  }
-
-  function handleRemoveAvatar() {
-    setAvatarUrl("");
-    setAvatarFile(null);
-    setAvatarPreview("");
-    setRemoveAvatar(true);
-    setMessage("Avatar removal is pending. Save your profile to apply it.");
-    if (avatarFileInputRef.current) {
-      avatarFileInputRef.current.value = "";
-    }
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSaving(true);
     setMessage("");
 
-    const previousAvatarUrl = savedAvatarUrl.trim() || null;
-    let nextAvatarUrl = removeAvatar ? null : avatarUrl.trim() || null;
-    let uploadedAvatarPath: string | null = null;
-
-    if (avatarFile) {
-      const fileExtension = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const filePath = `${userId}/${crypto.randomUUID()}.${fileExtension}`;
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, avatarFile, {
-          cacheControl: "3600",
-          contentType: avatarFile.type,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        setMessage(uploadError.message);
-        setIsSaving(false);
-        return;
-      }
-
-      uploadedAvatarPath = filePath;
-      nextAvatarUrl = supabase.storage.from("avatars").getPublicUrl(filePath).data.publicUrl;
-    }
-
     const { error } = await supabase
       .from("profiles")
       .update({
         username: username.trim() || null,
         display_name: displayName.trim() || null,
-        avatar_url: nextAvatarUrl,
         bio: bio.trim() || null,
       })
       .eq("id", userId);
 
     if (error) {
-      let message = error.message;
-
-      if (uploadedAvatarPath) {
-        const { error: cleanupError } = await supabase.storage
-          .from("avatars")
-          .remove([uploadedAvatarPath]);
-
-        if (cleanupError) {
-          message += ` The new avatar upload could not be cleaned up: ${cleanupError.message}`;
-        }
-      }
-
-      setMessage(message);
+      setMessage(error.message);
     } else {
-      const previousAvatarPath = previousAvatarUrl
-        ? getOwnedAvatarPath(previousAvatarUrl, userId)
-        : null;
-      const nextAvatarPath = nextAvatarUrl
-        ? getOwnedAvatarPath(nextAvatarUrl, userId)
-        : null;
-      let successMessage = "Profile saved.";
-
-      if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
-        const { error: cleanupError } = await supabase.storage
-          .from("avatars")
-          .remove([previousAvatarPath]);
-
-        if (cleanupError) {
-          successMessage += ` The previous avatar could not be deleted: ${cleanupError.message}`;
-        }
-      }
-
-      setAvatarUrl(nextAvatarUrl ?? "");
-      setSavedAvatarUrl(nextAvatarUrl ?? "");
-      setAvatarFile(null);
-      setAvatarPreview(nextAvatarUrl ?? "");
-      setRemoveAvatar(false);
-      if (avatarFileInputRef.current) {
-        avatarFileInputRef.current.value = "";
-      }
-      setMessage(successMessage);
+      setMessage("Profile details saved.");
       router.refresh();
     }
-
     setIsSaving(false);
   }
 
@@ -207,20 +71,13 @@ export default function ProfileForm({
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
-
       <div>
         <label htmlFor="username" className="text-sm font-semibold">Username</label>
         <input
           id="username"
           type="text"
           value={username}
-          onChange={(event) => {
-            // 🚀 Automatically strips spaces and forces lowercase as they type!
-            const sanitized = event.target.value
-              .toLowerCase()
-              .replace(/[^a-z0-9_-]/g, "");
-            setUsername(sanitized);
-          }}
+          onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
           placeholder="choose_a_username"
           minLength={3}
           maxLength={30}
@@ -230,7 +87,6 @@ export default function ProfileForm({
           className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
-
       <div>
         <label htmlFor="bio" className="text-sm font-semibold">Bio</label>
         <textarea
@@ -243,61 +99,13 @@ export default function ProfileForm({
           className="mt-2 w-full resize-y rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         />
       </div>
-      <div>
-        <label htmlFor="avatar-file" className="text-sm font-semibold">Profile Image</label>
-        <div className="mt-2 flex items-center gap-4">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-text-muted/20 bg-background text-sm text-text-muted">
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="Profile preview" className="h-full w-full object-cover" />
-            ) : (
-              "No image"
-            )}
-          </div>
-          <input
-            id="avatar-file"
-            type="file"
-            ref={avatarFileInputRef}
-            accept="image/*"
-            onChange={handleAvatarChange}
-            className="min-w-0 flex-1 text-sm text-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent file:px-3 file:py-2 file:font-semibold file:text-slate-950 hover:file:bg-yellow-300"
-          />
-        </div>
-        {(avatarPreview || avatarUrl || savedAvatarUrl) && !removeAvatar && (
-          <button
-            type="button"
-            onClick={handleRemoveAvatar}
-            disabled={isSaving}
-            className="mt-3 rounded-lg border border-text-muted/20 px-3 py-2 text-sm font-semibold text-text-muted transition-colors hover:border-rose-400/50 hover:text-rose-500 disabled:cursor-wait disabled:opacity-60"
-          >
-            Remove avatar
-          </button>
-        )}
-      </div>
-      <div>
-        <label htmlFor="avatar-url" className="text-sm font-semibold">Avatar URL</label>
-        <input
-          id="avatar-url"
-          type="url"
-          value={avatarUrl}
-          onChange={(event) => {
-            setAvatarUrl(event.target.value);
-            setRemoveAvatar(false);
-          }}
-          placeholder="https://..."
-          className="mt-2 w-full rounded-xl border border-text-muted/20 bg-background px-4 py-3 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
-        />
-      </div>
-      {message && (
-        <p role="status" className="rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
-          {message}
-        </p>
-      )}
+      {message && <p role="status" className="rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">{message}</p>}
       <button
         type="submit"
         disabled={isSaving}
         className="rounded-xl bg-accent px-5 py-3 font-bold text-slate-950 transition-colors hover:bg-yellow-300 disabled:cursor-wait disabled:opacity-60"
       >
-        {isSaving ? "Saving..." : "Save profile"}
+        {isSaving ? "Saving..." : "Save profile details"}
       </button>
     </form>
   );

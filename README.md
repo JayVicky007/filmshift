@@ -12,7 +12,7 @@ Discover what to watch, explore films and series, and share thoughtful reviews a
 - **Save drafts as you write.** The editor shows whether your draft is saving, has unsaved changes, or when it was last saved. You can also save manually and keep editing.
 - **Make posts your own** with headline images, uploaded or linked images, image resizing and cropping, text formatting, and horizontal separators.
 - **Join the conversation** with comments, replies, mentions, notifications, and comment reporting.
-- **Create a profile** with a username, display name, avatar, and bio.
+- **Personalize your profile** with a cover image and avatar. Change either directly from your profile by uploading an image or providing an image link; public profiles display your images, name, username, and bio. Your profile workspace keeps published posts and private drafts organized separately.
 - **Manage the community** with an administrator account: use separate, admin-only sections to correct post media metadata with an audit trail and author notification, pin important posts, and review comment reports.
 - **Use light or dark theme** across the site.
 
@@ -61,7 +61,7 @@ Use the Supabase project URL and **publishable/anon key**, never a service-role 
 
 ### 3. Set up the database
 
-The versioned Supabase SQL migrations are in [`supabase/migrations`](./supabase/migrations). They create the blog schema, security policies, storage buckets, comments, notifications, cover images, post pinning, and audited admin metadata corrections.
+The versioned Supabase SQL migrations are in [`supabase/migrations`](./supabase/migrations). They create the blog schema, security policies, storage buckets, comments, notifications, post cover images, profile cover images, post pinning, and audited admin metadata corrections.
 
 To apply migrations to a **new Supabase project**, install or run the Supabase CLI, authenticate, link the project, and push the migrations:
 
