@@ -94,24 +94,41 @@ const postFields = `
   author:profiles!posts_author_id_fkey(username, display_name, avatar_url)
 `;
 
-export async function getPublishedPosts() {
+export async function getPublishedPostsPage(page: number, pageSize: number) {
   const supabase = await createClient();
+  const { count, error: countError } = await supabase
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "published");
+
+  if (countError) throw new Error(countError.message);
+
+  const total = count ?? 0;
+  const totalPages = Math.ceil(total / pageSize);
+  const currentPage = totalPages > 0 ? Math.min(page, totalPages) : 1;
+  const start = (currentPage - 1) * pageSize;
   const { data, error } = await supabase
     .from("posts")
     .select(`${postFields}, comments(count)`)
     .eq("status", "published")
     .eq("comments.is_removed", false)
     .order("is_pinned", { ascending: false })
-    .order("published_at", { ascending: false });
+    .order("published_at", { ascending: false })
+    .range(start, start + pageSize - 1);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((post) => ({
-    ...post,
-    comment_count: post.comments?.[0]?.count ?? 0,
-  })) as unknown as BlogPost[];
+  return {
+    posts: (data ?? []).map((post) => ({
+      ...post,
+      comment_count: post.comments?.[0]?.count ?? 0,
+    })) as unknown as BlogPost[],
+    currentPage,
+    totalPages,
+    total,
+  };
 }
 
 export async function getPublishedPostsByAuthor(authorId: string): Promise<BlogPost[]> {

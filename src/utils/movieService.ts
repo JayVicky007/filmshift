@@ -148,6 +148,7 @@ interface TmdbPersonCredit {
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
+  vote_count?: number;
   popularity?: number;
 }
 
@@ -974,7 +975,59 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 }
 
 
-export async function getMoviesByCreator(
+const MIN_RELATED_TITLE_VOTES = {
+  movie: 500,
+  tv: 250,
+} as const;
+const MIN_RELATED_TITLE_RATING = 5.5;
+const MIN_CREATOR_TITLES_FOR_ROW = 3;
+
+function getProminentCredits(
+  credits: TmdbPersonCredit[],
+  excludedId: number,
+  mediaType: "movie" | "tv",
+): ContentItem[] {
+  const unique = new Map<number, TmdbPersonCredit>();
+  for (const credit of credits) {
+    const title = mediaType === "movie" ? credit.title : credit.name;
+    if (
+      credit.id === excludedId ||
+      !credit.poster_path ||
+      !title?.trim() ||
+      title === "Untitled" ||
+      (credit.vote_count ?? 0) < MIN_RELATED_TITLE_VOTES[mediaType] ||
+      (credit.vote_average ?? 0) < MIN_RELATED_TITLE_RATING
+    ) {
+      continue;
+    }
+    const existing = unique.get(credit.id);
+    if (!existing || (credit.vote_count ?? 0) > (existing.vote_count ?? 0)) {
+      unique.set(credit.id, credit);
+    }
+  }
+
+  return Array.from(unique.values())
+    .sort((first, second) =>
+      (second.vote_count ?? 0) - (first.vote_count ?? 0) ||
+      (second.popularity ?? 0) - (first.popularity ?? 0) ||
+      (second.vote_average ?? 0) - (first.vote_average ?? 0),
+    )
+    .slice(0, 10)
+    .map((credit) => ({
+      id: credit.id,
+      title: (mediaType === "movie" ? credit.title : credit.name) ?? "Untitled",
+      poster_path: credit.poster_path ?? null,
+      release_date: mediaType === "movie"
+        ? credit.release_date ?? ""
+        : credit.first_air_date ?? "",
+      vote_average: credit.vote_average ?? 0,
+      vote_count: credit.vote_count,
+      popularity: credit.popularity,
+      media_type: mediaType,
+    }));
+}
+
+async function getMoviesByCreator(
   personId: number,
   jobs: string[],
   excludeMovieId: number,
@@ -993,24 +1046,7 @@ export async function getMoviesByCreator(
       .filter((credit) => credit.job && jobs.includes(credit.job))
       .filter((movie) => movie.id !== excludeMovieId);
 
-    const uniqueMoviesMap = new Map<number, TmdbPersonCredit>();
-    relatedMovies.forEach((movie) => {
-      if (!uniqueMoviesMap.has(movie.id)) {
-        uniqueMoviesMap.set(movie.id, movie);
-      }
-    });
-
-    return Array.from(uniqueMoviesMap.values())
-      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
-      .map((movie) => ({
-        id: movie.id,
-        title: movie.title ?? "Untitled",
-        poster_path: movie.poster_path ?? null,
-        release_date: movie.release_date || "",
-        vote_average: movie.vote_average ?? 0,
-        media_type: "movie"
-      }))
-      .slice(0, 10);
+    return getProminentCredits(relatedMovies, excludeMovieId, "movie");
   } catch (error) {
     console.error("Unable to fetch related movies for creator:", error);
     return [];
@@ -1018,7 +1054,7 @@ export async function getMoviesByCreator(
 }
 
 
-export async function getTvShowsByCreator(
+async function getTvShowsByCreator(
   personId: number,
   jobs: string[],
   excludeTvId: number,
@@ -1037,28 +1073,44 @@ export async function getTvShowsByCreator(
       .filter((credit) => credit.job && jobs.includes(credit.job))
       .filter((show) => show.id !== excludeTvId);
 
-    const uniqueShowsMap = new Map<number, TmdbPersonCredit>();
-    createdShows.forEach((show) => {
-      if (!uniqueShowsMap.has(show.id)) {
-        uniqueShowsMap.set(show.id, show);
-      }
-    });
-
-    return Array.from(uniqueShowsMap.values())
-      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
-      .map((show) => ({
-        id: show.id,
-        title: show.name ?? "Untitled",
-        poster_path: show.poster_path ?? null,
-        release_date: show.first_air_date || "",
-        vote_average: show.vote_average ?? 0,
-        media_type: "tv"
-      }))
-      .slice(0, 10);
+    return getProminentCredits(createdShows, excludeTvId, "tv");
   } catch (error) {
     console.error("Unable to fetch related TV shows for creator:", error);
     return [];
   }
+}
+
+async function getCastTitleFallback(
+  cast: TmdbPersonCredit[],
+  mediaType: "movie" | "tv",
+  excludeId: number,
+): Promise<{ items: ContentItem[]; title: string } | null> {
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  if (!apiKey) return null;
+
+  const candidates = cast
+    .filter((person) => person.id && person.name?.trim())
+    .sort((first, second) => (first.order ?? Number.MAX_SAFE_INTEGER) - (second.order ?? Number.MAX_SAFE_INTEGER))
+    .slice(0, 5);
+  const endpoint = mediaType === "movie" ? "movie_credits" : "tv_credits";
+  const results = await Promise.all(candidates.map(async (person) => {
+    try {
+      const { data } = await axios.get<{ cast: TmdbPersonCredit[] }>(
+        getApiUrl(process.env.NEXT_PUBLIC_TMDB_BASE_URL, `person/${person.id}/${endpoint}`),
+        { params: { api_key: apiKey } },
+      );
+      return {
+        name: person.name,
+        items: getProminentCredits(data.cast ?? [], excludeId, mediaType),
+      };
+    } catch (error) {
+      console.warn(`Unable to fetch cast credits for ${person.name}:`, error);
+      return { name: person.name, items: [] };
+    }
+  }));
+
+  const match = results.find((result) => result.items.length >= MIN_CREATOR_TITLES_FOR_ROW);
+  return match ? { items: match.items, title: `More Featuring ${match.name}` } : null;
 }
 
 
@@ -1138,7 +1190,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
     "Original Concept",
     "Animation Director",
   ]);
-  const relatedMovies = primaryCreator
+  const creatorMovies = primaryCreator
     ? await getMoviesByCreator(
         primaryCreator.id,
         primaryCreator.job === "Director"
@@ -1147,6 +1199,12 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
         movieData.id,
       )
     : [];
+  const castFallback = creatorMovies.length >= MIN_CREATOR_TITLES_FOR_ROW
+    ? null
+    : await getCastTitleFallback(cast, "movie", movieData.id);
+  const relatedMovies = castFallback?.items ?? creatorMovies;
+  const relatedMoviesTitle = castFallback?.title ??
+    (creatorMovies.length > 0 && primaryCreator ? `More From ${primaryCreator.name}` : null);
 
   return {
     id: movieData.id,
@@ -1173,6 +1231,7 @@ export async function getMovieDetails(movieId: string): Promise<MovieDetails> {
         profilePath: person.profile_path,
       })),
     similar: relatedMovies,
+    similarTitle: relatedMoviesTitle,
     recommendations: recommendationsResult.data.results?.slice(0, 10) || [],
     genres: movieData.genres || [],
     officialVideos: getOfficialVideos(movieData.videos?.results),
@@ -1211,6 +1270,7 @@ export interface MovieDetails {
     profilePath: string | null;
   }>;
   similar: ContentItem[];
+  similarTitle: string | null;
   recommendations: ContentItem[];
   genres: TmdbGenre[];
   officialVideos: OfficialVideo[];
@@ -1246,6 +1306,7 @@ export interface TvShowDetails {
     profilePath: string | null;
   }>;
   similar: ContentItem[];
+  similarTitle: string | null;
   recommendations: ContentItem[];
   ratings: {
     imdb: number | null;
@@ -1351,6 +1412,14 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
     const creatorTvShows = creatorId
       ? await getTvShowsByCreator(creatorId, creatorJobs, showData.id)
       : [];
+    const castFallback = creatorTvShows.length >= MIN_CREATOR_TITLES_FOR_ROW
+      ? null
+      : await getCastTitleFallback(creditsResult.data.cast ?? [], "tv", showData.id);
+    const relatedTvShows = castFallback?.items ?? creatorTvShows;
+    const similarTitle = castFallback?.title ??
+      (creatorTvShows.length > 0 && creatorId
+        ? `More From ${nativeCreators[0]?.name ?? relatedCreatorCredit?.name ?? "The Creator"}`
+        : null);
 
     return {
       id: showData.id,
@@ -1374,7 +1443,8 @@ export async function getTvShowDetails(id: string): Promise<TvShowDetails | null
         character: person.character ?? "",
         profilePath: person.profile_path,
       })) || [],
-      similar: creatorTvShows, // Linked directly into the 'similar' carousel row layout slot
+      similar: relatedTvShows,
+      similarTitle,
       recommendations: recommendationsResult.data.results?.slice(0, 10).map(mapTvToContentItem) || [],
       officialVideos: getOfficialVideos(showData.videos?.results),
       ratings: {

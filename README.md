@@ -7,11 +7,11 @@ Discover what to watch, explore films and series, and share thoughtful reviews a
 
 - **Explore movies and TV** with trending, popular, top-rated, and coming-soon collections.
 - **Search for titles** and browse curated collections by genre and region.
-- **Dive into details** including trailers and official videos, cast and crew, ratings, recommendations, and related information.
+- **Dive into details** including trailers and official videos, cast and crew, ratings, recommendations, and related titles from prominent creators or leading cast members.
 - **Write and publish** reviews or general articles with a rich-text editor.
 - **Save drafts as you write.** The editor shows whether your draft is saving, has unsaved changes, or when it was last saved. You can also save manually and keep editing.
 - **Make posts your own** with headline images, uploaded or linked images, image resizing and cropping, text formatting, and horizontal separators.
-- **Join the conversation** with comments, replies, mentions, notifications, and comment reporting.
+- **Join the conversation** with paginated journal posts, comments, replies, mentions, notifications, and comment reporting.
 - **Personalize your profile** with a cover image and avatar. Change either directly from your profile by uploading an image or providing an image link; public profiles display your images, name, username, and bio. Your profile workspace keeps published posts and private drafts organized separately.
 - **Manage the community** with an administrator account: use separate, admin-only sections to correct post media metadata with an audit trail and author notification, pin important posts, and review comment reports.
 - **Use light or dark theme** across the site.

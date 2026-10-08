@@ -196,7 +196,9 @@ export default async function MovieDetailsPage({ params }: PageProps) {
           </section>
         )}
 
-        {movie.similar.length > 0 && <ContentCarousel title="More From This Creator" movies={movie.similar} />}
+        {movie.similar.length > 0 && (
+          <ContentCarousel title={movie.similarTitle ?? "More from the creator"} movies={movie.similar} />
+        )}
         {movie.recommendations.length > 0 && <ContentCarousel title="Recommendations" movies={movie.recommendations} />}
       </div>
     </main>

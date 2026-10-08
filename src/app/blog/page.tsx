@@ -1,17 +1,49 @@
 import Link from "next/link";
-import { formatBlogMediaType, getPublishedPosts, type BlogPost } from "@/utils/blogService";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { formatBlogMediaType, getPublishedPostsPage, type BlogPost } from "@/utils/blogService";
+
+const POSTS_PER_PAGE = 9;
+
+function getPageLinks(currentPage: number, totalPages: number): Array<number | "ellipsis"> {
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  const visiblePages = [...pages]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((first, second) => first - second);
+
+  return visiblePages.flatMap((page, index) => {
+    const previousPage = visiblePages[index - 1];
+    return [
+      ...(previousPage && page - previousPage > 1 ? ["ellipsis" as const] : []),
+      page,
+    ];
+  });
+}
 
 function formatDate(value: string | null) {
   if (!value) return "";
   return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(value));
 }
 
-export default async function BlogPage() {
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const requestedPage = Number.parseInt(pageParam ?? "1", 10);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   let posts: BlogPost[] = [];
   let errorMessage = "";
+  let currentPage = 1;
+  let totalPages = 0;
+  let totalPosts = 0;
 
   try {
-    posts = await getPublishedPosts();
+    const result = await getPublishedPostsPage(page, POSTS_PER_PAGE);
+    posts = result.posts;
+    currentPage = result.currentPage;
+    totalPages = result.totalPages;
+    totalPosts = result.total;
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Unable to load posts.";
   }
@@ -21,7 +53,10 @@ export default async function BlogPage() {
       <header className="mx-auto max-w-7xl">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">FilmShift community</p>
         <h1 className="mt-3 text-5xl font-black tracking-tight">The Journal</h1>
-        <p className="mt-4 max-w-2xl text-lg text-text-muted">Reviews, recommendations, and thoughtful detours through cinema.</p>
+        <p className="mt-4 max-w-2xl text-lg text-text-muted">
+          Reviews, recommendations, and thoughtful detours through cinema.
+          {totalPosts > 0 && <span className="mt-2 block text-sm">{totalPosts} published {totalPosts === 1 ? "post" : "posts"}</span>}
+        </p>
       </header>
 
       <section className="mx-auto mt-12 max-w-7xl">
@@ -100,6 +135,61 @@ export default async function BlogPage() {
               );
             })}
           </div>
+        )}
+        {!errorMessage && totalPages > 1 && (
+          <nav aria-label="Journal pages" className="mt-12 flex flex-col items-center justify-between gap-4 rounded-2xl border border-text-muted/15 bg-surface/70 px-4 py-4 sm:flex-row sm:px-5">
+            <p className="text-sm text-text-muted">
+              Page <span className="font-semibold text-foreground">{currentPage}</span> of{" "}
+              <span className="font-semibold text-foreground">{totalPages}</span>
+            </p>
+            <div className="flex items-center gap-1.5">
+              <Link
+                href={currentPage === 2 ? "/blog" : `/blog?page=${currentPage - 1}`}
+                aria-label="Previous page"
+                aria-disabled={currentPage === 1}
+                tabIndex={currentPage === 1 ? -1 : undefined}
+                className={`flex h-10 items-center gap-1 rounded-xl border border-text-muted/15 px-3 text-sm font-semibold transition-colors ${
+                  currentPage === 1
+                    ? "pointer-events-none opacity-40"
+                    : "hover:border-accent/50 hover:bg-accent/10"
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Previous</span>
+              </Link>
+              {getPageLinks(currentPage, totalPages).map((pageLink, index) => pageLink === "ellipsis" ? (
+                <span key={`ellipsis-${index}`} aria-hidden="true" className="px-1 text-text-muted">…</span>
+              ) : (
+                <Link
+                  key={pageLink}
+                  href={pageLink === 1 ? "/blog" : `/blog?page=${pageLink}`}
+                  aria-label={`Page ${pageLink}`}
+                  aria-current={pageLink === currentPage ? "page" : undefined}
+                  className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition-colors ${
+                    pageLink === currentPage
+                      ? "border-accent bg-accent text-slate-950 shadow-sm"
+                      : "border-text-muted/15 hover:border-accent/50 hover:bg-accent/10"
+                  }`}
+                >
+                  {pageLink}
+                </Link>
+              ))}
+              <Link
+                href={`/blog?page=${currentPage + 1}`}
+                aria-label="Next page"
+                aria-disabled={currentPage === totalPages}
+                tabIndex={currentPage === totalPages ? -1 : undefined}
+                className={`flex h-10 items-center gap-1 rounded-xl border border-text-muted/15 px-3 text-sm font-semibold transition-colors ${
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-40"
+                    : "hover:border-accent/50 hover:bg-accent/10"
+                }`}
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </nav>
         )}
       </section>
     </main>

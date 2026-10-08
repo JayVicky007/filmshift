@@ -213,7 +213,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
         )}
 
         {show.similar && show.similar.length > 0 && (
-          <ContentCarousel title="More From This Creator" movies={show.similar} />
+          <ContentCarousel title={show.similarTitle ?? "More from the creator"} movies={show.similar} />
         )}
         {show.recommendations && show.recommendations.length > 0 && (
           <ContentCarousel title="Recommendations" movies={show.recommendations} />
