@@ -45,7 +45,7 @@ export default function AdminPostPins({
   return (
     <section className="mx-auto mt-8 max-w-2xl rounded-3xl border border-text-muted/15 bg-surface p-6 sm:p-8">
       <div>
-        <h2 className="text-2xl font-black">Pinned blog posts</h2>
+        <h2 className="text-2xl font-black">Pinned Journal posts</h2>
         <p className="mt-1 text-sm text-text-muted">
           Pinned posts appear before other posts on The Journal. Among pinned posts, newest publications appear first.
         </p>

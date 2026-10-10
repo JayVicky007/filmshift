@@ -68,7 +68,7 @@ export default async function TvShowDetailPage({ params }: PageProps) {
 
           <div className="min-w-0 flex-1">
             <Link href="/blog" className="text-sm font-semibold text-accent transition-colors hover:text-yellow-300">
-              ← Back to Journal Dashboard
+              ← Back to The Journal
             </Link>
             
             <h1 className="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">

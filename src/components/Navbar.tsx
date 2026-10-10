@@ -274,7 +274,7 @@ export default function Navbar() {
               <CategoryMenu label="" menuId="series-categories" collections={getCollectionLinks("tv")} className="!py-0" />
             </div>
 
-            <Link href="/blog" className="transition-colors hover:text-accent">Blog</Link>
+            <Link href="/blog" className="transition-colors hover:text-accent">The Journal</Link>
             {isAdmin && (
               <Link href="/admin" className="transition-colors hover:text-accent">Admin</Link>
             )}
@@ -413,9 +413,9 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Blog Link Row */}
+            {/* Journal Link Row */}
             <Link href="/blog" className="py-3 border-b border-text-muted/10 text-base hover:text-accent transition-colors">
-              The Journal (Blog)
+              The Journal
             </Link>
             {isAdmin && (
               <Link href="/admin" className="py-3 border-b border-text-muted/10 text-base text-accent transition-colors hover:text-yellow-300">

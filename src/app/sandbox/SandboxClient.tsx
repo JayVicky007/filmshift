@@ -140,7 +140,7 @@ export default function SandboxPage() {
                   <span className="hover:text-amber-400 transition-colors cursor-pointer">TV Series</span>
                   <SandboxCategoryMenu label="" menuId="desk-tv" categories={seriesCategories} />
                 </div>
-                <span className="hover:text-amber-400 transition-colors cursor-pointer">Blog</span>
+                <span className="hover:text-amber-400 transition-colors cursor-pointer">The Journal</span>
               </nav>
             </div>
 
@@ -227,7 +227,7 @@ export default function SandboxPage() {
               </div>
 
               <span className="py-2.5 border-b border-zinc-800 text-sm hover:text-amber-400 cursor-pointer">
-                The Journal (Blog)
+                The Journal
               </span>
 
               {/* Mobile Simulated Dashboard Slate */}

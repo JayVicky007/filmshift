@@ -28,7 +28,7 @@ export default function Footer() {
           <nav aria-label="FilmShift community">
             <h2 className="text-sm font-bold text-foreground">Community</h2>
             <ul className="mt-4 space-y-3 text-sm text-text-muted">
-              <li><Link href="/blog" className="transition-colors hover:text-accent">Reviews & articles</Link></li>
+              <li><Link href="/blog" className="transition-colors hover:text-accent">The Journal</Link></li>
               <li>
                 <a
                   href="https://www.themoviedb.org/"

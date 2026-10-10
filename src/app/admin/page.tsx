@@ -21,7 +21,7 @@ const adminSections = [
   },
   {
     href: "/admin/pins",
-    title: "Pinned blog posts",
+    title: "Pinned Journal posts",
     description: "Choose which published posts appear first on The Journal.",
     action: "Manage pinned posts",
   },

@@ -742,7 +742,7 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
 
       <div>
         <label className="text-sm font-semibold" htmlFor="cover-image">Headline image <span className="font-normal text-text-muted">(optional)</span></label>
-        <p className="mt-1 text-xs text-text-muted">Shown on the blog card. Upload an image up to 5 MB, or use an image URL.</p>
+        <p className="mt-1 text-xs text-text-muted">Shown on the Journal card. Upload an image up to 5 MB, or use an image URL.</p>
         <input
           ref={coverImageInputRef}
           id="cover-image"

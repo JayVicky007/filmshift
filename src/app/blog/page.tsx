@@ -54,10 +54,10 @@ export default async function BlogPage({
   return (
     <main className="min-h-screen bg-background px-6 py-12 text-foreground sm:py-16">
       <header className="mx-auto max-w-7xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">FilmShift community</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-trending-text">FilmShift Journal</p>
         <h1 className="mt-3 text-5xl font-black tracking-tight">The Journal</h1>
         <p className="mt-4 max-w-2xl text-lg text-text-muted">
-          Reviews, recommendations, and thoughtful detours through cinema.
+          Film and TV reviews, recommendations, and thoughtful detours through the stories we love.
           {totalPosts > 0 && <span className="mt-2 block text-sm">{totalPosts} published {totalPosts === 1 ? "post" : "posts"}</span>}
         </p>
       </header>

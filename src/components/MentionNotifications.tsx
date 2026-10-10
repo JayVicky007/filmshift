@@ -152,7 +152,7 @@ export default function MentionNotifications({
                       {notification.post.title}
                     </Link>
                   ) : (
-                    <span className="font-semibold">a blog post</span>
+                    <span className="font-semibold">a Journal post</span>
                   )}
                 </p>
                 )}
