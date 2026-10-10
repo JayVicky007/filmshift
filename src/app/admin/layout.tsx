@@ -34,22 +34,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               Back to FilmShift
             </Link>
           </div>
-          <nav aria-label="Admin sections" className="mt-5 flex flex-wrap gap-2 border-t border-text-muted/10 pt-4">
-            {[
-              { href: "/admin", label: "Overview" },
-              { href: "/admin/corrections", label: "Post corrections" },
-              { href: "/admin/pins", label: "Pinned posts" },
-              { href: "/admin/reports", label: "Comment reports" },
-            ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="rounded-full border border-text-muted/15 bg-background px-3 py-2 text-xs font-semibold text-text-muted transition-colors hover:border-accent/50 hover:text-accent"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
         </header>
         {children}
       </div>

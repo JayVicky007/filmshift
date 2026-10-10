@@ -204,6 +204,13 @@ body {
   line-height: 1.8 !important;
 }
 
+/* Preserve intentional blank paragraphs in the editor and published posts. */
+.prose p:empty:not(.is-editor-empty)::before,
+.prose-invert p:empty:not(.is-editor-empty)::before {
+  content: "\00a0";
+  white-space: pre;
+}
+
 /* Ensure floated elements don't collapse text wrappers */
 .prose .tiptap::after {
   content: "";

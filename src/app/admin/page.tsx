@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const adminSections = [
   {
+    href: "/admin/users",
+    title: "Member management",
+    description: "Review member accounts and posts, apply time-limited or permanent bans, and delete accounts when necessary.",
+    action: "Manage members",
+  },
+  {
+    href: "/admin/posts",
+    title: "Manage posts",
+    description: "Review published posts and drafts, and remove content that should no longer be on FilmShift.",
+    action: "Manage posts",
+  },
+  {
     href: "/admin/corrections",
     title: "Post metadata corrections",
     description: "Correct a post’s media type or linked TMDB title, with an audit trail and author notification.",
@@ -24,7 +36,7 @@ const adminSections = [
 export default function AdminPage() {
   return (
     <section aria-label="Admin workspaces">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {adminSections.map((section) => (
           <article
             key={section.href}

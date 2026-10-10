@@ -7,13 +7,13 @@ Discover what to watch, explore films and series, and share thoughtful reviews a
 
 - **Explore movies and TV** with trending, popular, top-rated, and coming-soon collections.
 - **Search for titles** and browse curated collections by genre and region.
-- **Dive into details** including trailers and official videos, cast and crew, ratings, recommendations, and related titles from prominent creators or leading cast members.
+- **Dive into details** including official trailers, teasers, and other videos when available (including for upcoming titles), cast and crew, ratings, recommendations, and related titles from prominent creators or leading cast members.
 - **Write and publish** reviews or general articles with a rich-text editor.
 - **Save drafts as you write.** The editor shows whether your draft is saving, has unsaved changes, or when it was last saved. You can also save manually and keep editing.
 - **Make posts your own** with headline images, uploaded or linked images, image resizing and cropping, text formatting, and horizontal separators.
 - **Join the conversation** with paginated journal posts, post and comment likes, threaded comment replies, mentions, notifications, and comment reporting.
 - **Personalize your profile** with a cover image and avatar. Change either directly from your profile by uploading an image or providing an image link; public profiles display your images, name, username, and bio. Your profile workspace keeps published posts and private drafts organized separately.
-- **Manage the community** with an administrator account: use separate, admin-only sections to correct post media metadata with an audit trail and author notification, pin important posts, and review comment reports.
+- **Manage the community** with an administrator account: review members and their posts, apply temporary or permanent bans, delete accounts and their content, delete individual posts, correct post media metadata with an audit trail and author notification, pin important posts, and review comment reports.
 - **Use light or dark theme** across the site.
 
 ## Built with
@@ -48,6 +48,8 @@ Create a `.env.local` file in the project root:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-publishable-or-anon-key
 NEXT_PUBLIC_TMDB_API_KEY=your-tmdb-api-key
+# Required for admin member moderation; keep server-only
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-service-role-key
 
 # Optional: OMDb adds IMDb ratings to supported title pages
 NEXT_PUBLIC_OMDB_API_KEY=
@@ -59,9 +61,11 @@ NEXT_PUBLIC_OMDB_BASE_URL=https://www.omdbapi.com
 
 Use the Supabase project URL and **publishable/anon key**, never a service-role key in the browser app. Variables prefixed with `NEXT_PUBLIC_` are included in client-side code; only put values there that are meant to be public. Keep `.env.local` out of Git.
 
+Admin member moderation also requires `SUPABASE_SERVICE_ROLE_KEY` as a server-only environment variable in development and production. Never prefix it with `NEXT_PUBLIC_` or expose it to the browser.
+
 ### 3. Set up the database
 
-The versioned Supabase SQL migrations are in [`supabase/migrations`](./supabase/migrations). They create the blog schema, security policies, storage buckets, comments and comment/post likes, threaded replies, notifications, post cover images, profile cover images, post pinning, and audited admin metadata corrections.
+The versioned Supabase SQL migrations are in [`supabase/migrations`](./supabase/migrations). They create the blog schema, security policies, storage buckets, comments and comment/post likes, threaded replies, notifications, post cover images, profile cover images, post pinning, audited admin metadata corrections, and secure admin post deletion.
 
 To apply migrations to a **new Supabase project**, install or run the Supabase CLI, authenticate, link the project, and push the migrations:
 

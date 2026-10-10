@@ -807,11 +807,13 @@ export default function WritePostForm({ authorId, initialPost }: { authorId: str
           </p>
         </div>
         {coverImageUrl && (
-          <img
-            src={coverImageUrl}
-            alt="Headline image preview"
-            className="mt-4 aspect-video w-full max-w-xl rounded-xl border border-text-muted/15 object-cover"
-          />
+          <div className="mx-auto mt-4 w-full max-w-xl overflow-hidden rounded-xl border border-text-muted/15 bg-background">
+            <img
+              src={coverImageUrl}
+              alt="Headline image preview"
+              className="block aspect-video w-full object-cover object-center"
+            />
+          </div>
         )}
       </div>
 
